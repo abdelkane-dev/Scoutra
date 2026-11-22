@@ -63,7 +63,27 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(vite@8.3.8(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15))
 
-  apps/worker: {}
+  apps/worker:
+    dependencies:
+      '@scoutra/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@scoutra/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@scoutra/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@scoutra/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
 
   packages/auth:
     dependencies:

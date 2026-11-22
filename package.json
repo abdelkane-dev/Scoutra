@@ -16,7 +16,7 @@
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
     "db:generate": "pnpm --filter @scoutra/db generate",
-    "db:migrate": "pnpm --filter @scoutra/db migrate",
+    "db:migrate": "pnpm --filter @scoutra/worker migrate",
     "dev:web": "pnpm --filter @scoutra/web dev",
     "dev:worker": "pnpm --filter @scoutra/worker dev",
     "license": "pnpm --filter @scoutra/license-cli cli"
