@@ -104,6 +104,13 @@ function reasons(score: number, sector: string, role: L): { pts: number; label: 
     .filter((r) => r.pts > 0);
 }
 
+const DIAL: Record<string, string> = { FR: '33', CA: '1', US: '1', PT: '351', DE: '49', IT: '39', GB: '44', ES: '34', JP: '81', NL: '31', KE: '254', BR: '55', IN: '91', PL: '48', IE: '353', MA: '212', SG: '65', CH: '41', BE: '32', GH: '233', AU: '61', MX: '52', RO: '40' };
+
+function fakePhone(cc: string, i: number) {
+  const n = String(100000000 + ((i * 48271) % 899999999)).slice(0, 9);
+  return `+${DIAL[cc] ?? '00'} ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`;
+}
+
 const LISTS: Record<string, string> = {
   q_health: 'Cabinets dentaires 2026',
   c_manufacturing: 'Industrie Europe',
@@ -129,7 +136,7 @@ export const DEMO_PROSPECTS: DemoProspect[] = ROWS.map((r, i) => {
     reasons: reasons(score, sector, role),
     email: emailStatus === 'none' ? '' : `${first}@${domain}`,
     emailStatus,
-    phone: phone ? `+${(i * 7919) % 90 + 10} ${String(100 + ((i * 131) % 900))} ${String(1000 + ((i * 7717) % 9000))}` : null,
+    phone: phone ? fakePhone(cc, i + 1) : null,
     whatsapp,
     source,
     stage,
