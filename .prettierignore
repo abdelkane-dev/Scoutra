@@ -3,3 +3,7 @@ docs/
 **/.next/
 **/dist/
 packages/db/migrations/meta/
+PROGRESS.md
+CLAUDE.md
+CLAUDE.local.md
+**/AGENTS.md

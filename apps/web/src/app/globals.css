@@ -1,0 +1,18 @@
+/* Tailwind CSS v4 : configuration dans le CSS. Le thème (couleurs Scoutra, typographies)
+   est à compléter par le frontend (voir docs/maquettes). */
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import type { TestProject } from 'vitest/node';
-import { runMigrations } from '@scoutra/db';
+import { runMigrations } from '@scoutra/db/migrate';
 import { installQueueSchema } from '@scoutra/queue';
 
 /**

@@ -1,0 +1,35 @@
+{
+  "name": "@scoutra/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@scoutra/auth": "workspace:*",
+    "@scoutra/config": "workspace:*",
+    "@scoutra/core": "workspace:*",
+    "@scoutra/crypto": "workspace:*",
+    "@scoutra/db": "workspace:*",
+    "@scoutra/i18n": "workspace:*",
+    "@scoutra/license": "workspace:*",
+    "@scoutra/queue": "workspace:*",
+    "better-auth": "^1.7.27",
+    "next": "16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5"
+  }
+}

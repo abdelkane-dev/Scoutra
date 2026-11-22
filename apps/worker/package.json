@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "build": "esbuild src/main.ts src/migrate.ts --bundle --platform=node --target=node22 --format=esm --outdir=dist --sourcemap=external --external:pg-native --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\"",
+    "build": "esbuild src/main.ts src/migrate.ts --bundle --platform=node --target=node22 --format=esm --outdir=dist --sourcemap=external --external:pg-native --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\" && rm -rf dist/migrations && cp -r ../../packages/db/migrations dist/migrations",
     "dev": "tsx watch --env-file=../../.env src/main.ts",
     "start": "node dist/main.js",
     "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts"

@@ -1,0 +1,121 @@
+# Scoutra — installation en une commande :
+#   scripts/init-secrets.sh && docker compose up -d --build
+# Aucun secret par défaut : sans .env complet, `docker compose` REFUSE de démarrer
+# (syntaxe ${VAR:?}) et chaque service revérifie la force des secrets au démarrage.
+# Seul le web est publié, et uniquement sur 127.0.0.1 : placer un reverse proxy TLS devant.
+name: scoutra
+
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+  tmpfs: [/tmp]
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17-bookworm@sha256:837bed18782820fe967067cb5328b02b0d9992c1be9a37ee0c9c492cfc03af3b
+    <<: *hardened
+    # L'entrypoint officiel démarre en root puis passe à l'utilisateur postgres.
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs: [/tmp, /var/run/postgresql]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_MIGRATOR_PASSWORD: ${SCOUTRA_MIGRATOR_PASSWORD:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_APP_PASSWORD: ${SCOUTRA_APP_PASSWORD:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_AUTH_PASSWORD: ${SCOUTRA_AUTH_PASSWORD:?manquant, lancer scripts/init-secrets.sh}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d scoutra']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+
+  migrate:
+    build: { context: ., target: worker }
+    <<: *hardened
+    restart: 'no'
+    command: ['node', 'dist/migrate.js']
+    environment:
+      DATABASE_MIGRATOR_URL: ${DATABASE_MIGRATOR_URL:?manquant, lancer scripts/init-secrets.sh}
+    networks: [backend]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  worker:
+    build: { context: ., target: worker }
+    <<: *hardened
+    user: node
+    environment:
+      NODE_ENV: production
+      SCOUTRA_MODE: ${SCOUTRA_MODE:-saas}
+      DATABASE_URL: ${DATABASE_URL:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_MASTER_KEY: ${SCOUTRA_MASTER_KEY:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_MASTER_KEY_VERSION: ${SCOUTRA_MASTER_KEY_VERSION:-1}
+      SCOUTRA_HASH_KEY: ${SCOUTRA_HASH_KEY:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_LICENSE_TOKEN: ${SCOUTRA_LICENSE_TOKEN:-}
+    networks: [backend]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    mem_limit: 1g
+
+  web:
+    build: { context: ., target: web }
+    <<: *hardened
+    user: node
+    environment:
+      NODE_ENV: production
+      SCOUTRA_MODE: ${SCOUTRA_MODE:-saas}
+      DATABASE_URL: ${DATABASE_URL:?manquant, lancer scripts/init-secrets.sh}
+      DATABASE_AUTH_URL: ${DATABASE_AUTH_URL:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_MASTER_KEY: ${SCOUTRA_MASTER_KEY:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_MASTER_KEY_VERSION: ${SCOUTRA_MASTER_KEY_VERSION:-1}
+      SCOUTRA_HASH_KEY: ${SCOUTRA_HASH_KEY:?manquant, lancer scripts/init-secrets.sh}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?manquant, lancer scripts/init-secrets.sh}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?manquant, lancer scripts/init-secrets.sh}
+      SCOUTRA_TRUSTED_ORIGINS: ${SCOUTRA_TRUSTED_ORIGINS:-}
+      SCOUTRA_ALLOW_SIGNUP: ${SCOUTRA_ALLOW_SIGNUP:-false}
+      SCOUTRA_REQUIRE_EMAIL_VERIFICATION: ${SCOUTRA_REQUIRE_EMAIL_VERIFICATION:-true}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      SCOUTRA_LICENSE_TOKEN: ${SCOUTRA_LICENSE_TOKEN:-}
+    ports:
+      - '127.0.0.1:3000:3000'
+    networks: [edge, backend]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    mem_limit: 1g
+
+  # --- Services des agents (étape 2). Déclarés mais NON démarrés par défaut
+  # (`docker compose --profile agents up`). Réseaux internes, aucun port publié.
+  # TODO étape 2 : sortie Internet via un proxy filtrant (garde SSRF E5), port 25 pour Reacher.
+  reacher:
+    image: reacherhq/backend:v0.11.11@sha256:658de20fac2bc49360eb81c2ed365c5bdc9eb3285ff05f366328aeab990eba64
+    profiles: [agents]
+    <<: *hardened
+    networks: [backend]
+    mem_limit: 512m
+
+  crawl4ai:
+    # Licence Apache-2.0 + clause d'attribution (voir NOTICE et docs/recherche/verifications.md).
+    image: unclecode/crawl4ai:0.9.6@sha256:4603d7c4d69769673dfa1214fa9abbcac2a874d4d9af07d784782af528b65c68
+    profiles: [agents]
+    <<: *hardened
+    read_only: false # navigateur headless : écritures dans le conteneur nécessaires
+    shm_size: 1g
+    networks: [crawl] # isolé : aucun accès à Postgres
+    mem_limit: 2g
+
+networks:
+  edge: {}
+  backend:
+    internal: true
+  crawl:
+    internal: true
+
+volumes:
+  pgdata: {}

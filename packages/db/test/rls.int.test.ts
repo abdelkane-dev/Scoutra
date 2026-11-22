@@ -89,14 +89,12 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
         keyVersion: 1,
         last4: 'abcd',
       });
-      await tx
-        .insert(s.suppressionList)
-        .values({
-          organizationId: t.orgId,
-          valueHash: hex64(),
-          channel: 'email',
-          reason: 'opt_out',
-        });
+      await tx.insert(s.suppressionList).values({
+        organizationId: t.orgId,
+        valueHash: hex64(),
+        channel: 'email',
+        reason: 'opt_out',
+      });
       await writeAudit(tx, {
         orgId: t.orgId,
         actorType: 'user',
@@ -177,14 +175,12 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
   it('écriture refusée avec l’organization_id d’une autre organisation', async () => {
     await expectPgError(
       withTenant(h.app.db, A, (tx) =>
-        tx
-          .insert(s.campaigns)
-          .values({
-            organizationId: B.orgId,
-            name: 'intrus',
-            promptText: 'x',
-            prospectingModel: 'b2b',
-          }),
+        tx.insert(s.campaigns).values({
+          organizationId: B.orgId,
+          name: 'intrus',
+          promptText: 'x',
+          prospectingModel: 'b2b',
+        }),
       ),
       ['42501'],
     );
@@ -196,14 +192,12 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
     );
     await expectPgError(
       withTenant(h.app.db, A, (tx) =>
-        tx
-          .insert(s.creditLedger)
-          .values({
-            organizationId: B.orgId,
-            delta: 1000,
-            reason: 'adjustment',
-            idempotencyKey: 'vol-de-credits',
-          }),
+        tx.insert(s.creditLedger).values({
+          organizationId: B.orgId,
+          delta: 1000,
+          reason: 'adjustment',
+          idempotencyKey: 'vol-de-credits',
+        }),
       ),
       ['42501'],
     );
@@ -244,15 +238,13 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
   it('clé étrangère composite : impossible de rattacher un contact au prospect d’une autre organisation', async () => {
     await expectPgError(
       withTenant(h.app.db, A, (tx) =>
-        tx
-          .insert(s.contacts)
-          .values({
-            organizationId: A.orgId,
-            prospectId: ids.B.prospect,
-            channel: 'email',
-            valueEncrypted: {},
-            valueHash: hex64(),
-          }),
+        tx.insert(s.contacts).values({
+          organizationId: A.orgId,
+          prospectId: ids.B.prospect,
+          channel: 'email',
+          valueEncrypted: {},
+          valueHash: hex64(),
+        }),
       ),
       ['23503'],
     );

@@ -37,6 +37,11 @@ export function can(role: unknown, action: unknown): boolean {
   return RANK[role] >= RANK[ACTIONS[action as Action]];
 }
 
+/** Actions de consultation (encore permises quand la licence est en lecture seule). */
+export function isReadAction(action: Action): boolean {
+  return /:(read|list|export)$/.test(action);
+}
+
 /** Rôles qu'un acteur peut attribuer (jamais au-dessus du sien ; owner réservé au propriétaire). */
 export function assignableRoles(actor: unknown): OrgRole[] {
   if (actor === 'owner') return ['owner', 'admin', 'member'];
