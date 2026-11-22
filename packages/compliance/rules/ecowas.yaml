@@ -1,0 +1,30 @@
+# CEDEAO : Acte additionnel A/SA.1/01/10 (règle régionale par défaut, surchargée par les lois nationales).
+jurisdiction: ECOWAS
+version: '2026-11-22'
+members: [BJ, BF, CV, CI, GM, GH, GN, GW, LR, ML, NE, NG, SN, SL, TG]
+sources: ['Acte additionnel CEDEAO A/SA.1/01/10']
+retentionDays: 1095
+maxFollowUps: 2
+rules:
+  - id: ecowas-individual-direct
+    audience: individual
+    channels: [email, phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: ecowas-business-email
+    audience: business
+    channels: [email]
+    outcome: allow_with_conditions
+    conditions: { requireOptOut: true, requireIdentification: true, footer: generic_notice }
+  - id: ecowas-business-phone
+    audience: business
+    channels: [phone]
+    outcome: allow_with_conditions
+    conditions: { requireIdentification: true }
+  - id: ecowas-business-whatsapp
+    audience: business
+    channels: [whatsapp]
+    outcome: allow_with_conditions
+    conditions: { requireIdentification: true, requireOptOut: true, manualSendOnly: true }
+  - id: ecowas-manual-public
+    channels: [website_form, social_page]
+    outcome: manual_only

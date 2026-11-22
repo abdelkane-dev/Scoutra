@@ -166,6 +166,15 @@ importers:
 
   packages/agents:
     dependencies:
+      '@scoutra/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@scoutra/compliance':
+        specifier: workspace:*
+        version: link:../compliance
+      '@scoutra/connectors':
+        specifier: workspace:*
+        version: link:../connectors
       '@scoutra/core':
         specifier: workspace:*
         version: link:../core

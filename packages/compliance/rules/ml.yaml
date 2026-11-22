@@ -1,0 +1,22 @@
+# Mali : loi n° 2013-015 modifiée (2017-070), APDP. Déclaration du traitement à l'APDP.
+jurisdiction: ML
+version: '2026-11-22'
+sources: ['Loi n° 2013-015 du 21 mai 2013 (mod. 2017-070)']
+retentionDays: 1095
+maxFollowUps: 2
+rules:
+  - id: ml-individual-direct
+    audience: individual
+    channels: [email, phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: ml-business
+    audience: business
+    channels: [email, phone]
+    outcome: allow_with_conditions
+    conditions:
+      {
+        requireOptOut: true,
+        requireIdentification: true,
+        requireAuthorityDeclaration: true,
+        footer: generic_notice,
+      }

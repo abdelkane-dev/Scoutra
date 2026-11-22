@@ -1,0 +1,32 @@
+# États-Unis : CAN-SPAM (email : opt-out) ; TCPA (SMS/appels automatisés : consentement écrit).
+jurisdiction: US
+version: '2026-11-22'
+sources: ['CAN-SPAM Act 15 U.S.C. 7704', 'TCPA 47 U.S.C. 227']
+retentionDays: 1095
+maxFollowUps: 3
+rules:
+  - id: us-email
+    channels: [email]
+    outcome: allow_with_conditions
+    conditions:
+      {
+        requireOptOut: true,
+        requireIdentification: true,
+        requirePostalAddress: true,
+        footer: us_notice,
+      }
+  - id: us-individual-phone
+    audience: individual
+    channels: [phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: us-business-phone
+    audience: business
+    channels: [phone]
+    outcome: allow_with_conditions
+    conditions: { requireIdentification: true, checkDoNotCall: true }
+  - id: us-whatsapp
+    channels: [whatsapp]
+    outcome: deny_unless_consent
+  - id: us-manual-public
+    channels: [website_form, social_page]
+    outcome: manual_only

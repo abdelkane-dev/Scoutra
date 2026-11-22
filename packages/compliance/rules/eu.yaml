@@ -1,0 +1,61 @@
+# Union européenne : RGPD + directive ePrivacy 2002/58/CE. À faire valider par un juriste.
+jurisdiction: EU
+version: '2026-11-22'
+members:
+  [
+    AT,
+    BE,
+    BG,
+    HR,
+    CY,
+    CZ,
+    DK,
+    EE,
+    FI,
+    FR,
+    DE,
+    GR,
+    HU,
+    IE,
+    IT,
+    LV,
+    LT,
+    LU,
+    MT,
+    NL,
+    PL,
+    PT,
+    RO,
+    SK,
+    SI,
+    ES,
+    SE,
+    IS,
+    LI,
+    NO,
+  ]
+sources: ['RGPD art. 6, 13, 14, 21', 'Directive 2002/58/CE art. 13']
+retentionDays: 1095
+maxFollowUps: 2
+rules:
+  - id: eu-individual-direct
+    audience: individual
+    channels: [email, phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: eu-business-email
+    audience: business
+    channels: [email]
+    outcome: allow_with_conditions
+    conditions: { requireOptOut: true, requireIdentification: true, footer: eu_notice }
+  - id: eu-business-phone
+    audience: business
+    channels: [phone]
+    outcome: allow_with_conditions
+    conditions: { requireIdentification: true, checkDoNotCall: true }
+  - id: eu-business-whatsapp
+    audience: business
+    channels: [whatsapp]
+    outcome: deny_unless_consent
+  - id: eu-manual-public
+    channels: [website_form, social_page]
+    outcome: manual_only

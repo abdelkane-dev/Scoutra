@@ -12,6 +12,9 @@
   "dependencies": {
     "@scoutra/core": "workspace:*",
     "libphonenumber-js": "^1.13.17",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@scoutra/ai": "workspace:*",
+    "@scoutra/compliance": "workspace:*",
+    "@scoutra/connectors": "workspace:*"
   }
 }

@@ -1,0 +1,30 @@
+# Canada : LCAP / CASL (consentement exprès ou tacite, ex. adresse publiée sans mention de refus).
+jurisdiction: CA
+version: '2026-11-22'
+sources: ['LCAP / CASL art. 6, 10(9)']
+retentionDays: 730
+maxFollowUps: 2
+rules:
+  - id: ca-individual-direct
+    audience: individual
+    channels: [email, phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: ca-business-email
+    audience: business
+    channels: [email]
+    outcome: allow_with_conditions
+    conditions:
+      {
+        requireOptOut: true,
+        requireIdentification: true,
+        requirePublishedAddress: true,
+        footer: ca_notice,
+      }
+  - id: ca-business-phone
+    audience: business
+    channels: [phone]
+    outcome: allow_with_conditions
+    conditions: { requireIdentification: true, checkDoNotCall: true }
+  - id: ca-manual-public
+    channels: [website_form, social_page]
+    outcome: manual_only

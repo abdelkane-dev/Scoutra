@@ -1,0 +1,24 @@
+# Règle par défaut PRUDENTE pour un pays non couvert : consentement pour les particuliers,
+# opposition + information pour les professionnels. Avertissement « pays non couvert ».
+jurisdiction: DEFAULT
+version: '2026-11-22'
+sources: ['Règle prudente Scoutra (pays non couvert juridiquement)']
+retentionDays: 730
+maxFollowUps: 1
+rules:
+  - id: default-individual-direct
+    audience: individual
+    channels: [email, phone, whatsapp]
+    outcome: deny_unless_consent
+  - id: default-business
+    audience: business
+    channels: [email, phone]
+    outcome: allow_with_conditions
+    conditions: { requireOptOut: true, requireIdentification: true, footer: generic_notice }
+  - id: default-business-whatsapp
+    audience: business
+    channels: [whatsapp]
+    outcome: deny_unless_consent
+  - id: default-manual-public
+    channels: [website_form, social_page]
+    outcome: manual_only
