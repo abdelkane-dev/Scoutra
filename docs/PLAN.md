@@ -95,7 +95,7 @@ AGPL / GPL = non pour du code repris dans un SaaS fermé), maintenance (dernier 
 
 ### 3.5 Ton statut (point bloquant pour vendre)
 Sans entreprise enregistrée, impossible de signer des contrats solides, d'encaisser proprement (Stripe n'est pas disponible au Mali) ou de facturer à l'international.
-Recommandation : créer une structure à l'**APIJ (guichet unique, Bamako)** — entreprise individuelle pour démarrer vite, ou SARL si associés/investisseurs. Pour l'encaissement : mobile money / cartes via un agrégateur ouest-africain (CinetPay, PayDunya…) et un « merchant of record » international (Lemon Squeezy / Paddle) — conditions d'éligibilité à vérifier une fois la structure créée.
+Recommandation : créer une structure à l'**API-Mali (guichet unique, Bamako ; entreprise individuelle ≈ 72 h, ≈ 8 400 FCFA)** — entreprise individuelle pour démarrer vite, ou SARL si associés/investisseurs. Pour l'encaissement : mobile money / cartes via un agrégateur ouest-africain (CinetPay, PayDunya…) et un « merchant of record » international (Lemon Squeezy / Paddle) — conditions d'éligibilité à vérifier une fois la structure créée.
 
 ---
 
@@ -230,4 +230,4 @@ Rédaction en français + anglais, au format Word et PDF, **à faire relire par 
 3. Approche particuliers (§3.2 : pas d'aspiration de profils, messages envoyés à la main) : OK ?
 4. Prix indicatifs (§4) : à garder comme base ?
 5. Couleur d'accent : vert profond ou indigo ?
-6. Création de ta structure à l'APIJ : en cours / prévue ?
+6. Création de ta structure à l'API-Mali : en cours / prévue ?
