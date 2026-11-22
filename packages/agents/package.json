@@ -15,6 +15,7 @@
     "zod": "^4.6.7",
     "@scoutra/ai": "workspace:*",
     "@scoutra/compliance": "workspace:*",
-    "@scoutra/connectors": "workspace:*"
+    "@scoutra/connectors": "workspace:*",
+    "@scoutra/billing": "workspace:*"
   }
 }

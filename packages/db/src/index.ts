@@ -35,5 +35,14 @@ export const TENANT_TABLES = [
   'credit_ledger',
   'suppression_list',
   'tenant_jobs',
+  'campaign_events',
+  'usage_events',
+  'messages',
+  'credit_buckets',
+  'credit_reservations',
+  'credit_consumptions',
+  'subscriptions',
 ] as const;
 export * from './playbooks';
+export * from './wallet';
+export * from './events';

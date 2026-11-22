@@ -1,4 +1,5 @@
-import { z } from 'zod';
+import type { z } from 'zod';
+import { agentsEnvSchema } from '@scoutra/config';
 import type { ModelTier } from './types';
 
 /**
@@ -6,23 +7,14 @@ import type { ModelTier } from './types';
  * modèles du client (Anthropic avec sa clé, ou tout point d'accès compatible OpenAI : vLLM,
  * Ollama, Azure…). Sans clé : `none` → mode dégradé explicite (pas d'IA).
  */
-export const aiEnvSchema = z.object({
-  SCOUTRA_AI_PROVIDER: z.enum(['anthropic', 'openai_compatible', 'none']).default('none'),
-  ANTHROPIC_API_KEY: z.string().min(10).optional(),
-  SCOUTRA_AI_BASE_URL: z.url().optional(),
-  SCOUTRA_AI_API_KEY: z.string().min(1).optional(),
-  SCOUTRA_AI_MODEL_FAST: z
-    .string()
-    .regex(/^[\w.:/-]{2,100}$/)
-    .optional(),
-  SCOUTRA_AI_MODEL_BALANCED: z
-    .string()
-    .regex(/^[\w.:/-]{2,100}$/)
-    .optional(),
-  SCOUTRA_AI_MODEL_STRONG: z
-    .string()
-    .regex(/^[\w.:/-]{2,100}$/)
-    .optional(),
+export const aiEnvSchema = agentsEnvSchema.pick({
+  SCOUTRA_AI_PROVIDER: true,
+  ANTHROPIC_API_KEY: true,
+  SCOUTRA_AI_BASE_URL: true,
+  SCOUTRA_AI_API_KEY: true,
+  SCOUTRA_AI_MODEL_FAST: true,
+  SCOUTRA_AI_MODEL_BALANCED: true,
+  SCOUTRA_AI_MODEL_STRONG: true,
 });
 export type AiEnv = z.infer<typeof aiEnvSchema>;
 

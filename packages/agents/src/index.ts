@@ -9,3 +9,4 @@ export * from './planner';
 export * from './enrichment';
 export * from './drafting';
 export * from './playbooks';
+export * from './campaign-plan';

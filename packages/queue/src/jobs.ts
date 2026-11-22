@@ -39,7 +39,7 @@ const campaignRef = tracked.extend({ campaignId: z.uuid() });
 /** Interprétation du texte libre en profil de cible (agent Interprète). */
 export const campaignInterpretJob = defineJob({
   name: 'campaign.interpret',
-  schema: campaignRef.strict(),
+  schema: campaignRef.extend({ locale: z.enum(['fr', 'en']) }).strict(),
   queue: { retryLimit: 2, retryDelay: 10, retryBackoff: true, expireInSeconds: 180 },
 });
 

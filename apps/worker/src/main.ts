@@ -1,7 +1,9 @@
 import http from 'node:http';
 import { loadEnv, workerEnvSchema } from '@scoutra/config';
 import { assertRlsEnforcedRole, createDb } from '@scoutra/db';
+import { createLlmClient } from '@scoutra/ai';
 import { createBoss, pingJob, work } from '@scoutra/queue';
+import { createCampaignDeps, registerCampaignWorkers } from './campaign';
 import { handlePing } from './handlers/ping';
 
 async function main() {
@@ -13,6 +15,12 @@ async function main() {
   boss.on('error', (err: Error) => console.error('[worker] erreur pg-boss :', err.message));
   await boss.start();
   await work(boss, pingJob, (payload, { jobId }) => handlePing(handle.db, payload, jobId));
+  const llm = createLlmClient(env);
+  await registerCampaignWorkers(createCampaignDeps({ env, db: handle.db, boss, llm }));
+  if (!llm.available)
+    console.warn(
+      '[worker] aucun modèle d’IA configuré : interprétation heuristique et messages modèles (mode dégradé)',
+    );
 
   let healthy = true;
   const health = http.createServer((req, res) => {

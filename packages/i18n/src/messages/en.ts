@@ -18,8 +18,7 @@ export const en: Messages = {
     internal: 'Something went wrong. Please try again later.',
     insufficient_credits:
       'Not enough credits to launch this search. Add a pack or reduce the volume.',
-    quota_exceeded:
-      'Your plan limit has been reached (concurrent campaigns or daily cap).',
+    quota_exceeded: 'Your plan limit has been reached (concurrent campaigns or daily cap).',
     no_active_organization: 'Select an organization first.',
   },
   roles: {
@@ -672,7 +671,8 @@ export const en: Messages = {
       userMenu: 'Account menu',
       orgMenu: 'Switch organisation',
       demo: 'Demo data',
-      demoHint: 'Figures and names on this page are fictitious until the matching API is available.',
+      demoHint:
+        'Figures and names on this page are fictitious until the matching API is available.',
       rolePreview: 'Previewing the {role} role (development)',
       rolePreviewReset: 'Back to my role',
       twoFactorBanner: 'Turn on two-factor authentication to unlock: {actions}.',
@@ -681,7 +681,8 @@ export const en: Messages = {
       skip: 'Skip to content',
       breadcrumb: 'Breadcrumb',
       notAllowedTitle: 'This space is not available for your role',
-      notAllowedBody: 'Your role ({role}) does not give access to this page. Ask an admin to change your role if you need it.',
+      notAllowedBody:
+        'Your role ({role}) does not give access to this page. Ask an admin to change your role if you need it.',
       backHome: 'Back to home',
       soon: 'Coming soon',
     },
@@ -887,7 +888,8 @@ export const en: Messages = {
     composer: 'New search',
     query: 'Describe who you are looking for',
     queryHint: 'Industry, location, size, age, signal to spot: write the way you speak.',
-    queryPlaceholder: 'E.g. Independent hotels with 20 to 80 rooms in Lisbon and Porto, with no booking engine on their website',
+    queryPlaceholder:
+      'E.g. Independent hotels with 20 to 80 rooms in Lisbon and Porto, with no booking engine on their website',
     examples: 'Examples',
     ex1: 'Web agencies in Montreal hiring a developer',
     ex2: 'Medical equipment distributors in Poland and Romania',
@@ -921,7 +923,8 @@ export const en: Messages = {
     queryTooShort: 'Describe your target in a few words (10 characters minimum).',
     needCountry: 'Choose at least one country.',
     idleTitle: 'What happens next',
-    idleLede: 'Each agent leaves a trace: what it found, where, and why a prospect is kept or set aside.',
+    idleLede:
+      'Each agent leaves a trace: what it found, where, and why a prospect is kept or set aside.',
     idle1: 'Turns your sentence into a target profile.',
     idle2: 'Queries the sources authorised in each country.',
     idle3: 'Reads websites to find decision-makers and channels.',
@@ -971,7 +974,8 @@ export const en: Messages = {
       rerunDone: 'Search started again',
       fresh: '+{n}',
       emptyTitle: 'No saved search',
-      emptyBody: 'After a search, choose “Save search” to run it again and be alerted to new prospects.',
+      emptyBody:
+        'After a search, choose “Save search” to run it again and be alerted to new prospects.',
     },
     playbooks: {
       title: 'Playbooks',
@@ -993,7 +997,8 @@ export const en: Messages = {
       maxDefault: 'Default volume: {n} prospects',
       publicOnly: 'Public signals only (no lists of people).',
       angle: 'First message angle',
-      individualsNote: 'This model targets individuals: only the channels allowed in their country are suggested, and no message is ever sent automatically.',
+      individualsNote:
+        'This model targets individuals: only the channels allowed in their country are suggested, and no message is ever sent automatically.',
       version: 'Version {n}',
     },
     signalNames: {

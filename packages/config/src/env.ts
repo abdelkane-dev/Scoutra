@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { agentsEnvSchema } from './agents';
 import { base64KeyWeakness, secretWeakness } from './secrets';
 
 const secret = (minLength: number) =>
@@ -50,6 +51,7 @@ const baseSchema = z.object({
 });
 
 export const webEnvSchema = baseSchema
+  .extend(agentsEnvSchema.shape)
   .extend({
     /** Rôle scoutra_auth (Better Auth, tables d'identité uniquement). */
     DATABASE_AUTH_URL: postgresUrl,
@@ -116,7 +118,7 @@ export const webEnvSchema = baseSchema
     }
   });
 
-export const workerEnvSchema = baseSchema.extend({
+export const workerEnvSchema = baseSchema.extend(agentsEnvSchema.shape).extend({
   WORKER_HEALTH_PORT: z.coerce.number().int().min(1024).max(65535).default(8081),
 });
 

@@ -9,6 +9,8 @@ export type AppErrorCode =
   | 'not_found'
   | 'invalid_input'
   | 'conflict'
+  | 'insufficient_credits'
+  | 'quota_exceeded'
   | 'rate_limited'
   | 'read_only'
   | 'blocked_url'
@@ -21,6 +23,8 @@ const STATUS: Record<AppErrorCode, number> = {
   not_found: 404,
   invalid_input: 400,
   conflict: 409,
+  insufficient_credits: 402,
+  quota_exceeded: 429,
   rate_limited: 429,
   read_only: 423,
   blocked_url: 400,

@@ -14,6 +14,7 @@
     "@anthropic-ai/sdk": "^1.12.0",
     "@scoutra/core": "workspace:*",
     "ai": "^7.0.179",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@scoutra/config": "workspace:*"
   }
 }

@@ -10,7 +10,17 @@ const entrySchema = z.object({
     .number()
     .int()
     .refine((d) => d !== 0, 'delta nul'),
-  reason: z.enum(['monthly_grant', 'purchase', 'usage', 'reserve', 'refund', 'adjustment']),
+  reason: z.enum([
+    'monthly_grant',
+    'purchase',
+    'usage',
+    'reserve',
+    'refund',
+    'adjustment',
+    'pack_purchase',
+    'rollover',
+    'expire',
+  ]),
   idempotencyKey: z.string().min(8).max(200),
   refType: z.string().max(50).optional(),
   refId: z.string().max(100).optional(),

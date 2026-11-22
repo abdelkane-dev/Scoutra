@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@scoutra/billing": "workspace:*",
     "@scoutra/core": "workspace:*",
     "@scoutra/db": "workspace:*",
     "pg-boss": "^12.39.0",

@@ -44,6 +44,7 @@ export const campaignStatus = pgEnum('campaign_status', [
   'cancelled',
   'completed',
   'failed',
+  'awaiting_confirmation',
 ]);
 export const prospectStatus = pgEnum('prospect_status', [
   'found',
@@ -85,6 +86,9 @@ export const ledgerReason = pgEnum('ledger_reason', [
   'reserve',
   'refund',
   'adjustment',
+  'pack_purchase',
+  'rollover',
+  'expire',
 ]);
 export const suppressionReason = pgEnum('suppression_reason', [
   'opt_out',
@@ -107,6 +111,24 @@ export const campaigns = pgTable(
     status: campaignStatus('status').notNull().default('draft'),
     maxProspects: integer('max_prospects').notNull().default(100),
     creditBudget: integer('credit_budget').notNull().default(0),
+    /** Qualité des messages : standard (inclus), careful (+1 crédit), premium (+3). */
+    quality: varchar('quality', { length: 20 }).notNull().default('standard'),
+    /** Modèle de prospection imposé par l'utilisateur (sinon choisi par l'Interprète). */
+    modelForced: boolean('model_forced').notNull().default(false),
+    /** Millicrédits réservés au lancement, consommés (prospects livrés) ; le reste est remboursé. */
+    reservedMc: bigint('reserved_mc', { mode: 'number' }).notNull().default(0),
+    consumedMc: bigint('consumed_mc', { mode: 'number' }).notNull().default(0),
+    candidatesCount: integer('candidates_count').notNull().default(0),
+    duplicatesCount: integer('duplicates_count').notNull().default(0),
+    deliveredCount: integer('delivered_count').notNull().default(0),
+    rejectedCount: integer('rejected_count').notNull().default(0),
+    /** Sources gratuites seulement (pas de clé, garde-fou de coût) : expliqué à l'écran. */
+    degraded: boolean('degraded').notNull().default(false),
+    costMode: varchar('cost_mode', { length: 20 }).notNull().default('normal'),
+    estimate: jsonb('estimate'),
+    /** Sources retenues et écartées (avec la raison) au lancement. */
+    sources: jsonb('sources'),
+    errorCode: varchar('error_code', { length: 100 }),
     startedAt: ts('started_at'),
     finishedAt: ts('finished_at'),
     createdAt: ts('created_at').notNull().defaultNow(),
@@ -116,6 +138,9 @@ export const campaigns = pgTable(
     unique('campaigns_org_id_unique').on(t.organizationId, t.id),
     index('campaigns_org_created_idx').on(t.organizationId, t.createdAt),
     check('campaigns_budget_positive', sql`${t.maxProspects} > 0 and ${t.creditBudget} >= 0`),
+    check('campaigns_quality_valid', sql`${t.quality} in ('standard', 'careful', 'premium')`),
+    check('campaigns_credits_consistent', sql`${t.consumedMc} >= 0 and ${t.reservedMc} >= 0`),
+    index('campaigns_org_status_idx').on(t.organizationId, t.status),
   ],
 );
 
@@ -168,6 +193,19 @@ export const prospects = pgTable(
     subjectKey: char('subject_key', { length: 64 }),
     status: prospectStatus('status').notNull().default('found'),
     rejectionReason: varchar('rejection_reason', { length: 300 }),
+    /** Créateur ou commercial assigné (portée « ses prospects » du rôle member). */
+    ownerUserId: uuid('owner_user_id'),
+    score: smallint('score'),
+    /** Raisons du score par critère (code, points, constat). */
+    scoreReasons: jsonb('score_reasons').notNull().default([]),
+    /** Décisions du garde-fou juridique par canal (rejouables : versions de règles incluses). */
+    channelDecisions: jsonb('channel_decisions').notNull().default([]),
+    sourceCodes: text('source_codes')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Livré = facturé (1 crédit + qualité) ; null tant que non livré. */
+    deliveredAt: ts('delivered_at'),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
@@ -176,6 +214,12 @@ export const prospects = pgTable(
     unique('prospects_org_dedupe_unique').on(t.organizationId, t.dedupeKey),
     index('prospects_org_campaign_idx').on(t.organizationId, t.campaignId),
     index('prospects_org_subject_idx').on(t.organizationId, t.subjectKey),
+    index('prospects_org_delivered_idx').on(t.organizationId, t.deliveredAt),
+    index('prospects_org_owner_idx').on(t.organizationId, t.ownerUserId),
+    check(
+      'prospects_score_range',
+      sql`${t.score} is null or (${t.score} >= 0 and ${t.score} <= 100)`,
+    ),
     foreignKey({
       name: 'prospects_campaign_fk',
       columns: [t.organizationId, t.campaignId],
@@ -315,7 +359,8 @@ export const creditLedger = pgTable(
     organizationId: uuid('organization_id')
       .notNull()
       .references(() => organizations.id, { onDelete: 'restrict' }),
-    delta: integer('delta').notNull(),
+    /** Millicrédits (1 crédit = 1 000 mc), entiers. */
+    delta: bigint('delta', { mode: 'number' }).notNull(),
     reason: ledgerReason('reason').notNull(),
     refType: varchar('ref_type', { length: 50 }),
     refId: varchar('ref_id', { length: 100 }),
@@ -379,5 +424,189 @@ export const tenantJobs = pgTable(
     unique('tenant_jobs_org_id_unique').on(t.organizationId, t.id),
     index('tenant_jobs_org_ref_idx').on(t.organizationId, t.refType, t.refId),
     index('tenant_jobs_org_status_idx').on(t.organizationId, t.status),
+  ],
+);
+
+/** Événements d'une campagne (diffusion en direct SSE, reprise par Last-Event-ID). */
+export const campaignEvents = pgTable(
+  'campaign_events',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    organizationId: orgId(),
+    campaignId: uuid('campaign_id').notNull(),
+    type: varchar('type', { length: 50 }).notNull(),
+    payload: jsonb('payload').notNull().default({}),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('campaign_events_org_campaign_idx').on(t.organizationId, t.campaignId, t.id),
+    foreignKey({
+      name: 'campaign_events_campaign_fk',
+      columns: [t.organizationId, t.campaignId],
+      foreignColumns: [campaigns.organizationId, campaigns.id],
+    }).onDelete('cascade'),
+  ],
+);
+
+/** Coût réel par événement (IA, connecteur, vérification) : garde-fou et recalibrage. Ajout seul. */
+export const usageEvents = pgTable(
+  'usage_events',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    organizationId: orgId(),
+    campaignId: uuid('campaign_id'),
+    kind: varchar('kind', { length: 30 }).notNull(),
+    provider: varchar('provider', { length: 60 }).notNull(),
+    /** Agent ou connecteur à l'origine du coût. */
+    source: varchar('source', { length: 60 }).notNull(),
+    units: integer('units').notNull().default(1),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    costMicroUsd: bigint('cost_micro_usd', { mode: 'number' }).notNull().default(0),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('usage_events_org_created_idx').on(t.organizationId, t.createdAt),
+    index('usage_events_org_campaign_idx').on(t.organizationId, t.campaignId),
+    check(
+      'usage_events_kind_valid',
+      sql`${t.kind} in ('llm', 'connector', 'verification', 'crawl')`,
+    ),
+    check('usage_events_cost_positive', sql`${t.costMicroUsd} >= 0`),
+  ],
+);
+
+/** Messages rédigés (jamais envoyés automatiquement : l'utilisateur copie et envoie lui-même). */
+export const messages = pgTable(
+  'messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    prospectId: uuid('prospect_id').notNull(),
+    campaignId: uuid('campaign_id'),
+    channel: contactChannel('channel').notNull(),
+    language: varchar('language', { length: 5 }).notNull(),
+    subject: varchar('subject', { length: 200 }),
+    body: varchar('body', { length: 4000 }).notNull(),
+    footer: varchar('footer', { length: 1000 }).notNull().default(''),
+    quality: varchar('quality', { length: 20 }).notNull().default('standard'),
+    generatedBy: varchar('generated_by', { length: 20 }).notNull(),
+    model: varchar('model', { length: 100 }),
+    status: varchar('status', { length: 20 }).notNull().default('draft'),
+    complianceDecision: jsonb('compliance_decision').notNull(),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('messages_org_prospect_idx').on(t.organizationId, t.prospectId),
+    foreignKey({
+      name: 'messages_prospect_fk',
+      columns: [t.organizationId, t.prospectId],
+      foreignColumns: [prospects.organizationId, prospects.id],
+    }).onDelete('cascade'),
+    check(
+      'messages_status_valid',
+      sql`${t.status} in ('draft', 'approved', 'copied', 'sent_manually', 'discarded')`,
+    ),
+    check('messages_generated_by_valid', sql`${t.generatedBy} in ('ai', 'template', 'user')`),
+  ],
+);
+
+/** Portefeuilles de crédits par origine, consommés par ordre d'expiration (FIFO). */
+export const creditBuckets = pgTable(
+  'credit_buckets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    origin: varchar('origin', { length: 20 }).notNull(),
+    grantedMc: bigint('granted_mc', { mode: 'number' }).notNull(),
+    remainingMc: bigint('remaining_mc', { mode: 'number' }).notNull(),
+    expiresAt: ts('expires_at').notNull(),
+    ref: varchar('ref', { length: 200 }).notNull(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('credit_buckets_org_id_unique').on(t.organizationId, t.id),
+    unique('credit_buckets_org_ref_unique').on(t.organizationId, t.ref),
+    index('credit_buckets_org_expiry_idx').on(t.organizationId, t.expiresAt),
+    check(
+      'credit_buckets_origin_valid',
+      sql`${t.origin} in ('plan', 'rollover', 'pack', 'trial', 'adjustment')`,
+    ),
+    check(
+      'credit_buckets_amounts',
+      sql`${t.remainingMc} >= 0 and ${t.remainingMc} <= ${t.grantedMc}`,
+    ),
+  ],
+);
+
+/** Réservation d'une campagne, ventilée par portefeuille (remboursement ciblé). */
+export const creditReservations = pgTable(
+  'credit_reservations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    campaignId: uuid('campaign_id').notNull(),
+    bucketId: uuid('bucket_id').notNull(),
+    reservedMc: bigint('reserved_mc', { mode: 'number' }).notNull(),
+    refundedMc: bigint('refunded_mc', { mode: 'number' }).notNull().default(0),
+    position: integer('position').notNull(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('credit_reservations_org_campaign_idx').on(t.organizationId, t.campaignId),
+    foreignKey({
+      name: 'credit_reservations_bucket_fk',
+      columns: [t.organizationId, t.bucketId],
+      foreignColumns: [creditBuckets.organizationId, creditBuckets.id],
+    }),
+    check(
+      'credit_reservations_amounts',
+      sql`${t.refundedMc} >= 0 and ${t.refundedMc} <= ${t.reservedMc}`,
+    ),
+  ],
+);
+
+/** Consommations (prospect livré) : idempotentes, une reprise de tâche ne facture jamais deux fois. */
+export const creditConsumptions = pgTable(
+  'credit_consumptions',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    organizationId: orgId(),
+    campaignId: uuid('campaign_id').notNull(),
+    prospectId: uuid('prospect_id'),
+    amountMc: bigint('amount_mc', { mode: 'number' }).notNull(),
+    idempotencyKey: varchar('idempotency_key', { length: 200 }).notNull(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('credit_consumptions_idem_unique').on(t.organizationId, t.idempotencyKey),
+    check('credit_consumptions_positive', sql`${t.amountMc} > 0`),
+  ],
+);
+
+/** Abonnement SaaS (prestataire de paiement abstrait). */
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    plan: varchar('plan', { length: 20 }).notNull(),
+    status: varchar('status', { length: 20 }).notNull(),
+    seats: integer('seats').notNull().default(1),
+    periodStart: ts('period_start').notNull(),
+    periodEnd: ts('period_end').notNull(),
+    provider: varchar('provider', { length: 30 }).notNull(),
+    providerRef: varchar('provider_ref', { length: 200 }),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    updatedAt: ts('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('subscriptions_org_unique').on(t.organizationId),
+    check('subscriptions_plan_valid', sql`${t.plan} in ('research', 'pipeline')`),
+    check(
+      'subscriptions_status_valid',
+      sql`${t.status} in ('trialing', 'active', 'past_due', 'canceled')`,
+    ),
   ],
 );

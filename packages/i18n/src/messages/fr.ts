@@ -681,7 +681,8 @@ export const fr = {
       userMenu: 'Menu du compte',
       orgMenu: 'Changer d’organisation',
       demo: 'Données de démonstration',
-      demoHint: 'Les chiffres et les noms de cette page sont fictifs, en attendant l’API correspondante.',
+      demoHint:
+        'Les chiffres et les noms de cette page sont fictifs, en attendant l’API correspondante.',
       rolePreview: 'Aperçu du rôle {role} (développement)',
       rolePreviewReset: 'Revenir à mon rôle',
       twoFactorBanner: 'Activez la double authentification pour débloquer : {actions}.',
@@ -690,7 +691,8 @@ export const fr = {
       skip: 'Aller au contenu',
       breadcrumb: 'Fil d’Ariane',
       notAllowedTitle: 'Cet espace n’est pas disponible pour votre rôle',
-      notAllowedBody: 'Votre rôle ({role}) ne donne pas accès à cette page. Demandez à un administrateur de modifier votre rôle si vous en avez besoin.',
+      notAllowedBody:
+        'Votre rôle ({role}) ne donne pas accès à cette page. Demandez à un administrateur de modifier votre rôle si vous en avez besoin.',
       backHome: 'Retour à l’accueil',
       soon: 'Prochainement',
     },
@@ -818,7 +820,8 @@ export const fr = {
       whyScore: 'Pourquoi {n}',
       scoreExplained: 'Chaque point a une raison et une source.',
       message: 'Premier message',
-      messageNote: 'Brouillon de l’agent Rédaction. Vous le relisez et l’envoyez depuis votre compte.',
+      messageNote:
+        'Brouillon de l’agent Rédaction. Vous le relisez et l’envoyez depuis votre compte.',
       copyMessage: 'Copier le message',
       messageCopied: 'Message copié',
       addToPipeline: 'Ajouter au pipeline',
@@ -879,7 +882,8 @@ export const fr = {
     pipelineValue: '{value} en cours',
     playbooks: 'Modèles suggérés pour votre profil',
     playbooksHint: 'D’après votre type de compte et vos secteurs.',
-    completeProfile: 'Renseignez votre type de compte et vos secteurs pour des suggestions plus précises.',
+    completeProfile:
+      'Renseignez votre type de compte et vos secteurs pour des suggestions plus précises.',
     completeProfileCta: 'Compléter le profil',
     billingTitle: 'Facturation et crédits',
     billingLede: 'Votre rôle donne accès à la facturation, pas aux données de prospection.',
@@ -896,7 +900,8 @@ export const fr = {
     composer: 'Nouvelle recherche',
     query: 'Décrivez qui vous cherchez',
     queryHint: 'Secteur, lieu, taille, ancienneté, signal à repérer : écrivez comme vous parlez.',
-    queryPlaceholder: 'Ex. Hôtels indépendants de 20 à 80 chambres à Lisbonne et Porto, sans moteur de réservation sur leur site',
+    queryPlaceholder:
+      'Ex. Hôtels indépendants de 20 à 80 chambres à Lisbonne et Porto, sans moteur de réservation sur leur site',
     examples: 'Exemples',
     ex1: 'Agences web à Montréal qui recrutent un développeur',
     ex2: 'Distributeurs de matériel médical en Pologne et en Roumanie',
@@ -905,7 +910,8 @@ export const fr = {
     ex5: 'Restaurants à Austin avec plus de 300 avis et sans commande en ligne',
     ex6: 'Fabricants d’emballages recyclables en Inde',
     target: 'Cible',
-    targetPeopleNote: 'Pour les particuliers, seuls les canaux autorisés dans leur pays sont proposés.',
+    targetPeopleNote:
+      'Pour les particuliers, seuls les canaux autorisés dans leur pays sont proposés.',
     model: 'Modèle de prospection',
     zone: 'Zone',
     zoneOne: 'Un pays',
@@ -916,7 +922,8 @@ export const fr = {
     addCountry: 'Ajouter un pays',
     searchCountry: 'Chercher un pays',
     removeCountry: 'Retirer {country}',
-    worldNote: 'Recherche dans tous les pays où les sources sont autorisées. Plus long et plus coûteux en crédits.',
+    worldNote:
+      'Recherche dans tous les pays où les sources sont autorisées. Plus long et plus coûteux en crédits.',
     writing: 'Rédaction du premier message',
     writingStandard: 'Standard (inclus)',
     writingCareful: 'Soignée (+{n} crédit par prospect)',
@@ -930,7 +937,8 @@ export const fr = {
     queryTooShort: 'Décrivez votre cible en quelques mots (10 caractères minimum).',
     needCountry: 'Choisissez au moins un pays.',
     idleTitle: 'Ce qui va se passer',
-    idleLede: 'Chaque agent laisse une trace : ce qu’il a trouvé, où, et pourquoi un prospect est gardé ou écarté.',
+    idleLede:
+      'Chaque agent laisse une trace : ce qu’il a trouvé, où, et pourquoi un prospect est gardé ou écarté.',
     idle1: 'Transforme votre phrase en fiche cible.',
     idle2: 'Interroge les sources autorisées dans chaque pays.',
     idle3: 'Lit les sites pour trouver décideurs et canaux.',
@@ -980,7 +988,8 @@ export const fr = {
       rerunDone: 'Recherche relancée',
       fresh: '+{n}',
       emptyTitle: 'Aucune recherche enregistrée',
-      emptyBody: 'Après une recherche, choisissez « Enregistrer la recherche » pour la relancer et être alerté des nouveaux prospects.',
+      emptyBody:
+        'Après une recherche, choisissez « Enregistrer la recherche » pour la relancer et être alerté des nouveaux prospects.',
     },
     playbooks: {
       title: 'Playbooks',
@@ -1002,7 +1011,8 @@ export const fr = {
       maxDefault: 'Volume par défaut : {n} prospects',
       publicOnly: 'Signaux publics uniquement (aucune liste de personnes).',
       angle: 'Angle du premier message',
-      individualsNote: 'Ce modèle vise des particuliers : seuls les canaux autorisés dans leur pays seront proposés, et aucun message n’est envoyé automatiquement.',
+      individualsNote:
+        'Ce modèle vise des particuliers : seuls les canaux autorisés dans leur pays seront proposés, et aucun message n’est envoyé automatiquement.',
       version: 'Version {n}',
     },
     signalNames: {
@@ -1201,7 +1211,12 @@ export const fr = {
       meta: '{n} tâches ouvertes, dont {late} en retard.',
       newTask: 'Nouvelle tâche',
       created: 'Tâche créée',
-      groups: { overdue: 'En retard', today: 'Aujourd’hui', tomorrow: 'Demain', later: 'Plus tard' },
+      groups: {
+        overdue: 'En retard',
+        today: 'Aujourd’hui',
+        tomorrow: 'Demain',
+        later: 'Plus tard',
+      },
       done: 'Faite',
       week: 'Semaine du 23 novembre',
       taskTitle: 'Intitulé',

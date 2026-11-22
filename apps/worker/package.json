@@ -14,15 +14,16 @@
     "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts"
   },
   "dependencies": {
-    "@scoutra/config": "workspace:*",
-    "@scoutra/core": "workspace:*",
-    "@scoutra/db": "workspace:*",
-    "@scoutra/queue": "workspace:*",
     "@scoutra/agents": "workspace:*",
     "@scoutra/ai": "workspace:*",
+    "@scoutra/billing": "workspace:*",
     "@scoutra/compliance": "workspace:*",
+    "@scoutra/config": "workspace:*",
     "@scoutra/connectors": "workspace:*",
-    "@scoutra/billing": "workspace:*"
+    "@scoutra/core": "workspace:*",
+    "@scoutra/crypto": "workspace:*",
+    "@scoutra/db": "workspace:*",
+    "@scoutra/queue": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
