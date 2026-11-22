@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
     "@scoutra/auth": "workspace:*",
     "@scoutra/config": "workspace:*",
     "@scoutra/core": "workspace:*",
@@ -18,10 +19,14 @@
     "@scoutra/i18n": "workspace:*",
     "@scoutra/license": "workspace:*",
     "@scoutra/queue": "workspace:*",
+    "@scoutra/ui": "workspace:*",
     "better-auth": "^1.7.27",
+    "lucide-react": "^1.77.0",
+    "motion": "^14.14.0",
     "next": "16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "recharts": "^3.11.0",
     "server-only": "0.0.1",
     "zod": "^4.6.7"
   },

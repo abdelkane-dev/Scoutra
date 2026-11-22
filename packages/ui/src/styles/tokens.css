@@ -1,0 +1,148 @@
+/*
+ * Scoutra — jetons du design system (docs/design/guidelines.md, v2).
+ * Un seul accent (orange signal). Tout le reste : encre, gris, filets.
+ * Importé par apps/web/src/app/globals.css après `@import 'tailwindcss'`.
+ */
+
+:root {
+  --canvas: #f5f6f7;
+  --surface: #ffffff;
+  --sunken: #eef0f2;
+  --hover: #eaecef;
+  --line: #e4e6ea;
+  --line-strong: #cdd1d8;
+  --ink: #12141a;
+  --ink-2: #474c57;
+  --ink-3: #6a707c;
+
+  --accent: #ff5b1f;
+  --accent-hover: #ee4a0e;
+  --on-accent: #0e1116;
+  --accent-text: #b23a0b;
+  --accent-soft: #ffede5;
+  --accent-line: #ffc9b3;
+
+  --ok: #12805c;
+  --ok-soft: #e6f4ee;
+  --warn: #a15c00;
+  --warn-soft: #fff3dc;
+  --bad: #c8261c;
+  --bad-soft: #fdecea;
+
+  --dark: #12141a;
+  --dark-line: #262a33;
+  --dark-2: #9ba1ac;
+  --dark-text: #e6e8ec;
+
+  --shadow-pop: 0 1px 2px rgba(18, 20, 26, 0.06), 0 8px 24px rgba(18, 20, 26, 0.1);
+  --shadow-drag: 0 12px 32px rgba(18, 20, 26, 0.18);
+  --shadow-window: 0 30px 60px -24px rgba(18, 20, 26, 0.45), 0 0 0 1px rgba(18, 20, 26, 0.08);
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-dark: var(--dark);
+  --color-dark-line: var(--dark-line);
+  --color-dark-2: var(--dark-2);
+  --color-dark-text: var(--dark-text);
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-pop: var(--shadow-pop);
+  --shadow-drag: var(--shadow-drag);
+  --shadow-window: var(--shadow-window);
+  --ease-soft: var(--ease-out-soft);
+
+  /* Échelle typographique (nommage usage + taille) */
+  --text-copy-18: 18px;
+  --text-copy-18--line-height: 28px;
+  --text-copy-16: 16px;
+  --text-copy-16--line-height: 26px;
+  --text-copy-14: 14px;
+  --text-copy-14--line-height: 22px;
+  --text-label-14: 14px;
+  --text-label-14--line-height: 20px;
+  --text-label-14--font-weight: 500;
+  --text-label-13: 13px;
+  --text-label-13--line-height: 18px;
+  --text-label-13--font-weight: 500;
+  --text-label-12: 12px;
+  --text-label-12--line-height: 16px;
+  --text-label-12--font-weight: 500;
+}
+
+/* Titres : largeur 104 à 112 %, graisse 600, approche négative */
+@utility t-display {
+  font-size: 40px;
+  line-height: 42px;
+  font-weight: 600;
+  font-stretch: 112%;
+  letter-spacing: -0.035em;
+  @media (min-width: 900px) {
+    font-size: 64px;
+    line-height: 64px;
+  }
+}
+@utility t-heading-40 {
+  font-size: 30px;
+  line-height: 34px;
+  font-weight: 600;
+  font-stretch: 110%;
+  letter-spacing: -0.03em;
+  @media (min-width: 900px) {
+    font-size: 40px;
+    line-height: 44px;
+  }
+}
+@utility t-heading-28 {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  font-stretch: 108%;
+  letter-spacing: -0.02em;
+  @media (min-width: 900px) {
+    font-size: 28px;
+    line-height: 34px;
+  }
+}
+@utility t-heading-20 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  font-stretch: 104%;
+  letter-spacing: -0.01em;
+}
+@utility t-heading-16 {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
