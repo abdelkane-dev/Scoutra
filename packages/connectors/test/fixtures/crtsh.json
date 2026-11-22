@@ -1,0 +1,6 @@
+[
+  { "name_value": "www.batiplus.sn\nbatiplus.sn", "not_before": "2026-11-01T00:00:00" },
+  { "name_value": "*.batimax.sn", "not_before": "2026-11-02T00:00:00" },
+  { "name_value": "mail.batiold.sn", "not_before": "2024-01-01T00:00:00" },
+  { "name_value": "shop.bati-store.sn", "not_before": "2026-10-20T00:00:00" }
+]

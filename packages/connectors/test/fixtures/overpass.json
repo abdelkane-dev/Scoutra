@@ -1,0 +1,17 @@
+{
+  "elements": [
+    {
+      "type": "node",
+      "id": 101,
+      "tags": {
+        "name": "Restaurant Le Baobab",
+        "amenity": "restaurant",
+        "website": "https://lebaobab.example.sn",
+        "phone": "+221 33 800 00 00",
+        "addr:city": "Dakar"
+      }
+    },
+    { "type": "way", "id": 202, "tags": { "name": "Chez Fatou", "amenity": "restaurant" } },
+    { "type": "node", "id": 303, "tags": { "amenity": "restaurant" } }
+  ]
+}

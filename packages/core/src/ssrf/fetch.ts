@@ -10,7 +10,9 @@ import { assertSafeUrl, type UrlPolicy } from './url';
 export type Resolver = (hostname: string) => Promise<LookupAddress[]>;
 
 export interface SafeFetchOptions extends UrlPolicy {
-  method?: 'GET' | 'HEAD';
+  method?: 'GET' | 'HEAD' | 'POST';
+  /** Corps (POST uniquement, API JSON des fournisseurs). Les redirections sont alors refusées. */
+  body?: string;
   headers?: Record<string, string>;
   maxRedirects?: number;
   timeoutMs?: number;
@@ -144,7 +146,7 @@ function requestOnce(
     );
     req.on('timeout', () => req.destroy(new AppError('blocked_url', 'Délai dépassé')));
     req.on('error', reject);
-    req.end();
+    req.end(opts.method === 'POST' && opts.body !== undefined ? opts.body : undefined);
   });
 }
 
@@ -171,6 +173,7 @@ export async function safeFetch(
       if (!REDIRECT_CODES.has(res.status)) return res;
       const location = res.headers.location;
       if (!location) return res;
+      if (opts.method === 'POST') throw new AppError('blocked_url', 'Redirection refusée (POST)');
       if (hop >= maxRedirects) throw new AppError('blocked_url', 'Trop de redirections');
       url = assertSafeUrl(new URL(location, url), opts);
       // Les identifiants ne suivent jamais une redirection vers une autre origine.

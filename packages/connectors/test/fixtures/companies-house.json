@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "company_name": "EXAMPLE BUILDERS LTD",
+      "company_number": "00000001",
+      "company_status": "active",
+      "date_of_creation": "2026-08-01",
+      "sic_codes": ["41201"],
+      "registered_office_address": { "locality": "Manchester" }
+    },
+    {
+      "company_name": "OLD BUILDERS LTD",
+      "company_number": "00000002",
+      "company_status": "active",
+      "date_of_creation": "2001-01-01",
+      "sic_codes": ["41202"],
+      "registered_office_address": { "locality": "Leeds" }
+    }
+  ]
+}

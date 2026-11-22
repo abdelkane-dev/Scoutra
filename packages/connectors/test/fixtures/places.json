@@ -1,0 +1,21 @@
+{
+  "places": [
+    {
+      "id": "ChIJ_fictif_1",
+      "displayName": { "text": "Clinique Exemple" },
+      "formattedAddress": "Rue 10, Dakar",
+      "websiteUri": "https://clinique.example.sn/",
+      "internationalPhoneNumber": "+221 33 900 00 00",
+      "primaryType": "hospital",
+      "businessStatus": "OPERATIONAL",
+      "rating": 4.4,
+      "userRatingCount": 120,
+      "googleMapsUri": "https://maps.google.com/?cid=1"
+    },
+    {
+      "id": "ChIJ_fictif_2",
+      "displayName": { "text": "Ancienne clinique" },
+      "businessStatus": "CLOSED_PERMANENTLY"
+    }
+  ]
+}

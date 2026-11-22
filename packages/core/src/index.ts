@@ -7,3 +7,4 @@ export { assertSafeUrl, type UrlPolicy } from './ssrf/url';
 export { safeFetch, type SafeFetchOptions, type SafeResponse, type Resolver } from './ssrf/fetch';
 export { SlidingWindowLimiter } from './rate-limit';
 export * from './profile';
+export * from './target';

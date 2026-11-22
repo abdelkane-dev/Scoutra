@@ -1,0 +1,17 @@
+{
+  "organic": [
+    {
+      "title": "BTP Construction Dakar | Entreprise générale",
+      "link": "https://www.btp-dakar.example.sn/",
+      "snippet": "Entreprise de construction à Dakar depuis 2010.",
+      "date": "2026-10-01"
+    },
+    { "title": "Page Facebook BTP", "link": "https://facebook.com/btp-dakar", "snippet": "Page" },
+    {
+      "title": "Bâtir SARL - Accueil",
+      "link": "https://batir.example.sn/accueil",
+      "snippet": "Gros œuvre et rénovation."
+    },
+    { "title": "Doublon", "link": "https://batir.example.sn/contact", "snippet": "Contact" }
+  ]
+}

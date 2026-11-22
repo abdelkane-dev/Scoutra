@@ -139,6 +139,12 @@ describe('safeFetch', () => {
         res.end();
         return;
       }
+      if (req.url === '/echo-body' && req.method === 'POST') {
+        let b = '';
+        req.on('data', (c: Buffer) => (b += c.toString()));
+        req.on('end', () => res.end(`POST:${b}`));
+        return;
+      }
       if (req.url === '/echo-headers') {
         res.end(JSON.stringify(req.headers));
         return;
@@ -183,6 +189,18 @@ describe('safeFetch', () => {
       );
     },
   );
+
+  it('POST : corps envoyé ; redirection refusée', async () => {
+    const res = await safeFetch(`http://public.test:${port}/echo-body`, {
+      ...testOpts(),
+      method: 'POST',
+      body: '{"q":1}',
+    });
+    expect(res.body.toString()).toBe('POST:{"q":1}');
+    await expect(
+      safeFetch(`http://public.test:${port}/to-ok`, { ...testOpts(), method: 'POST', body: '{}' }),
+    ).rejects.toThrow(/Redirection refusée/);
+  });
 
   it('limite le nombre de redirections', async () => {
     await expect(

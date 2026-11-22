@@ -1,0 +1,19 @@
+{
+  "name": "@scoutra/ai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.94",
+    "@anthropic-ai/sdk": "^1.12.0",
+    "@scoutra/core": "workspace:*",
+    "ai": "^7.0.179",
+    "zod": "^4.6.7"
+  }
+}

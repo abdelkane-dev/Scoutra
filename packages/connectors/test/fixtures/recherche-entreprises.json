@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000001",
+      "nom_complet": "EXEMPLE BATIMENT SAS",
+      "date_creation": "2026-06-15",
+      "tranche_effectif_salarie": "12",
+      "activite_principale": "41.20A",
+      "est_entrepreneur_individuel": false,
+      "siege": { "libelle_commune": "LYON", "adresse": "1 RUE EXEMPLE 69001 LYON" },
+      "complements": { "est_association": false }
+    },
+    {
+      "siren": "000000002",
+      "nom_complet": "JEAN EXEMPLE",
+      "est_entrepreneur_individuel": true,
+      "siege": { "libelle_commune": "LYON" }
+    },
+    {
+      "siren": "000000003",
+      "nom_complet": "[NON-DIFFUSIBLE]",
+      "est_entrepreneur_individuel": false
+    },
+    {
+      "siren": "000000004",
+      "nom_complet": "ASSOCIATION EXEMPLE",
+      "date_creation": "1990-01-01",
+      "est_entrepreneur_individuel": false,
+      "siege": { "libelle_commune": "LYON" },
+      "complements": { "est_association": true }
+    }
+  ]
+}
