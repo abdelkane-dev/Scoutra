@@ -1,7 +1,7 @@
-# Nyini — Dossier de cadrage (à valider avant de coder)
+# Scoutra — Dossier de cadrage (à valider avant de coder)
 
 > Statut : **proposition**, rien n'est codé. Date : 22/11/2026.
-> Nom de travail : **Nyini** (« chercher » en bambara). Voir §7.
+> Nom de travail : **Scoutra** (international). Voir §7.
 
 ---
 
@@ -75,12 +75,14 @@ AGPL / GPL = non pour du code repris dans un SaaS fermé), maintenance (dernier 
 👉 **Conséquence produit** : un moteur de règles par pays (« garde-fou juridique ») qui adapte ce que l'outil propose : canaux autorisés, mention d'information obligatoire, désinscription, durée de conservation.
 
 ### 3.2 Particuliers : ce qu'on peut faire et ce qu'on ne peut pas faire
+Principe retenu (le même que le CRM Aken) : **on passe par les moteurs de recherche** (Serper/Google, Brave, Tavily, SearXNG…) pour retrouver le contenu **public et indexé** : publications et pages Facebook publiques, groupes publics, Instagram, TikTok, YouTube, LinkedIn, Reddit, forums, annuaires, petites annonces. Exemple de requête générée par l'agent : `site:facebook.com "je cherche une formation" marketing digital Abidjan`. On garde le titre, l'extrait, le lien et la date ; l'agent qualifie l'intention ; le commercial ouvre le lien et contacte. Aucune connexion à un compte, aucun robot sur la plateforme.
+
 | ❌ Interdit / trop risqué | ✅ Légal et efficace |
 |---|---|
-| Aspirer des profils Facebook / Instagram / LinkedIn de particuliers (contraire aux conditions de Meta et LinkedIn ; comptes bannis, poursuites possibles) | **Trouver où se trouve l'audience** : groupes publics, pages, hashtags, chaînes YouTube, forums, événements → l'agent dit *où* et *pourquoi*, l'humain s'y rend |
+| Se connecter à un compte pour aspirer des profils Facebook / Instagram / LinkedIn (contraire aux conditions ; comptes bannis, poursuites possibles) | **Signaux d'intention publics via moteurs de recherche** : publications publiques (« je cherche… », « qui connaît… »), commentaires indexés, groupes publics, hashtags, chaînes, forums → lien direct vers la publication |
 | Robots qui envoient des messages privés automatiques (DM) | **Messages rédigés par l'IA, envoyés à la main** par le closer (copier-coller en un clic) |
 | Constituer un dossier sur une personne (OSINT, pseudo → tous ses comptes) | **Personnes qui se rendent publiquement joignables pour du business** : créateurs, coachs, freelances, commerçants avec un contact pro affiché |
-| Acheter/revendre des fichiers de particuliers | **Prospection entrante** : formulaires Meta Lead Ads (API officielle, consentement), page de capture fournie par Nyini |
+| Acheter/revendre des fichiers de particuliers | **Prospection entrante** : formulaires Meta Lead Ads (API officielle, consentement), page de capture fournie par Scoutra |
 | Emails/SMS à des particuliers sans consentement (UE, UK, Canada) | WhatsApp Business uniquement avec **opt-in** (règle de Meta) |
 
 ### 3.3 Conditions des plateformes
@@ -105,14 +107,15 @@ Recommandation : créer une structure à l'**API-Mali (guichet unique, Bamako ; 
 |---|---|---|---|
 | Hébergement & IA | Moi | Moi | **Client** (ses serveurs, ses clés IA et API) |
 | Recherche en langage naturel, zones (1 pays / plusieurs / monde) | ✅ | ✅ | ✅ |
+| Tous les cerveaux : B2B (de la très grande entreprise à celle créée hier), B2C (particuliers), mixte | ✅ | ✅ | ✅ |
 | Enrichissement, vérification, score expliqué | ✅ | ✅ | ✅ |
 | Premier message rédigé | ✅ | ✅ | ✅ |
 | Export CSV / Excel | ✅ | ✅ | ✅ |
-| **Suivi complet** : pipeline (nouveau → contacté → répondu → RDV → **validé**/perdu), relances programmées, rappels, notes, historique, tableaux de bord | — | ✅ | ✅ |
+| **Accompagnement et suivi complet de chaque prospect jusqu'à sa validation** : pipeline (nouveau → contacté → répondu → RDV → **validé**/perdu), relances programmées, rappels, notes, historique, tableaux de bord | — | ✅ | ✅ |
 | Quotas | crédits de recherche / mois | crédits plus élevés | illimité (payé par ses clés) |
-| Prix (à valider) | ~29 €/mois (≈ 19 000 FCFA) | ~79 €/mois (≈ 52 000 FCFA) | dès ~1 500 €/an et par pays |
+| Prix | **19,99 $/mois** | **49,99 $/mois** | **1 990 $/an par pays** (jusqu'à 10 utilisateurs, +99 $/an par utilisateur en plus) |
 
-**Licence par pays** = le droit d'utiliser Nyini *pour une entreprise établie dans un pays donné*, vérifié par une **clé de licence signée** (pays + date d'expiration + nombre d'utilisateurs), contrôlée **hors ligne** (pas de dépendance à mes serveurs).
+**Licence par pays** = le droit d'utiliser Scoutra *pour une entreprise établie dans un pays donné*, vérifié par une **clé de licence signée** (pays + date d'expiration + nombre d'utilisateurs), contrôlée **hors ligne** (pas de dépendance à mes serveurs).
 
 ---
 
@@ -172,17 +175,25 @@ Principes :
 
 ## 7. Nom
 
-**Recommandé : Nyini** — « chercher » en bambara. Court, facile à prononcer partout (« nyi-ni »), une vraie histoire (né à Bamako), sonne comme une marque tech.
-Domaines libres au 22/11/2026 : **nyini.io, nyini.ai, nyini.app, nyini.co** (nyini.com est pris).
-Alternatives : **Huntra** (huntra.io libre), **Leadkin** (leadkin.io libre).
-→ Nom du dépôt proposé : `nyini`. (Vérifier aussi les marques déposées : OAPI pour l'Afrique francophone, EUIPO, USPTO.)
+Critères : international (aucune référence locale), court, facile à prononcer en français et en anglais, domaine disponible.
+Domaines vérifiés le 22/11/2026 (les noms évidents type « leadmind », « prospectly », « huntly » sont tous pris).
+
+| Nom | Idée | Domaine libre |
+|---|---|---|
+| **Scoutra** (recommandé) | « scout » = éclaireur qui repère les talents ; se dit pareil partout | scoutra.ai |
+| Pursuo | « pursue » = poursuivre une opportunité | pursuo.ai, pursuo.io |
+| Leadvio | « lead » + élan | leadvio.ai |
+| Kloser | pour les closers, direct | kloser.io |
+| Prospiq | « prospect » + intelligence | prospiq.ai |
+
+→ Nom du dépôt proposé : `scoutra`. Marque à vérifier (OAPI, EUIPO, USPTO) avant dépôt.
 
 ---
 
 ## 8. Direction design
 
 Propre, épuré, international, « ne fait pas IA » : pas de dégradés violets, pas d'étincelles ✨, pas de robot.
-- Fond blanc cassé, texte encre presque noir, **une seule couleur d'accent** (vert profond ou indigo sobre, à choisir), gris neutres.
+- Couleurs vives qui accrochent l'œil et donnent envie de travailler, sur une base sobre (fond blanc chaud, texte encre). Deux options à comparer dans les maquettes : **Orange énergie** (#FF5B1F) ou **Bleu électrique** (#2B59FF + touche lime #C6F432 pour les données).
 - Typographie : une sans-serif nette (ex. Geist / Inter) + chiffres tabulaires pour les tableaux.
 - Animations discrètes et utiles : apparition des prospects en direct pendant que les agents travaillent, compteurs, transitions du pipeline (glisser-déposer).
 - Graphiques : entonnoir de conversion, prospects par pays (carte), taux de réponse par canal, score moyen par source.
@@ -196,9 +207,9 @@ Propre, épuré, international, « ne fait pas IA » : pas de dégradés violets
 |---|---|---|
 | **0. Cadrage** (ce document) | Validation stack, nom, offres, limites légales | Ton feu vert ✅ |
 | **1. Socle** | Monorepo, Docker Compose, Postgres, auth multi-organisation, i18n FR/EN, design system, CI (tests + lint), hook de démarrage cloud | App vide mais installable en 1 commande |
-| **2. Cerveau v1 (B2B)** | Agent Interprète + Recherche (Google Places, OSM, web) + Enrichissement (Crawl4AI) + Vérification (Reacher) + Notation + Rédaction ; affichage en direct | 1re recherche réelle de bout en bout |
+| **2. Cerveau v1 (B2B + B2C)** | Agent Interprète + Recherche (Google Places, OSM, moteurs de recherche, signaux d'intention publics sur les réseaux) + Enrichissement (Crawl4AI) + Vérification (Reacher) + Notation + Rédaction ; affichage en direct | 1re recherche réelle de bout en bout |
 | **3. Garde-fou juridique** | Règles par pays, traçabilité source/base légale, désinscription, effacement, journal | Conformité intégrée |
-| **4. Particuliers (B2C légal)** | Agent « Où est mon audience », profils pros publics, Lead Ads Meta, page de capture, messages à envoyer à la main | Le cas closers |
+| **4. Sources avancées** | Entreprises récentes (nouveaux domaines, registres, nouvelles fiches), Lead Ads Meta, page de capture, connecteurs Apollo/Hunter | Couverture maximale |
 | **5. Suivi (Formule 2)** | Pipeline kanban, relances, rappels, statut « validé », tableaux de bord et graphiques | Formule 2 complète |
 | **6. Offres & licence** | Abonnements + crédits, paiement (mobile money + carte), clé de licence signée par pays, mode « clés du client » | Prêt à vendre |
 | **7. Contrats** | Voir §10 | Documents Word/PDF |
@@ -223,11 +234,13 @@ Rédaction en français + anglais, au format Word et PDF, **à faire relire par 
 
 ---
 
-## 11. Décisions attendues de ta part
+## 11. Décisions prises le 22/11/2026
 
-1. Nom : **Nyini** ou une alternative ?
-2. Stack (§5) : OK ?
-3. Approche particuliers (§3.2 : pas d'aspiration de profils, messages envoyés à la main) : OK ?
-4. Prix indicatifs (§4) : à garder comme base ?
-5. Couleur d'accent : vert profond ou indigo ?
-6. Création de ta structure à l'API-Mali : en cours / prévue ?
+- Nom international (proposé : Scoutra), pas de référence malienne.
+- Prix : 19,99 $ / 49,99 $ par mois ; licence 1 990 $/an par pays.
+- Couleurs vives (orange énergie ou bleu électrique, choix sur maquettes).
+- Tous les cerveaux (B2B, B2C, mixte) dès la v1, à l'international.
+- Particuliers trouvés via moteurs de recherche (contenu public indexé), comme dans le CRM Aken.
+- Structure juridique : on attend, bêta d'abord.
+
+Reste à valider : nom final, stack (§5), couleur.

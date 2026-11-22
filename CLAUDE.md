@@ -1,4 +1,4 @@
-# Nyini — SaaS de prospection multi-agents
+# Scoutra — SaaS de prospection multi-agents
 
 Statut : cadrage, aucun code. Lire `docs/PLAN.md` (plan complet) et `PROGRESS.md`.
 

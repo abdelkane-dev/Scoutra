@@ -1,4 +1,4 @@
-# Nyini — Spécification technique (architecture)
+# Scoutra — Spécification technique (architecture)
 
 > Statut : **proposition**, en attente de validation du plan (`docs/PLAN.md`). Aucun code applicatif.
 > Date : 22/11/2026. Auteur : équipe back-end.
@@ -118,7 +118,7 @@ Rôles : `owner` (facturation, licence, suppression org), `admin` (membres, clé
 | `compliance_decisions` | id, organization_id, prospect_id, contact_id?, channel, rule_version, outcome (`allow`/`allow_with_conditions`/`deny`), conditions jsonb, reasons jsonb, decided_at | Rejouable : la décision cite la version de règle. |
 | `suppression_list` | id, organization_id (null = global plateforme), value_hash, channel, reason (`opt_out`/`erasure`/`bounce`/`complaint`), created_at | Vérifiée **avant** toute insertion de contact et tout message. Seul un hachage est conservé. |
 | `data_subject_requests` | id, organization_id, type (`erasure`/`opposition`/`access`/`rectification`), subject_identifier_hash, received_via, status, due_at, completed_at, handled_by | Délai légal suivi (`due_at`). |
-| `capture_forms` / `inbound_leads` | form: id, org, slug, consent_text_version ; lead: id, org, form_id, payload chiffré, consent_at, ip_hash | Formulaire Nyini (opt-in prouvé). |
+| `capture_forms` / `inbound_leads` | form: id, org, slug, consent_text_version ; lead: id, org, form_id, payload chiffré, consent_at, ip_hash | Formulaire Scoutra (opt-in prouvé). |
 | `audit_log` | id, organization_id, actor_user_id?, actor_type (`user`/`system`/`agent`), action, target_type, target_id, ip_hash, user_agent, metadata jsonb, created_at | Ajout seul (révocation `UPDATE/DELETE` pour le rôle applicatif). |
 
 ### 2.7 Isolation multi-locataire
@@ -290,11 +290,13 @@ Registre : `connectors/registry.ts`. Le planificateur ne retient un connecteur q
 | Apollo | company, person (pro) | monde | `official_api` (contrat du client) | crédits Apollo du client | **client** |
 | Hunter | company (emails de domaine) | monde | `official_api` | crédits Hunter du client | **client** |
 | Meta Lead Ads (Graph API, webhook `leadgen`) | person | monde | `opt_in` (consentement recueilli par le formulaire Meta) | gratuit (hors publicité) | client (jeton de page, app Meta validée) |
-| Formulaire de capture Nyini | person, company | monde | `first_party` (consentement horodaté, texte versionné) | gratuit | non |
+| Signaux sociaux via moteurs de recherche (requêtes `site:facebook.com`, `site:instagram.com`, `site:tiktok.com`, `site:linkedin.com/posts`, `site:reddit.com`…) | person, company | monde | `official_api` (API du moteur ; on ne stocke que titre, extrait, URL, date ; pas de connexion à la plateforme) | payant par requête (Serper, Brave, Tavily) ou gratuit (SearXNG auto-hébergé) | plateforme ou client |
+| Entreprises récentes : nouveaux domaines enregistrés, registres publics, nouvelles fiches d'établissement | company | monde (selon sources) | `open_data` / `official_api` | variable | selon source |
+| Formulaire de capture Scoutra | person, company | monde | `first_party` (consentement horodaté, texte versionné) | gratuit | non |
 
 ### 5.3 Interdits explicites (non négociables, vérifiés en revue de code)
 
-- Aucune aspiration de profils de réseaux sociaux (LinkedIn, Facebook, Instagram, TikTok, X), ni via navigateur automatisé, ni via services tiers d'aspiration.
+- Aucune connexion à un compte de réseau social ni aspiration de profils derrière authentification (LinkedIn, Facebook, Instagram, TikTok, X). La découverte passe par les moteurs de recherche (contenu public indexé) ; l'utilisateur ouvre lui-même le lien.
 - Aucun envoi automatique de messages privés (DM) sur une plateforme ; aucun pilotage de compte utilisateur.
 - Aucun outil OSINT de corrélation d'identité (pseudo → comptes).
 - Aucune aspiration de Google Maps (API officielle uniquement).
@@ -474,10 +476,10 @@ docker compose -f docker/compose.yml up -d
 3. **Instance Overpass** : publique (limitée) ou dédiée (coût serveur, import des extraits Afrique) ?
 4. **Registres publics d'entreprises** par pays prioritaire (Mali, Sénégal, Côte d'Ivoire, France) : lesquels ont une API ou des données ouvertes réutilisables ?
 5. **Barème de crédits** et octrois mensuels : à fixer après mesure des coûts réels de l'étape 2.
-6. **Envoi d'emails par Nyini** (SMTP/API du client) : hors périmètre v1 (copier-coller) ou prévu en formule 2 ? Impacte délivrabilité, désinscription automatisée et responsabilité.
+6. **Envoi d'emails par Scoutra** (SMTP/API du client) : hors périmètre v1 (copier-coller) ou prévu en formule 2 ? Impacte délivrabilité, désinscription automatisée et responsabilité.
 7. **Modèles IA en licence** : liste minimale de fournisseurs supportés et testés (Anthropic, OpenAI, Mistral, modèles locaux via Ollama ?).
 8. **RLS dès l'étape 1** (recommandé) ou seulement filtrage applicatif au départ ?
 9. **Rétention par défaut** et durée de conservation des preuves après effacement d'un prospect (seul le hachage d'opposition est conservé ?) — à valider par un juriste.
 10. **Licence** : rattachement à un nom de domaine/instance en plus du pays ? Liste de révocation nécessaire ?
 11. **Données de contact chiffrées** : accepte-t-on la perte de recherche plein texte sur emails/téléphones (recherche par hachage exact seulement) ?
-12. **Meta Lead Ads** : qui porte l'app Meta (Nyini en SaaS, le client en licence) et la vérification d'entreprise Meta ?
+12. **Meta Lead Ads** : qui porte l'app Meta (Scoutra en SaaS, le client en licence) et la vérification d'entreprise Meta ?
