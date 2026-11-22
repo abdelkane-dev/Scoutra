@@ -158,12 +158,12 @@
   .scrim { display: none; }
   @media (max-width: 1279px) {
     .js .prospect { position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; top: auto; max-height: 88vh; overflow: auto; border-radius: var(--radius-l) var(--radius-l) 0 0; box-shadow: var(--shadow-float); transform: translateY(105%); visibility: hidden; transition: transform .28s cubic-bezier(.2,0,0,1), visibility 0s linear .28s; }
-    .js .prospect.open { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2,0,0,1); }
+    .js .prospect.is-open { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2,0,0,1); }
     .js .pp-close { display: grid; }
-    .js .scrim.open { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(21,24,28,.32); }
+    .js .scrim.is-open { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(21,24,28,.32); }
   }
   @media (max-width: 1279px) and (prefers-reduced-motion: reduce) {
-    .js .prospect, .js .prospect.open { transition: none; }
+    .js .prospect, .js .prospect.is-open { transition: none; }
   }
   @media (min-width: 768px) and (max-width: 1279px) {
     .js .prospect { left: auto; top: 0; bottom: 0; width: 400px; max-height: none; border-radius: 0; transform: translateX(105%); }
@@ -496,18 +496,18 @@ Rendezvo</div>
       return;
     }
     lastTrigger = trigger;
-    panel.classList.add("open");
-    scrim.classList.add("open");
+    panel.classList.add("is-open");
+    scrim.classList.add("is-open");
     $("pp-close").focus();
   }
   function closePanel() {
-    panel.classList.remove("open");
-    scrim.classList.remove("open");
+    panel.classList.remove("is-open");
+    scrim.classList.remove("is-open");
     if (lastTrigger) lastTrigger.focus();
   }
   $("pp-close").addEventListener("click", closePanel);
   scrim.addEventListener("click", closePanel);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && panel.classList.contains("open")) closePanel(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && panel.classList.contains("is-open")) closePanel(); });
 
   table.addEventListener("click", (e) => {
     const btn = e.target.closest(".open");

@@ -24,7 +24,8 @@
   .top-row { margin-top: 16px; display: grid; gap: 16px; }
   @media (min-width: 1100px) { .top-row { grid-template-columns: 400px minmax(0, 1fr); } }
 
-  .todo .panel-h .badge { margin-left: auto; padding: 3px 9px; border-radius: 999px; background: var(--hl); color: var(--hl-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .todo .panel-h .badge { margin-left: auto; padding: 3px 9px; border-radius: 999px; background: var(--hl); color: var(--hl-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 520px) { .todo .panel-h .sub { display: none; } }
   .todo-list li { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 10px; align-items: start; padding: 11px 16px; border-top: 1px solid var(--line); }
   .todo-list li:first-child { border-top: 0; }
   .todo-list input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent); }
@@ -367,8 +368,10 @@
       svg.append(el("line", { class: "grid", x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }));
       const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
     });
+    const step = W < 460 ? 3 : 2;
     weeks.forEach((w, i) => {
-      if (i % 2 === 1 && i !== weeks.length - 1) return;
+      const lastI = weeks.length - 1;
+      if (i !== lastI && (i % step !== 0 || lastI - i < step)) return;
       const t = el("text", { x: x(i), y: H - 6, "text-anchor": "middle" }); t.textContent = w.w; svg.append(t);
     });
     const pts = weeks.map((w, i) => `${x(i)},${y(w.v)}`);
