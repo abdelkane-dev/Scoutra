@@ -10,3 +10,10 @@
 - 22/11/2026 — Particuliers : découverte via moteurs de recherche (contenu public indexé), même principe que le CRM Aken ; pas de connexion aux plateformes.
 - 22/11/2026 — Structure juridique repoussée après la bêta.
 - 22/11/2026 — VALIDÉ par le porteur : nom Scoutra (scoutra.ai) et stack (§5 du plan). Démarrage de l'étape 1 (socle). Exigence : couvrir tous les modèles de prospection (B2B, B2C, C2C, C2B, B2B2C, B2G…).
+- 22/11/2026 — TypeScript 6.0.3 et non 7.0 : typescript-eslint ne supporte pas encore la 7.0.
+- 22/11/2026 — Modèles de prospection (23) et types de prospect (7) en tables de référence extensibles ; table `playbooks` versionnée.
+- 22/11/2026 — Rôles Postgres séparés (migrator / app / auth) avec RLS FORCE : l'application ne peut ni contourner la RLS ni migrer le schéma.
+- 22/11/2026 — Next.js 16 : `proxy.ts` remplace `middleware.ts`; CSP avec nonce.
+- 22/11/2026 — Inscription fermée sauf premier compte ou invitation (pas d'inscription ouverte en auto-hébergement ni en SaaS).
+- 22/11/2026 — 2FA TOTP disponible (obligatoire pour les admins à imposer, voir PROGRESS.md).
+- 22/11/2026 — Design : refonte en cours d'après des références réelles ; police Mona Sans envisagée pour la marque (à valider).
