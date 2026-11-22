@@ -31,3 +31,25 @@ describe('référentiels', () => {
     expect(isoCountrySchema.parse(' ml ')).toBe('ML');
   });
 });
+
+describe('profil d’organisation', async () => {
+  const { orgProfileSchema, SECTORS, ACCOUNT_TYPES } = await import('../src');
+  it('codes uniques, libellés FR/EN, validation stricte', () => {
+    expect(new Set(SECTORS.map((s) => s.code)).size).toBe(SECTORS.length);
+    expect(new Set(ACCOUNT_TYPES.map((s) => s.code)).size).toBe(ACCOUNT_TYPES.length);
+    expect(
+      orgProfileSchema.parse({ accountType: 'startup', sectors: ['j_tech_media', 'j_tech_media'] }),
+    ).toEqual({ accountType: 'startup', sectors: ['j_tech_media'] });
+    expect(
+      orgProfileSchema.safeParse({ accountType: 'x', sectors: ['j_tech_media'] }).success,
+    ).toBe(false);
+    expect(orgProfileSchema.safeParse({ accountType: 'sme', sectors: [] }).success).toBe(false);
+    expect(
+      orgProfileSchema.safeParse({
+        accountType: 'sme',
+        sectors: ['f_construction'],
+        countryCode: 'FR',
+      }).success,
+    ).toBe(false);
+  });
+});

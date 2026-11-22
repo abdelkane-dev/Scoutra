@@ -50,9 +50,14 @@ export function useFormat() {
     const tag = locale === 'fr' ? 'fr-FR' : 'en-US';
     return {
       n: (v: number, o?: Intl.NumberFormatOptions) => new Intl.NumberFormat(tag, o).format(v),
-      pct: (v: number) => new Intl.NumberFormat(tag, { style: 'percent', maximumFractionDigits: 0 }).format(v),
+      pct: (v: number) =>
+        new Intl.NumberFormat(tag, { style: 'percent', maximumFractionDigits: 0 }).format(v),
       money: (v: number, currency = 'USD') =>
-        new Intl.NumberFormat(tag, { style: 'currency', currency, maximumFractionDigits: v % 1 ? 2 : 0 }).format(v),
+        new Intl.NumberFormat(tag, {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: v % 1 ? 2 : 0,
+        }).format(v),
       country: (code: string) => new Intl.DisplayNames([tag], { type: 'region' }).of(code) ?? code,
       tag,
     };

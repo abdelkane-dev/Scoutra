@@ -23,6 +23,7 @@ export interface OrgContext {
   orgId: string;
   role: OrgRole;
   license: LicenseState;
+  org: { countryCode: string; accountType: string | null; sectors: string[] };
 }
 
 /** Session courante ou null (cookies HttpOnly lus côté serveur). */
@@ -72,7 +73,12 @@ export async function requireOrgAccess(action: Action): Promise<OrgContext> {
 
   const found = await withTenant(db, { orgId, userId: user.id }, async (tx) => {
     const [org] = await tx
-      .select({ id: schema.organizations.id, countryCode: schema.organizations.countryCode })
+      .select({
+        id: schema.organizations.id,
+        countryCode: schema.organizations.countryCode,
+        accountType: schema.organizations.accountType,
+        sectors: schema.organizations.sectors,
+      })
       .from(schema.organizations);
     const [member] = await tx
       .select({ role: schema.members.role })
@@ -95,5 +101,12 @@ export async function requireOrgAccess(action: Action): Promise<OrgContext> {
   });
   if (!decision.ok) throw new AppError(decision.reason);
 
-  return { user, orgId, role: found.role, license };
+  const { countryCode, accountType, sectors } = found.org;
+  return {
+    user,
+    orgId,
+    role: found.role,
+    license,
+    org: { countryCode, accountType, sectors },
+  };
 }

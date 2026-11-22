@@ -53,9 +53,23 @@ export const organizations = pgTable(
     metadata: text('metadata'),
     /** Pays d'établissement (ISO 3166-1 alpha-2) : base des règles « émetteur » et de la licence. */
     countryCode: char('country_code', { length: 2 }).notNull(),
+    /** Type de compte (onboarding, @scoutra/core ACCOUNT_TYPES), modifiable par owner/admin. */
+    accountType: text('account_type'),
+    /** Secteurs d'activité (codes ISIC de @scoutra/core SECTORS), validés par Zod côté code. */
+    sectors: text('sectors')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     createdAt: ts('created_at').notNull().defaultNow(),
   },
-  (t) => [check('organizations_country_code_format', sql`${t.countryCode} ~ '^[A-Z]{2}$'`)],
+  (t) => [
+    check('organizations_country_code_format', sql`${t.countryCode} ~ '^[A-Z]{2}$'`),
+    check(
+      'organizations_account_type_format',
+      sql`${t.accountType} is null or ${t.accountType} ~ '^[a-z_]{2,40}$'`,
+    ),
+    check('organizations_sectors_max', sql`cardinality(${t.sectors}) <= 10`),
+  ],
 );
 
 export const sessions = pgTable(

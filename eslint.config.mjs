@@ -14,10 +14,7 @@ export default tseslint.config(
       '**/next-env.d.ts',
       'docs/**',
       'packages/db/migrations/**',
-      'apps/web/src/app/(marketing)/**',
-      'apps/web/src/app/(app)/**',
-      'apps/web/src/components/**',
-      'packages/ui/**',
+      // Le code d'interface (apps/web, packages/ui) est lui aussi analysé : HTML brut interdit.
     ],
   },
   js.configs.recommended,

@@ -29,6 +29,8 @@ export const ACTIONS = {
   // Organisation et équipe
   'org:read': { roles: ALL, read: true },
   'org:update': { roles: ADMINS, sensitive: true },
+  /** Profil (type de compte, secteurs) : onboarding, donc sans 2FA exigée. */
+  'org:profile': { roles: ADMINS },
   'org:delete': { roles: OWNER, sensitive: true },
   'member:list': { roles: ALL, read: true },
   'member:invite': { roles: ADMINS, sensitive: true },

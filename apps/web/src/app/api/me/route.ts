@@ -29,6 +29,10 @@ export const GET = apiRoute({ public: true }, async () => {
     organization = {
       id: ctx.orgId,
       role: ctx.role,
+      countryCode: ctx.org.countryCode,
+      accountType: ctx.org.accountType,
+      sectors: ctx.org.sectors,
+      onboardingComplete: ctx.org.accountType !== null && ctx.org.sectors.length > 0,
       permissions: perms.allowed,
       twoFactorRequiredFor: perms.needsTwoFactor,
       dataScope: perms.dataScope,
