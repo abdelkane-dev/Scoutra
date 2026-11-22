@@ -20,7 +20,7 @@ export default defineConfig({
           name: 'integration',
           include: ['packages/*/test/**/*.int.test.ts', 'apps/*/test/**/*.int.test.ts'],
           environment: 'node',
-          globalSetup: ['./packages/db/test/global-setup.ts'],
+          globalSetup: ['./test/global-setup.ts'],
           fileParallelism: false,
           testTimeout: 30_000,
           hookTimeout: 60_000,
