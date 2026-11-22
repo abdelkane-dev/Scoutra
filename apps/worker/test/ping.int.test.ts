@@ -71,6 +71,32 @@ describe.skipIf(!info.available)('tâche ping de bout en bout (pg-boss + RLS)', 
     expect(await getJobForOrg(boss, pingJob, jobId, B.orgId)).toBeNull();
   });
 
+  it('constat 7 : isolation des tâches entre organisations (lecture croisée impossible)', async () => {
+    const jobA = await publish(boss, pingJob, {
+      organizationId: A.orgId,
+      requestedBy: A.userId,
+      message: 'a',
+    });
+    const jobB = await publish(boss, pingJob, {
+      organizationId: B.orgId,
+      requestedBy: B.userId,
+      message: 'b',
+    });
+    expect(await getJobForOrg(boss, pingJob, jobB, A.orgId)).toBeNull();
+    expect(await getJobForOrg(boss, pingJob, jobA, B.orgId)).toBeNull();
+    expect((await getJobForOrg(boss, pingJob, jobA, A.orgId))?.id).toBe(jobA);
+    // Une tâche sans organisation (forgée hors publish) n'est visible par personne.
+    const orphan = await boss.send(pingJob.name, { message: 'sans org' });
+    expect(await getJobForOrg(boss, pingJob, orphan!, A.orgId)).toBeNull();
+    // Aucune donnée personnelle dans la file : seulement des identifiants et le message court.
+    const raw = await boss.getJobById(pingJob.name, jobA);
+    expect(Object.keys(raw!.data as object).sort()).toEqual([
+      'message',
+      'organizationId',
+      'requestedBy',
+    ]);
+  });
+
   it('charge utile invalide refusée à la publication (Zod)', async () => {
     await expect(
       publish(boss, pingJob, {

@@ -1,11 +1,11 @@
 import 'server-only';
 import { headers } from 'next/headers';
 import { AppError, type OrgRole } from '@scoutra/core';
-import { can, isOrgRole, isReadAction, type Action } from '@scoutra/auth';
+import { decideAccess, isOrgRole, type Action } from '@scoutra/auth';
 import { count, eq, schema, withTenant } from '@scoutra/db';
-import { licenseAllowsWrites } from '@scoutra/license';
 import { getAuth } from './auth';
 import { appDb } from './db';
+import { getEnv } from './env';
 import { licenseStateFor, type LicenseState } from './license';
 
 export interface SessionUser {
@@ -56,7 +56,8 @@ function toUser(u: {
  * 2. organisation ACTIVE issue de la session (jamais du corps de requête ni de l'URL) ;
  * 3. rôle relu en base (adhésion vérifiée sous RLS), jamais pris du client ;
  * 4. matrice `can(rôle, action)` à refus par défaut ;
- * 5. licence : en lecture seule, seules les actions de lecture/export passent.
+ * 5. 2FA obligatoire pour les actions sensibles des owners/admins (code two_factor_required) ;
+ * 6. licence : en lecture seule, seules les actions de lecture/export passent.
  */
 export async function requireOrgAccess(action: Action): Promise<OrgContext> {
   const s = await requireSession();
@@ -79,13 +80,16 @@ export async function requireOrgAccess(action: Action): Promise<OrgContext> {
 
   if (!found.org || found.org.id !== orgId || !isOrgRole(found.role))
     throw new AppError('forbidden');
-  if (!can(found.role, action)) throw new AppError('forbidden');
 
   const license = licenseStateFor(found.org, found.members);
-  if (license.status === 'invalid')
-    throw new AppError('read_only', `licence invalide (${license.reason ?? '?'})`);
-  if (!isReadAction(action) && !licenseAllowsWrites(license.status))
-    throw new AppError('read_only');
+  const decision = decideAccess({
+    role: found.role,
+    action,
+    twoFactorEnabled: user.twoFactorEnabled,
+    enforceTwoFactor: getEnv().SCOUTRA_ENFORCE_ADMIN_2FA,
+    licenseStatus: license.status,
+  });
+  if (!decision.ok) throw new AppError(decision.reason);
 
   return { user, orgId, role: found.role, license };
 }

@@ -22,10 +22,13 @@ function pools(): Pools {
   return g.__scoutraPools;
 }
 
-/** Vérifie une fois que le rôle applicatif ne contourne pas la RLS. */
+/** Vérifie une fois que les rôles applicatif ET d'authentification ne contournent pas la RLS. */
 export function ensureDbReady(): Promise<void> {
   const p = pools();
-  p.ready ??= assertRlsEnforcedRole(p.app.pool).then(() => undefined);
+  p.ready ??= Promise.all([
+    assertRlsEnforcedRole(p.app.pool),
+    assertRlsEnforcedRole(p.auth.pool),
+  ]).then(() => undefined);
   return p.ready;
 }
 

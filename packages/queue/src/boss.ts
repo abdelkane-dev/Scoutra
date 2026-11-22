@@ -98,7 +98,12 @@ export async function work<S extends z.ZodType>(
   });
 }
 
-/** Lit l'état d'une tâche en vérifiant qu'elle appartient bien à l'organisation demandée. */
+/**
+ * Lit l'état d'une tâche en vérifiant qu'elle appartient bien à l'organisation demandée.
+ * Les tables pg-boss n'ont pas de RLS : l'application ne doit JAMAIS lire la file autrement
+ * que par cette fonction (testé : constat 7 de la revue). Charges utiles = identifiants
+ * seulement. TODO avant l'étape 2 : file par organisation ou vue filtrée si besoin.
+ */
 export async function getJobForOrg(
   boss: PgBoss,
   job: JobDefinition<z.ZodType>,

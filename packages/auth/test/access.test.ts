@@ -48,3 +48,63 @@ describe('mots de passe', () => {
     expect(await verifyPassword({ hash: 'scrypt:abc', password: 'x' })).toBe(false);
   });
 });
+
+describe('decideAccess (revue étape 1, constat 4)', async () => {
+  const { decideAccess, requiresTwoFactor, canManageMember } = await import('../src');
+  const base = { twoFactorEnabled: false, enforceTwoFactor: true, licenseStatus: 'valid' as const };
+
+  it('owner/admin sans 2FA : actions sensibles refusées avec two_factor_required', () => {
+    expect(decideAccess({ ...base, role: 'admin', action: 'apikey:manage' })).toEqual({
+      ok: false,
+      reason: 'two_factor_required',
+    });
+    expect(decideAccess({ ...base, role: 'owner', action: 'member:invite' })).toEqual({
+      ok: false,
+      reason: 'two_factor_required',
+    });
+    expect(decideAccess({ ...base, role: 'owner', action: 'campaign:write' })).toEqual({
+      ok: true,
+    });
+    expect(
+      decideAccess({ ...base, role: 'admin', action: 'apikey:manage', twoFactorEnabled: true }),
+    ).toEqual({ ok: true });
+    expect(
+      decideAccess({ ...base, role: 'admin', action: 'apikey:manage', enforceTwoFactor: false }),
+    ).toEqual({ ok: true });
+  });
+
+  it('le rôle est vérifié avant la 2FA ; un membre ne déclenche jamais la 2FA', () => {
+    expect(decideAccess({ ...base, role: 'member', action: 'apikey:manage' })).toEqual({
+      ok: false,
+      reason: 'forbidden',
+    });
+    expect(requiresTwoFactor('member', 'prospect:read')).toBe(false);
+  });
+
+  it('licence : lecture seule bloque les écritures, pas les lectures ; invalide bloque tout', () => {
+    expect(
+      decideAccess({
+        ...base,
+        role: 'member',
+        action: 'campaign:write',
+        licenseStatus: 'read_only',
+      }).ok,
+    ).toBe(false);
+    expect(
+      decideAccess({ ...base, role: 'member', action: 'campaign:read', licenseStatus: 'read_only' })
+        .ok,
+    ).toBe(true);
+    expect(
+      decideAccess({ ...base, role: 'member', action: 'campaign:read', licenseStatus: 'invalid' })
+        .ok,
+    ).toBe(false);
+  });
+
+  it('gestion des membres : uniquement les rangs inférieurs', () => {
+    expect(canManageMember('admin', 'member')).toBe(true);
+    expect(canManageMember('admin', 'admin')).toBe(false);
+    expect(canManageMember('admin', 'owner')).toBe(false);
+    expect(canManageMember('owner', 'admin')).toBe(true);
+    expect(canManageMember('member', 'member')).toBe(false);
+  });
+});

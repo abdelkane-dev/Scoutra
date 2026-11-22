@@ -5,7 +5,8 @@ import { getSession, requireOrgAccess } from '@/server/session';
 export const dynamic = 'force-dynamic';
 
 /** Utilisateur connecté, organisation active, rôle et état de licence (pour l'interface). */
-export const GET = apiRoute({}, async () => {
+// Déclarée publique pour l'enveloppe : la session est vérifiée ci-dessous (401 sinon).
+export const GET = apiRoute({ public: true }, async () => {
   const s = await getSession();
   if (!s) throw new AppError('unauthenticated');
   let organization: { id: string; role: string; license: unknown } | null = null;

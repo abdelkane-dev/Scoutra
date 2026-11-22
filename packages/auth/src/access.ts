@@ -74,3 +74,31 @@ export function assignableRoles(actor: unknown): OrgRole[] {
   if (actor === 'admin') return ['member'];
   return [];
 }
+
+export type LicenseStatusLike = 'valid' | 'grace' | 'read_only' | 'invalid';
+export type AccessDenial = 'forbidden' | 'two_factor_required' | 'read_only';
+
+/**
+ * Décision d'accès unique (routes métier) : rôle → 2FA des actions sensibles → licence.
+ * Pure et testée ; `requireOrgAccess` (apps/web) ne fait que lire les entrées en base.
+ */
+export function decideAccess(input: {
+  role: unknown;
+  action: Action;
+  twoFactorEnabled: boolean;
+  enforceTwoFactor: boolean;
+  licenseStatus: LicenseStatusLike;
+}): { ok: true } | { ok: false; reason: AccessDenial } {
+  if (!can(input.role, input.action)) return { ok: false, reason: 'forbidden' };
+  if (
+    input.enforceTwoFactor &&
+    requiresTwoFactor(input.role, input.action) &&
+    !input.twoFactorEnabled
+  ) {
+    return { ok: false, reason: 'two_factor_required' };
+  }
+  if (input.licenseStatus === 'invalid') return { ok: false, reason: 'read_only' };
+  if (input.licenseStatus === 'read_only' && !isReadAction(input.action))
+    return { ok: false, reason: 'read_only' };
+  return { ok: true };
+}
