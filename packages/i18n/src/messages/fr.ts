@@ -1,0 +1,61 @@
+/**
+ * Messages français (langue de référence : toutes les clés existent ici).
+ * Organisation par espace de noms. L'interface (frontend) ajoute ses propres espaces.
+ */
+export const fr = {
+  common: {
+    appName: 'Scoutra',
+    loading: 'Chargement…',
+  },
+  errors: {
+    unauthenticated: 'Veuillez vous connecter.',
+    forbidden: 'Vous n’avez pas les droits pour cette action.',
+    not_found: 'Introuvable.',
+    invalid_input: 'Certaines informations sont invalides.',
+    conflict: 'Cette action entre en conflit avec l’état actuel.',
+    rate_limited: 'Trop de tentatives. Réessayez dans quelques minutes.',
+    read_only: 'Licence expirée : l’application est en lecture seule.',
+    blocked_url: 'Cette adresse web n’est pas autorisée.',
+    internal: 'Une erreur est survenue. Réessayez plus tard.',
+    no_active_organization: 'Choisissez d’abord une organisation.',
+  },
+  roles: {
+    owner: 'Propriétaire',
+    admin: 'Administrateur',
+    member: 'Membre',
+  },
+  prospectKinds: {
+    company: 'Entreprise',
+    person: 'Personne',
+    creator: 'Créateur',
+    public_buyer: 'Acheteur public',
+    nonprofit: 'Association / ONG',
+    property: 'Bien immobilier',
+    listing: 'Annonce',
+  },
+  prospectingModels: {
+    b2b: 'B2B — vendre aux entreprises',
+    b2c: 'B2C — vendre aux particuliers',
+    b2b2c: 'B2B2C — via une entreprise vers ses clients',
+    d2c: 'D2C — marque en direct',
+    c2c: 'C2C — entre particuliers',
+    c2b: 'C2B — freelance ou créateur vers entreprises',
+    b2g: 'B2G — vendre à l’administration',
+    g2b: 'G2B — aides et appels publics aux entreprises',
+    b2n: 'B2N — associations, ONG, fondations',
+    b2e: 'B2E — avantages salariés',
+    partners_distributors: 'Partenaires et distributeurs',
+    talent_recruiting: 'Recrutement de talents',
+    investors_fundraising: 'Investisseurs et levée de fonds',
+    real_estate: 'Immobilier',
+    local_business: 'Commerces de proximité',
+    marketplace_sellers: 'Vendeurs de places de marché',
+    distressed_insolvency: 'Entreprises en difficulté',
+    business_succession: 'Cession et transmission d’entreprise',
+    events_exhibitors: 'Salons et événements',
+    press_pr: 'Presse et relations publiques',
+    procurement_sourcing: 'Recherche de fournisseurs',
+    regulated_professions: 'Professions réglementées',
+    education_institutions: 'Éducation et institutions',
+  },
+} as const;

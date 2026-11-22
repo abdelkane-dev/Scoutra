@@ -76,19 +76,15 @@ importers:
       '@scoutra/core':
         specifier: workspace:*
         version: link:../core
+      '@scoutra/db':
+        specifier: workspace:*
+        version: link:../db
       better-auth:
         specifier: ^1.7.27
         version: 1.7.27(@opentelemetry/api@1.10.0)(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@opentelemetry/api@1.10.0)(@types/pg@8.23.1)(kysely@0.29.9)(pg@8.23.1))(pg@8.23.1)(vitest@5.1.1(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(vite@8.3.8(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)))
-      pg:
-        specifier: ^8.23.1
-        version: 8.23.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
-    devDependencies:
-      '@types/pg':
-        specifier: ^8.23.1
-        version: 8.23.1
 
   packages/config:
     dependencies:
@@ -133,7 +129,11 @@ importers:
         specifier: ^0.31.11
         version: 0.31.11
 
-  packages/i18n: {}
+  packages/i18n:
+    dependencies:
+      '@scoutra/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/license:
     dependencies:

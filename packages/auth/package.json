@@ -13,11 +13,8 @@
     "@node-rs/argon2": "^2.2.2",
     "@scoutra/config": "workspace:*",
     "@scoutra/core": "workspace:*",
+    "@scoutra/db": "workspace:*",
     "better-auth": "^1.7.27",
-    "pg": "^8.23.1",
     "zod": "^4.6.7"
-  },
-  "devDependencies": {
-    "@types/pg": "^8.23.1"
   }
 }
