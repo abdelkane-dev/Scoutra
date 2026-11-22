@@ -1,6 +1,22 @@
-CLAUDE.local.md
-.basemind/
-basemind.toml
+# Dépendances et builds
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets : jamais dans le dépôt
 .env
 .env.*
-node_modules/
+!.env.example
+*.key
+*.pem
+!**/keys/*.pub
+
+# Outils locaux
+.basemind/
+basemind.toml
+.claude/settings.local.json
+CLAUDE.local.md

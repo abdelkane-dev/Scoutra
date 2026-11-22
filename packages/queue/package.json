@@ -1,0 +1,17 @@
+{
+  "name": "@scoutra/queue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@scoutra/core": "workspace:*",
+    "pg-boss": "^12.39.0",
+    "zod": "^4.6.7"
+  }
+}
