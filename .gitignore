@@ -1,0 +1,6 @@
+CLAUDE.local.md
+.basemind/
+basemind.toml
+.env
+.env.*
+node_modules/
