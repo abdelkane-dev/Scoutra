@@ -107,6 +107,7 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
         reason: 'monthly_grant',
         idempotencyKey: `grant-${t.orgId}`,
       });
+      await tx.insert(s.tenantJobs).values({ organizationId: t.orgId, kind: 'test.seed' });
       ids[key] = { campaign: c!.id, prospect: p!.id, contact: ct!.id };
     });
   }
@@ -133,6 +134,7 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
     ['audit_log', s.auditLog],
     ['credit_ledger', s.creditLedger],
     ['members', s.members],
+    ['tenant_jobs', s.tenantJobs],
   ] as const;
 
   it('le rôle applicatif ne peut pas contourner la RLS ; le propriétaire est refusé au démarrage', async () => {

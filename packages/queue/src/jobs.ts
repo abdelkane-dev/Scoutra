@@ -32,6 +32,57 @@ export const pingJob = defineJob({
   queue: { retryLimit: 2, retryDelay: 5, retryBackoff: true, expireInSeconds: 60 },
 });
 
-export const ALL_JOBS = [pingJob] as const;
+/** Charge utile des tâches MÉTIER : organisation + identifiant de suivi (tenant_jobs, RLS). */
+const tracked = z.object({ organizationId: z.uuid(), trackingId: z.uuid() });
+const campaignRef = tracked.extend({ campaignId: z.uuid() });
+
+/** Interprétation du texte libre en profil de cible (agent Interprète). */
+export const campaignInterpretJob = defineJob({
+  name: 'campaign.interpret',
+  schema: campaignRef.strict(),
+  queue: { retryLimit: 2, retryDelay: 10, retryBackoff: true, expireInSeconds: 180 },
+});
+
+/** Planification : réservation des crédits, requêtes par connecteur (fan-out). */
+export const campaignPlanJob = defineJob({
+  name: 'campaign.plan',
+  schema: campaignRef.strict(),
+  queue: { retryLimit: 2, retryDelay: 10, retryBackoff: true, expireInSeconds: 120 },
+});
+
+/** Une requête d'un connecteur (agent Recherche) : insère les candidats dédoublonnés. */
+export const searchRunJob = defineJob({
+  name: 'search.run',
+  schema: campaignRef
+    .extend({
+      connector: z.string().regex(/^[a-z0-9_]{2,40}$/),
+      queryIndex: z.int().min(0).max(500),
+    })
+    .strict(),
+  queue: { retryLimit: 3, retryDelay: 15, retryBackoff: true, expireInSeconds: 120 },
+});
+
+/** Un prospect : enrichissement → vérification → notation → rédaction (étapes idempotentes). */
+export const prospectProcessJob = defineJob({
+  name: 'prospect.process',
+  schema: campaignRef.extend({ prospectId: z.uuid() }).strict(),
+  queue: { retryLimit: 3, retryDelay: 15, retryBackoff: true, expireInSeconds: 300 },
+});
+
+/** Clôture : statut final, remboursement de la réservation non consommée. */
+export const campaignFinalizeJob = defineJob({
+  name: 'campaign.finalize',
+  schema: campaignRef.strict(),
+  queue: { retryLimit: 5, retryDelay: 10, retryBackoff: true, expireInSeconds: 60 },
+});
+
+export const ALL_JOBS = [
+  pingJob,
+  campaignInterpretJob,
+  campaignPlanJob,
+  searchRunJob,
+  prospectProcessJob,
+  campaignFinalizeJob,
+] as const;
 
 export type JobPayload<J extends JobDefinition<z.ZodType>> = z.infer<J['schema']>;

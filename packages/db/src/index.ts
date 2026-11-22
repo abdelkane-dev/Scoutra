@@ -34,4 +34,5 @@ export const TENANT_TABLES = [
   'api_credentials',
   'credit_ledger',
   'suppression_list',
+  'tenant_jobs',
 ] as const;

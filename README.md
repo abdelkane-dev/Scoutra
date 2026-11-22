@@ -98,6 +98,17 @@ tools/license-cli  Génération de clés et signature de licences
 - **pg-boss** : file de tâches dans Postgres (pas de Redis à installer chez les clients). Le
   schéma est installé par le rôle propriétaire ; l'application ne fait aucun DDL. Chaque charge
   utile est validée par Zod (avec `organizationId`) à l'envoi **et** à la réception.
+- **File pg-boss et isolation (décision de l'étape 2, constat 7 de la revue)** : les tables
+  pg-boss n'ont pas de RLS. Option retenue, la plus simple et sûre sans fork de pg-boss : chaque
+  tâche MÉTIER porte `organizationId` + `trackingId` validés par Zod à l'envoi et à la réception ;
+  une ligne `tenant_jobs` (RLS FORCE) est créée dans l'organisation avant l'envoi ; le worker
+  rouvre `withTenant` et **refuse** une tâche dont le suivi n'existe pas dans cette organisation ;
+  l'état et l'annulation passent **uniquement** par `tenant_jobs` (`getTenantJob`,
+  `cancelTenantJobs`), jamais par une lecture directe de pg-boss. Charges utiles = identifiants
+  seulement (aucune donnée personnelle dans la file). Test d'isolation :
+  `packages/queue/test/tenant-jobs.int.test.ts`. Écartées : une file par organisation (milliers
+  de files, DDL à l'exécution) et la RLS sur le schéma pg-boss (non supportée, casse la
+  maintenance).
 - **Garde SSRF** maison sur `node:http(s)` + `ipaddr.js` (très utilisé, MIT) : seules les IP
   publiques sont autorisées, vérifiées **au moment de la connexion** (anti DNS rebinding),
   redirections revalidées, ports 80/443, noms internes refusés.

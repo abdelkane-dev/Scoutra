@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@scoutra/core": "workspace:*",
+    "@scoutra/db": "workspace:*",
     "pg-boss": "^12.39.0",
     "zod": "^4.6.7"
   }

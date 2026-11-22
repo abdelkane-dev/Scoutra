@@ -342,3 +342,42 @@ export const suppressionList = pgTable(
   },
   (t) => [unique('suppression_list_unique').on(t.organizationId, t.valueHash, t.channel)],
 );
+
+export const tenantJobStatus = pgEnum('tenant_job_status', [
+  'queued',
+  'active',
+  'retrying',
+  'completed',
+  'failed',
+  'cancelled',
+]);
+
+/**
+ * Suivi des tâches MÉTIER (décision « file pg-boss », revue étape 1 constat 7). Les tables
+ * pg-boss n'ont pas de RLS : l'application ne lit JAMAIS l'état d'une tâche métier dans pg-boss,
+ * seulement ici, sous RLS FORCE. Le worker refuse toute tâche dont la ligne de suivi n'existe pas
+ * dans l'organisation de la charge utile (tâche forgée ou mélangée).
+ */
+export const tenantJobs = pgTable(
+  'tenant_jobs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    kind: varchar('kind', { length: 50 }).notNull(),
+    refType: varchar('ref_type', { length: 50 }),
+    refId: uuid('ref_id'),
+    bossJobId: uuid('boss_job_id'),
+    status: tenantJobStatus('status').notNull().default('queued'),
+    attempts: integer('attempts').notNull().default(0),
+    errorCode: varchar('error_code', { length: 100 }),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    updatedAt: ts('updated_at').notNull().defaultNow(),
+    finishedAt: ts('finished_at'),
+  },
+  (t) => [
+    unique('tenant_jobs_org_id_unique').on(t.organizationId, t.id),
+    index('tenant_jobs_org_ref_idx').on(t.organizationId, t.refType, t.refId),
+    index('tenant_jobs_org_status_idx').on(t.organizationId, t.status),
+  ],
+);
