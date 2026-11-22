@@ -2,7 +2,9 @@ import { generateKeyPairSync } from 'node:crypto';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
+  EMBEDDED_PUBLIC_KEYS,
   LicenseFormatError,
+  loadPublicKeyring,
   evaluateLicense,
   licenseAllowsWrites,
   rawPublicKey,
@@ -159,5 +161,18 @@ describe('évaluation (dates, grâce, lecture seule)', () => {
   });
   it('jeton invalide → invalid, jamais d’exception', () => {
     expect(evaluateLicense('nimporte.quoi', { keyring, now: NOW }).status).toBe('invalid');
+  });
+});
+
+describe('trousseau (constat 10)', () => {
+  const env = JSON.stringify({ 'client-1': k1.pub });
+  it('clés d’environnement acceptées hors production', () => {
+    expect(loadPublicKeyring(env)['client-1']).toBe(k1.pub);
+  });
+  it('ignorées quand allowEnvKeys=false (production licence) : licence auto-signée rejetée', () => {
+    const ring = loadPublicKeyring(env, { allowEnvKeys: false });
+    expect(ring).toBe(EMBEDDED_PUBLIC_KEYS);
+    const selfSigned = signLicense({ ...base, kid: 'client-1' }, k1.pem);
+    expect(evaluateLicense(selfSigned, { keyring: ring, now: NOW + DAY }).status).toBe('invalid');
   });
 });

@@ -19,7 +19,13 @@ const envKeysSchema = z.record(
  * utile pour les tests et les installations de recette. Une clé embarquée n'est jamais
  * remplacée par l'environnement.
  */
-export function loadPublicKeyring(envValue: string | undefined): PublicKeyring {
+export function loadPublicKeyring(
+  envValue: string | undefined,
+  opts: { allowEnvKeys?: boolean } = {},
+): PublicKeyring {
+  // En production sous licence, le client contrôle l'environnement : ses propres clés ne
+  // doivent pas pouvoir valider ses propres licences (revue étape 1, constat 10).
+  if (opts.allowEnvKeys === false) return EMBEDDED_PUBLIC_KEYS;
   const extra = envValue ? envKeysSchema.parse(JSON.parse(envValue)) : {};
   return Object.freeze({ ...extra, ...EMBEDDED_PUBLIC_KEYS });
 }

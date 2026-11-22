@@ -14,6 +14,8 @@ export interface SafeFetchOptions extends UrlPolicy {
   headers?: Record<string, string>;
   maxRedirects?: number;
   timeoutMs?: number;
+  /** Durée maximale de l'ensemble (redirections comprises). Défaut : 30 s. */
+  totalTimeoutMs?: number;
   maxBytes?: number;
   /** Résolveur DNS (injectable pour les tests). */
   resolver?: Resolver;
@@ -66,6 +68,26 @@ function guardedLookup(resolver: Resolver, policy: (ip: string) => boolean): Loo
 }
 
 const REDIRECT_CODES = new Set([301, 302, 303, 307, 308]);
+/** En-têtes jamais transmis à une autre origine lors d'une redirection. */
+const CREDENTIAL_HEADERS = [
+  'authorization',
+  'cookie',
+  'proxy-authorization',
+  'x-api-key',
+  'api-key',
+];
+
+function stripCredentials(
+  headers: Record<string, string> | undefined,
+): Record<string, string> | undefined {
+  if (!headers) return headers;
+  return Object.fromEntries(
+    Object.entries(headers).filter(([k]) => {
+      const key = k.toLowerCase();
+      return !CREDENTIAL_HEADERS.includes(key) && !key.includes('token') && !key.includes('secret');
+    }),
+  );
+}
 
 function requestOnce(
   url: URL,
@@ -137,15 +159,25 @@ export async function safeFetch(
   input: string,
   options: SafeFetchOptions = {},
 ): Promise<SafeResponse> {
-  const opts = { timeoutMs: 10_000, maxBytes: 5 * 1024 * 1024, ...options };
+  const deadline = AbortSignal.timeout(options.totalTimeoutMs ?? 30_000);
+  const signal = options.signal ? AbortSignal.any([options.signal, deadline]) : deadline;
+  const opts = { timeoutMs: 10_000, maxBytes: 5 * 1024 * 1024, ...options, signal };
   const maxRedirects = options.maxRedirects ?? 5;
   let url = assertSafeUrl(input, opts);
-  for (let hop = 0; ; hop++) {
-    const res = await requestOnce(url, opts);
-    if (!REDIRECT_CODES.has(res.status)) return res;
-    const location = res.headers.location;
-    if (!location) return res;
-    if (hop >= maxRedirects) throw new AppError('blocked_url', 'Trop de redirections');
-    url = assertSafeUrl(new URL(location, url), opts);
+  const origin = url.origin;
+  try {
+    for (let hop = 0; ; hop++) {
+      const res = await requestOnce(url, opts);
+      if (!REDIRECT_CODES.has(res.status)) return res;
+      const location = res.headers.location;
+      if (!location) return res;
+      if (hop >= maxRedirects) throw new AppError('blocked_url', 'Trop de redirections');
+      url = assertSafeUrl(new URL(location, url), opts);
+      // Les identifiants ne suivent jamais une redirection vers une autre origine.
+      if (url.origin !== origin) opts.headers = stripCredentials(opts.headers);
+    }
+  } catch (err) {
+    if (deadline.aborted) throw new AppError('blocked_url', 'Délai global dépassé');
+    throw err;
   }
 }

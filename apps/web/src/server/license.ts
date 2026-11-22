@@ -20,7 +20,9 @@ export function licenseStateFor(
   const env = getEnv();
   if (env.SCOUTRA_MODE === 'saas') return { mode: 'saas', status: 'valid' };
   const ev = evaluateLicense(env.SCOUTRA_LICENSE_TOKEN ?? '', {
-    keyring: loadPublicKeyring(env.SCOUTRA_LICENSE_PUBLIC_KEYS),
+    keyring: loadPublicKeyring(env.SCOUTRA_LICENSE_PUBLIC_KEYS, {
+      allowEnvKeys: env.NODE_ENV !== 'production',
+    }),
     now: Math.floor(Date.now() / 1000),
     orgCountry: org.countryCode,
     orgId: org.id,

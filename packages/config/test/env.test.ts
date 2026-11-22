@@ -55,6 +55,22 @@ describe('validation de l’environnement', () => {
     expect(() => loadEnv(webEnvSchema, { ...valid(), SCOUTRA_MODE: 'license' })).toThrow(/LICENSE/);
   });
 
+  it('proxys de confiance et 2FA (constats 4 et 5)', () => {
+    const env = loadEnv(webEnvSchema, {
+      ...valid(),
+      SCOUTRA_TRUSTED_PROXIES: '10.0.0.1, 172.18.0.0/16',
+    });
+    expect(env.SCOUTRA_TRUSTED_PROXIES).toEqual(['10.0.0.1', '172.18.0.0/16']);
+    expect(env.SCOUTRA_ENFORCE_ADMIN_2FA).toBe(true);
+    expect(env.SCOUTRA_CLIENT_IP_HEADER).toBe('x-forwarded-for');
+    expect(() =>
+      loadEnv(webEnvSchema, { ...valid(), SCOUTRA_TRUSTED_PROXIES: 'n importe quoi' }),
+    ).toThrow(EnvError);
+    expect(() =>
+      loadEnv(webEnvSchema, { ...valid(), SCOUTRA_CLIENT_IP_HEADER: 'X Forwarded' }),
+    ).toThrow(EnvError);
+  });
+
   it('worker', () => {
     const { DATABASE_URL, SCOUTRA_MASTER_KEY, SCOUTRA_HASH_KEY } = valid();
     expect(

@@ -39,17 +39,17 @@ En développement, les emails (vérification, invitation) sont affichés dans la
 
 ## Commandes
 
-| Commande | Rôle |
-|---|---|
-| `pnpm lint` | ESLint (règles de sécurité incluses) |
-| `pnpm format:check` / `pnpm format` | Prettier |
-| `pnpm typecheck` | TypeScript strict sur tous les paquets |
-| `pnpm test` | Vitest : unitaires + intégration Postgres (si `TEST_DATABASE_ADMIN_URL` est défini) |
-| `pnpm test:unit` / `pnpm test:integration` | Sous-ensembles |
-| `pnpm build` | Build Next.js (standalone) et bundle du worker |
-| `pnpm db:generate` | Nouvelle migration Drizzle (SQL relu en revue) |
-| `pnpm db:migrate` | Migrations + schéma pg-boss (rôle propriétaire) |
-| `pnpm license <keygen\|sign\|verify>` | Émission hors ligne des licences |
+| Commande                                   | Rôle                                                                                |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `pnpm lint`                                | ESLint (règles de sécurité incluses)                                                |
+| `pnpm format:check` / `pnpm format`        | Prettier                                                                            |
+| `pnpm typecheck`                           | TypeScript strict sur tous les paquets                                              |
+| `pnpm test`                                | Vitest : unitaires + intégration Postgres (si `TEST_DATABASE_ADMIN_URL` est défini) |
+| `pnpm test:unit` / `pnpm test:integration` | Sous-ensembles                                                                      |
+| `pnpm build`                               | Build Next.js (standalone) et bundle du worker                                      |
+| `pnpm db:generate`                         | Nouvelle migration Drizzle (SQL relu en revue)                                      |
+| `pnpm db:migrate`                          | Migrations + schéma pg-boss (rôle propriétaire)                                     |
+| `pnpm license <keygen\|sign\|verify>`      | Émission hors ligne des licences                                                    |
 
 Tests d'intégration : `TEST_DATABASE_ADMIN_URL=postgres://postgres:…@localhost:5432/postgres pnpm test`
 (superutilisateur d'un Postgres **jetable** : une base temporaire est créée puis supprimée).
@@ -105,6 +105,27 @@ tools/license-cli  Génération de clés et signature de licences
   cryptographique tierce.
 - **Next.js 16** : `proxy.ts` remplace `middleware.ts` ; CSP stricte à nonce (les pages sont donc
   rendues dynamiquement).
+
+## Mise en production (à lire)
+
+1. **Premier compte = propriétaire de l'installation.** L'inscription est fermée : seul le
+   tout premier compte peut s'inscrire sans invitation. Le web n'écoute que sur
+   `127.0.0.1:3000` : créez ce compte **avant** d'ouvrir l'accès public, par exemple via un
+   tunnel SSH (`ssh -L 3000:127.0.0.1:3000 serveur`), puis configurez le reverse proxy.
+2. **Reverse proxy et IP client.** Les limites de tentatives dépendent de l'IP du client. Le
+   proxy doit **écraser** l'en-tête d'IP envoyé par le client (Caddy et Traefik le font pour
+   `X-Forwarded-For` ; Cloudflare : `CF-Connecting-IP`). Réglez `SCOUTRA_CLIENT_IP_HEADER`
+   (défaut `x-forwarded-for`) et `SCOUTRA_TRUSTED_PROXIES` (IP/CIDR du proxy, ex.
+   `172.18.0.0/16` pour un proxy dans le réseau Docker). Une limite de 10 tentatives par email
+   et par 15 minutes s'applique en plus, quelle que soit l'IP.
+3. **2FA.** Les owners et admins doivent activer la double authentification pour les actions
+   sensibles (invitations, rôles, clés API, export, facturation, licence) : l'API répond
+   `403 two_factor_required`. `SCOUTRA_ENFORCE_ADMIN_2FA=false` est réservé à la recette.
+4. **Pays d'établissement.** Il est choisi à la création de l'organisation et n'est plus
+   modifiable par l'interface (il pilote la licence et les règles juridiques).
+5. **Mode licence.** En production, `SCOUTRA_LICENSE_PUBLIC_KEYS` est ignorée : seules les clés
+   publiques embarquées dans l'image valident une licence. La vérification hors ligne dissuade
+   mais n'est pas inviolable chez un client qui modifie le code : le contrat fait foi.
 
 ## Sécurité et licences
 

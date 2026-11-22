@@ -9,7 +9,15 @@ check() {
     echo "Refus : $name manquant ou trop court (24 caractères minimum). Lancer scripts/init-secrets.sh." >&2
     exit 1
   fi
+  # Entropie minimale : au moins 10 caractères distincts, pas de valeur d'exemple.
+  local distinct
+  distinct=$(printf '%s' "$value" | fold -w1 | sort -u | wc -l)
+  if [[ $distinct -lt 10 ]] || printf '%s' "$value" | grep -qiE 'change.?me|password|motdepasse|example|secret'; then
+    echo "Refus : $name trop faible (entropie insuffisante ou valeur d'exemple)." >&2
+    exit 1
+  fi
 }
+check POSTGRES_PASSWORD "${POSTGRES_PASSWORD:-}"
 check SCOUTRA_MIGRATOR_PASSWORD "${SCOUTRA_MIGRATOR_PASSWORD:-}"
 check SCOUTRA_APP_PASSWORD "${SCOUTRA_APP_PASSWORD:-}"
 check SCOUTRA_AUTH_PASSWORD "${SCOUTRA_AUTH_PASSWORD:-}"

@@ -134,6 +134,19 @@ describe('safeFetch', () => {
         res.end();
         return;
       }
+      if (req.url === '/to-other-origin') {
+        res.writeHead(302, { location: `http://other.test:${port}/echo-headers` });
+        res.end();
+        return;
+      }
+      if (req.url === '/echo-headers') {
+        res.end(JSON.stringify(req.headers));
+        return;
+      }
+      if (req.url === '/slow') {
+        setTimeout(() => res.end('tard'), 400);
+        return;
+      }
       if (req.url === '/big') {
         res.end(Buffer.alloc(2048));
         return;
@@ -150,7 +163,7 @@ describe('safeFetch', () => {
   const testOpts = () => ({
     allowedPorts: [80, 443, port],
     resolver: async (host: string) =>
-      host === 'public.test'
+      host === 'public.test' || host === 'other.test'
         ? [{ address: '127.0.0.1', family: 4 }]
         : [{ address: '10.1.2.3', family: 4 }],
     addressPolicy: (ip: string) => ip === '127.0.0.1',
@@ -202,6 +215,29 @@ describe('safeFetch', () => {
         resolver: async () => [{ address: '127.0.0.1', family: 4 }],
       }),
     ).rejects.toThrow(/adresse interne/);
+  });
+
+  it('constat 8 : identifiants retirés lors d’une redirection vers une autre origine', async () => {
+    const res = await safeFetch(`http://public.test:${port}/to-other-origin`, {
+      ...testOpts(),
+      headers: {
+        authorization: 'Bearer secret',
+        'x-api-key': 'k',
+        cookie: 'c=1',
+        accept: 'text/plain',
+      },
+    });
+    const seen = JSON.parse(res.body.toString()) as Record<string, string>;
+    expect(seen.authorization).toBeUndefined();
+    expect(seen['x-api-key']).toBeUndefined();
+    expect(seen.cookie).toBeUndefined();
+    expect(seen.accept).toBe('text/plain');
+  });
+
+  it('constat 8 : délai global, redirections comprises', async () => {
+    await expect(
+      safeFetch(`http://public.test:${port}/slow`, { ...testOpts(), totalTimeoutMs: 100 }),
+    ).rejects.toThrow(/Délai global/);
   });
 
   it('limite la taille de la réponse', async () => {
