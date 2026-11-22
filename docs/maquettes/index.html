@@ -3,491 +3,642 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scoutra — Décrivez votre cible. Scoutra trouve, vérifie et rédige.</title>
-<meta name="description" content="Scoutra est un outil de prospection pour commerciaux et closers : décrivez votre cible en une phrase, Scoutra trouve les prospects, vérifie leurs coordonnées et rédige le premier message.">
+<title>Scoutra — vos prochains clients, trouvés et vérifiés</title>
+<meta name="description" content="Décrivez votre cible en une phrase. Scoutra trouve les prospects, vérifie leurs coordonnées, les note de 0 à 100 et rédige le premier message.">
+<link rel="icon" href="../design/logo/a-trace-favicon-32.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,400..700&display=swap">
 <link rel="stylesheet" href="assets/scoutra.css">
 <script src="assets/accent.js"></script>
 <style>
-  .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-  @media (min-width: 768px) { .wrap { padding: 0 32px; } }
+  /* Grille landing : 12 colonnes, rails pointillés visibles (référence Stripe) */
+  .wrap { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 20px; position: relative; }
+  .rails { position: relative; }
+  .rails::before, .rails::after { content: ""; position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--line-strong); opacity: .7; pointer-events: none; }
+  .rails::before { left: max(20px, calc(50% - 620px)); }
+  .rails::after { right: max(20px, calc(50% - 620px)); }
+  .grid12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
+  @media (min-width: 640px) { .wrap { padding: 0 32px; } }
+  @media (min-width: 1100px) { .wrap { padding: 0 40px; } }
+  @media (max-width: 1099px) { .rails::before, .rails::after { display: none; } }
 
-  /* En-tête */
-  .site-head { border-bottom: 1px solid var(--line); background: var(--bg); }
-  .site-head .wrap { display: flex; align-items: center; gap: 16px; min-height: 64px; }
-  .site-nav { display: none; gap: 28px; margin-left: 24px; font-size: 15px; }
-  .site-nav a { text-decoration: none; color: var(--ink-2); }
-  .site-nav a:hover { color: var(--ink); }
-  .head-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .head-actions .login, .head-actions .btn { display: none; }
-  .head-actions .login { font-size: 15px; color: var(--ink-2); text-decoration: none; }
-  @media (max-width: 420px) { .accent-switch .as-label { display: none; } }
-  @media (min-width: 960px) {
-    .site-nav { display: flex; }
-    .head-actions .login, .head-actions .btn { display: inline-flex; }
-  }
+  body { background: var(--surface); }
+
+  /* Navigation */
+  .nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); }
+  .nav .wrap { display: flex; align-items: center; height: 64px; gap: 32px; }
+  .nav nav ul { display: flex; gap: 28px; font-size: 14px; font-weight: 500; color: var(--ink-2); }
+  .nav nav a { text-decoration: none; }
+  .nav nav a:hover { color: var(--ink); }
+  .nav .sp { flex: 1; }
+  .nav .login { font-size: 14px; font-weight: 500; text-decoration: none; color: var(--ink-2); }
+  @media (max-width: 899px) { .nav nav, .nav .login { display: none; } .nav .wrap { gap: 12px; } }
 
   /* Hero */
-  .hero { padding: 40px 0 56px; }
-  .hero h1 {
-    font-size: clamp(38px, 6.4vw, 76px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 600;
-    max-width: 15ch;
-  }
-  .hero h1 span { display: block; }
-  .hero-grid { display: grid; gap: 32px; margin-top: 28px; }
-  .hero-copy p { font-size: 18px; color: var(--ink-2); max-width: 38ch; }
-  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
-  .hero-facts { margin-top: 28px; display: grid; gap: 10px; font-size: 14px; color: var(--ink-2); }
-  .hero-facts li { display: flex; gap: 10px; align-items: baseline; }
-  .hero-facts svg { width: 15px; height: 15px; color: var(--accent); flex: none; transform: translateY(2px); }
-  @media (min-width: 960px) {
-    .hero { padding: 56px 0 72px; }
-    .hero h1 { max-width: none; }
-    .hero-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; margin-top: 36px; align-items: start; }
-    .hero-copy { padding-top: 8px; }
+  .hero { padding-top: 72px; }
+  .hero .grid12 { align-items: end; row-gap: 28px; }
+  .hero h1 { grid-column: 1 / -1; max-width: 15.5em; }
+  .hero .lede { grid-column: 1 / -1; display: grid; gap: 24px; }
+  .hero .lede p { color: var(--ink-2); max-width: 46ch; }
+  .hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero .fine { font-size: 13px; color: var(--ink-3); }
+  @media (min-width: 1000px) {
+    .hero { padding-top: 64px; }
+    .hero h1 { grid-column: 1 / span 8; }
+    .hero .lede { grid-column: 9 / span 4; padding-bottom: 6px; }
   }
 
-  /* Démo */
-  .demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden; }
-  .demo-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-  .demo-top .title { font-weight: 600; font-size: 14px; margin-right: auto; }
-  .demo-query { padding: 16px 16px 12px; }
-  .demo-query label { display: block; font-size: 13px; color: var(--ink-3); margin-bottom: 6px; }
-  .q-box {
-    min-height: 56px; padding: 14px 14px; border-radius: var(--radius-m);
-    border: 1px solid var(--line-2); background: var(--bg); font-size: 17px; line-height: 1.4;
+  /* Scène : aplat d'accent qui porte l'app (l'unique élément audacieux de la page) */
+  .stage { margin-top: 44px; background: var(--accent); border-radius: var(--r-xl); position: relative; overflow: hidden; height: 600px; }
+  .stage-note { position: absolute; left: 6%; top: 18px; font-size: 12.5px; font-weight: 550; color: var(--on-accent); z-index: 2; }
+  .window {
+    position: absolute; left: 6%; right: -2%; top: 56px; bottom: -40px;
+    background: var(--surface); border-radius: var(--r-xl); box-shadow: var(--shadow-window);
+    display: grid; grid-template-rows: 40px 1fr; overflow: hidden; font-size: 13.5px; line-height: 20px;
   }
-  .q-caret { display: inline-block; width: 2px; height: 1.1em; vertical-align: -0.15em; background: var(--accent); margin-left: 1px; opacity: 0; }
-  .demo.is-typing .q-caret { opacity: 1; }
-  .agents { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 4px 16px 14px; }
-  @media (max-width: 420px) { .agents { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (min-width: 640px) { .agents { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-  .agent { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-3); min-width: 0; }
-  .agent .dot { position: relative; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none; display: grid; place-items: center; }
-  .agent .dot svg { width: 9px; height: 9px; color: var(--on-accent); opacity: 0; }
-  .agent[data-state="done"] { color: var(--ink-2); }
-  .agent[data-state="done"] .dot { background: var(--accent); border-color: var(--accent); }
-  .agent[data-state="done"] .dot svg { opacity: 1; }
-  .agent[data-state="active"] { color: var(--ink); font-weight: 500; }
-  .agent[data-state="active"] .dot { border-color: var(--accent); }
-  .agent[data-state="active"] .dot::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-  .agent span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .w-bar { display: flex; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--canvas); }
+  .w-url { font-size: 12px; color: var(--ink-3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-s); padding: 2px 10px; }
+  .w-body { display: grid; grid-template-columns: 196px minmax(0, 1fr) 340px; min-height: 0; }
+  .w-side { border-right: 1px solid var(--line); background: var(--canvas); padding: 14px 10px; display: grid; align-content: start; gap: 2px; }
+  .w-side .logo { height: 18px; margin: 2px 8px 14px; }
+  .w-side a { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: var(--r-s); color: var(--ink-2); text-decoration: none; font-weight: 500; }
+  .w-side a[aria-current] { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .w-main { padding: 18px 20px; min-width: 0; display: grid; align-content: start; gap: 14px; }
+  .q { border: 1px solid var(--line-strong); border-radius: var(--r-m); padding: 10px 12px; min-height: 62px; font-size: 14px; line-height: 21px; }
+  .q-caret[hidden] { display: none; }
+  .q-caret { display: inline-block; width: 1.5px; height: 16px; background: var(--ink); vertical-align: -3px; margin-left: 1px; }
+  .q-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--ink-3); font-size: 12.5px; }
+  .q-meta .sp { flex: 1; }
+  .agents { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--r-m); overflow: hidden; }
+  .agent { padding: 8px 10px; border-right: 1px solid var(--line); min-width: 0; }
+  .agent:last-child { border-right: 0; }
+  .agent b { display: flex; align-items: center; gap: 6px; font-weight: 550; font-size: 12.5px; }
+  .agent > span { display: block; color: var(--ink-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+  .agent[data-state="pending"] .dot { background: var(--line-strong); }
+  .agent[data-state="pending"] > span { visibility: hidden; }
+  .res-head { display: flex; align-items: baseline; gap: 10px; }
+  .res-head .sp { flex: 1; }
+  .res { border-top: 1px solid var(--line); }
+  .res li { display: grid; grid-template-columns: minmax(0, 1fr) 40px 104px 76px; gap: 12px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); }
+  .res li[aria-current] { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+  .res .who b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res .who span { display: block; color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .w-card { border-left: 1px solid var(--line); padding: 18px 18px; display: grid; align-content: start; gap: 14px; min-width: 0; }
+  .w-card h3 { font-size: 16px; line-height: 22px; font-weight: 600; }
+  .w-card .sub { color: var(--ink-3); font-size: 12.5px; }
+  .why { display: grid; gap: 7px; }
+  .why li { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .why li b { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .msg { background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-m); padding: 10px 12px; font-size: 12.5px; line-height: 19px; color: var(--ink-2); }
+  .msg b { color: var(--ink); font-weight: 600; }
+  .replay { position: absolute; right: 20px; bottom: 18px; z-index: 3; height: 32px; border-radius: var(--r-s); border: 0; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 550; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .replay[hidden] { display: none; }
+  @media (max-width: 1099px) { .w-body { grid-template-columns: minmax(0,1fr) 300px; } .w-side { display: none; } }
+  @media (max-width: 760px) {
+    .stage { height: 560px; margin-top: 40px; border-radius: var(--r-l); }
+    .window { left: 12px; right: -24px; top: 48px; }
+    .stage-note { left: 12px; top: 16px; }
+    .w-body { grid-template-columns: minmax(0, 1fr); }
+    .w-card { display: none; }
+    .agents { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .agent:nth-child(3) { border-right: 0; }
+    .agent:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+    .res li { grid-template-columns: minmax(0, 1fr) 70px; }
+    .res .c-cc, .res .c-mail { display: none; }
+  }
 
-  .res-head { display: flex; align-items: baseline; gap: 16px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--surface-2); font-size: 13px; color: var(--ink-2); }
-  .res-head strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .res-head .muted { margin-left: auto; color: var(--ink-3); }
-  .res-list li {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; align-items: center;
-    padding: 11px 16px; border-top: 1px solid var(--line);
-  }
-  .res-list .who { min-width: 0; }
-  .res-list .who b { display: block; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .res-list .who small { display: block; color: var(--ink-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .res-list .mail { display: none; }
-  .score.top { background: var(--hl); color: var(--hl-ink); padding: 2px 7px 2px 4px; border-radius: 5px; }
-  @media (min-width: 640px) {
-    .res-list li { grid-template-columns: minmax(0, 1fr) 40px 150px 96px; }
-    .res-list .mail { display: inline-flex; }
-  }
-  .res-list .cc-cell { display: none; }
-  @media (min-width: 640px) { .res-list .cc-cell { display: block; } }
-  .demo-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
-  .replay { background: none; border: 0; padding: 6px 0; color: var(--accent-ink); font-weight: 600; cursor: pointer; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
-  .js .replay[hidden] { display: none; }
+  /* Bande de faits */
+  .facts { border-bottom: 1px solid var(--line); }
+  .facts .wrap { padding-top: 28px; padding-bottom: 28px; }
+  .facts p { font-size: 14px; color: var(--ink-2); max-width: 92ch; }
+  .facts b { color: var(--ink); font-weight: 600; }
 
   /* Sections */
-  section.block { padding: 72px 0; border-top: 1px solid var(--line); }
-  .block h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; max-width: 22ch; }
-  .block .lead { margin-top: 14px; font-size: 18px; color: var(--ink-2); max-width: 58ch; }
-
-  /* Pour qui */
-  .aud-grid { margin-top: 36px; display: grid; gap: 28px; }
-  @media (min-width: 900px) { .aud-grid { grid-template-columns: repeat(3, 1fr); gap: 40px; } }
-  .aud { padding-top: 18px; border-top: 3px solid var(--accent); }
-  .aud h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-  .aud p { margin-top: 8px; color: var(--ink-2); font-size: 15.5px; max-width: 42ch; }
-  .aud .aud-ex { margin-top: 14px; display: inline-block; padding: 4px 8px; border-radius: 5px; background: var(--hl); color: var(--hl-ink); font-size: 14px; }
-
-  /* Agents */
-  .steps { margin-top: 44px; display: grid; gap: 0; counter-reset: step; border-top: 1px solid var(--line); }
-  @media (min-width: 720px) { .steps { grid-template-columns: repeat(2, 1fr); column-gap: 40px; } }
-  @media (min-width: 1040px) { .steps { grid-template-columns: repeat(3, 1fr); } }
-  .step { padding: 24px 0 28px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr; gap: 0 4px; }
-  .step .n { font-size: 15px; font-weight: 600; color: var(--accent-ink); font-variant-numeric: tabular-nums; padding-top: 2px; }
-  .step h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-  .step p { margin-top: 6px; color: var(--ink-2); font-size: 15px; max-width: 40ch; }
-  .step .out {
-    margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface);
-    border: 1px solid var(--line); font-size: 13.5px; color: var(--ink-2); line-height: 1.45;
+  .sec { padding: 72px 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 900px) { .sec { padding: 120px 0; } }
+  .sec-intro { grid-column: 1 / -1; display: grid; gap: 16px; align-content: start; margin-bottom: 40px; }
+  .sec-intro p { color: var(--ink-2); max-width: 52ch; }
+  @media (min-width: 1000px) {
+    .sec-intro.side { grid-column: 1 / span 4; position: sticky; top: 104px; margin-bottom: 0; }
+    .sec-body.side { grid-column: 6 / span 7; }
   }
-  .step .out b { color: var(--ink); font-weight: 600; }
-  .steps-note { margin-top: 28px; display: grid; gap: 12px; font-size: 15px; color: var(--ink-2); max-width: 75ch; }
-  .steps-note p { padding-left: 16px; border-left: 2px solid var(--accent); }
-  .steps-note b { color: var(--ink); font-weight: 600; }
+  .sec-body { grid-column: 1 / -1; min-width: 0; }
 
-  /* Conformité */
-  .law-grid { display: grid; gap: 40px; margin-top: 40px; }
-  @media (min-width: 1040px) { .law-grid { grid-template-columns: 4fr 8fr; gap: 56px; } }
-  .law-points { display: grid; gap: 22px; align-content: start; }
-  .law-points h3 { font-size: 17px; font-weight: 600; }
-  .law-points p { margin-top: 4px; color: var(--ink-2); font-size: 15px; }
-  .law-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); overflow: hidden; }
-  .law-table table { font-size: 14px; }
-  .law-table th, .law-table td { padding: 12px 14px; vertical-align: top; }
-  .law-table thead th { background: var(--surface-2); border-bottom: 1px solid var(--line); }
-  .law-table tbody tr + tr td { border-top: 1px solid var(--line); }
-  .law-table td:first-child b { display: block; font-weight: 600; }
-  .law-table td:first-child small { color: var(--ink-3); font-size: 12.5px; }
-  .rule { display: inline-flex; gap: 6px; align-items: baseline; color: var(--ink-2); }
-  .rule svg { width: 13px; height: 13px; flex: none; transform: translateY(2px); }
-  .rule.ok svg { color: var(--accent); }
-  .rule.strict svg { color: var(--ink-2); }
-  .law-caption { padding: 12px 14px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); }
-  @media (max-width: 719px) {
-    .law-table thead { display: none; }
-    .law-table tr { display: block; padding: 14px; }
-    .law-table tbody tr + tr { border-top: 1px solid var(--line); }
-    .law-table tbody tr + tr td { border-top: 0; }
-    .law-table td { display: block; padding: 3px 0; }
-    .law-table td[data-h]::before { content: attr(data-h) " : "; color: var(--ink-3); }
+  /* Journal d'une recherche (séquence réelle : horodatage) */
+  .log { border-top: 1px solid var(--ink); }
+  .log li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .log time { font-size: 13px; color: var(--ink-3); padding-top: 2px; }
+  .log h3 { font-size: 16px; line-height: 24px; font-weight: 600; }
+  .log p { color: var(--ink-2); font-size: 15px; line-height: 24px; max-width: 58ch; }
+  .log .out { margin-top: 10px; font-size: 13.5px; line-height: 20px; color: var(--ink); background: var(--canvas); border-left: 2px solid var(--accent); padding: 8px 12px; border-radius: 0 var(--r-s) var(--r-s) 0; font-variant-numeric: tabular-nums; }
+
+  /* Score expliqué */
+  .score-sec .grid12 { row-gap: 40px; align-items: start; }
+  .fiche { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: var(--r-l); background: var(--surface); overflow: hidden; }
+  .fiche-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--line); }
+  .fiche-h .big { font-size: 40px; line-height: 40px; font-weight: 600; font-stretch: 110%; letter-spacing: -.03em; }
+  .fiche-h .big small { font-size: 14px; color: var(--ink-3); font-weight: 500; letter-spacing: 0; margin-left: 2px; }
+  .fiche-b { padding: 20px 24px; display: grid; gap: 22px; }
+  .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .bars { display: grid; gap: 10px; }
+  .bars li { display: grid; grid-template-columns: minmax(0, 1fr) 150px 34px; gap: 12px; align-items: center; font-size: 13.5px; }
+  .bars .track { height: 10px; background: var(--sunken); border-radius: 2px; position: relative; }
+  .bars .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 4px 4px 0; transform-origin: left; }
+  .bars .v { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .bars li:hover .fill, .bars li:focus-within .fill { background: var(--accent-hover); }
+  .fiche .msg { font-size: 14px; line-height: 22px; padding: 14px 16px; }
+  .fiche-f .state { white-space: normal; overflow-wrap: anywhere; }
+  .fiche-f { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--canvas); align-items: center; }
+  .fiche-f .faint { font-size: 12.5px; margin-left: auto; }
+  .targets { grid-column: 1 / -1; display: grid; gap: 16px; align-content: start; }
+  .targets > p { color: var(--ink-2); max-width: 52ch; }
+  .t-list { margin-top: 16px; border-top: 1px solid var(--ink); }
+  .t-list li { padding: 18px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+  .t-list h3 { font-size: 16px; font-weight: 600; line-height: 24px; }
+  .t-list p { font-size: 15px; color: var(--ink-2); line-height: 24px; }
+  .t-list q { display: block; margin-top: 6px; font-size: 14px; color: var(--ink); quotes: "« " " »"; }
+  @media (max-width: 640px) { .bars li { grid-template-columns: minmax(0,1fr) 80px 30px; } }
+  @media (min-width: 1000px) {
+    .fiche { grid-column: 1 / span 7; }
+    .targets { grid-column: 9 / span 4; }
   }
 
-  /* Tarifs */
-  .plans { margin-top: 44px; display: grid; gap: 16px; }
-  @media (min-width: 960px) { .plans { grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; } }
-  .plan { position: relative; display: flex; flex-direction: column; padding: 26px 24px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); }
-  .plan.featured { border: 2px solid var(--accent); padding: 25px 23px 23px; }
-  .plan .tag { position: absolute; top: -12px; left: 22px; background: var(--accent); color: var(--on-accent); font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
-  .plan h3 { font-size: 19px; font-weight: 600; }
-  .plan .for { margin-top: 4px; color: var(--ink-3); font-size: 14px; min-height: 2.9em; }
-  .price { margin-top: 18px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-  .price .amt { font-size: 44px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
-  .price .per { color: var(--ink-2); font-size: 15px; }
-  .price .from { color: var(--ink-2); font-size: 15px; }
-  .fcfa { margin-top: 6px; color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
-  .plan ul { margin-top: 20px; display: grid; gap: 9px; font-size: 14.5px; color: var(--ink-2); flex: 1; }
-  .plan li { display: flex; gap: 9px; align-items: baseline; }
-  .plan li svg { width: 14px; height: 14px; color: var(--accent); flex: none; transform: translateY(2px); }
-  .plan li.no { color: var(--ink-3); }
-  .plan li.no svg { color: var(--line-2); }
-  .plan li.note { display: block; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13.5px; }
-  .plan .btn { margin-top: 24px; width: 100%; }
-  .plans-note { margin-top: 20px; font-size: 14px; color: var(--ink-3); max-width: 80ch; }
+  /* Section sombre : Pipeline */
+  .dark { background: var(--ink); color: #e6e8ec; border-bottom: 0; }
+  .dark .rails::before, .dark .rails::after { border-color: var(--dark-line); opacity: 1; }
+  .dark .sec-intro p { color: var(--dark-2); }
+  .dark .grid12 { row-gap: 40px; }
+  .panel-d { border: 1px solid var(--dark-line); border-radius: var(--r-l); padding: 20px 22px; min-width: 0; }
+  .panel-d h3 { font-size: 15px; font-weight: 600; color: #fff; }
+  .panel-d .sub { font-size: 13px; color: var(--dark-2); margin-top: 2px; }
+  .funnel { margin-top: 20px; display: grid; gap: 12px; }
+  .funnel li { display: grid; grid-template-columns: 92px minmax(0, 1fr) 44px 40px; gap: 12px; align-items: center; font-size: 13.5px; }
+  .funnel .track { height: 12px; position: relative; background: #1d2028; border-radius: 2px; }
+  .funnel .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; background: #3a3f4b; }
+  .funnel li.on .fill { background: var(--accent); }
+  .funnel .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: #fff; }
+  .funnel .conv { font-size: 12.5px; color: var(--dark-2); text-align: right; }
+  .todo { margin-top: 14px; }
+  .todo li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--dark-line); font-size: 14px; }
+  .todo li:last-child { border-bottom: 0; }
+  .todo b { color: #fff; font-weight: 600; }
+  .todo span { display: block; color: var(--dark-2); font-size: 13px; }
+  .todo time { font-size: 13px; color: var(--dark-2); }
+  .todo .late { color: #ff9a73; }
+  [data-accent="bleu"] .todo .late { color: #c6f432; }
+  .dark .ctas { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .dark .btn-line { background: transparent; color: #fff; border-color: #3a3f4b; }
+  @media (min-width: 1000px) {
+    .dark .sec-intro.side { grid-column: 1 / span 4; }
+    .p-funnel { grid-column: 6 / span 4; }
+    .p-todo { grid-column: 10 / span 3; }
+  }
+  @media (max-width: 999px) { .p-funnel, .p-todo { grid-column: 1 / -1; } }
 
-  /* Pied de page */
-  .site-foot { border-top: 1px solid var(--line); padding: 48px 0 72px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
-  .foot-grid { display: grid; gap: 32px; }
-  @media (min-width: 860px) { .foot-grid { grid-template-columns: 5fr 2fr 2fr 2fr; } }
-  .foot-grid h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
-  .foot-grid li + li { margin-top: 6px; }
-  .foot-grid a { text-decoration: none; color: var(--ink-2); }
-  .foot-grid a:hover { color: var(--ink); text-decoration: underline; }
-  .foot-about p { margin-top: 12px; max-width: 40ch; }
-  .foot-legal { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 24px; color: var(--ink-3); font-size: 13px; }
+  /* Tableau conformité */
+  .tbl { border-top: 1px solid var(--ink); font-size: 14.5px; }
+  .tbl th, .tbl td { text-align: left; padding: 14px 16px 14px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tbl thead th { font-size: 13px; font-weight: 500; color: var(--ink-3); padding-top: 12px; padding-bottom: 12px; }
+  .tbl tbody th { font-weight: 600; width: 26%; }
+  .tbl tbody th small { display: block; font-weight: 400; color: var(--ink-3); font-size: 13px; }
+  .tbl td { color: var(--ink-2); }
+  .tbl .state { align-items: flex-start; line-height: 20px; }
+  .tbl .state .i { margin-top: 3px; }
+  .rules-foot { margin-top: 20px; font-size: 14px; color: var(--ink-2); max-width: 78ch; }
+  @media (max-width: 760px) {
+    .tbl thead { display: none; }
+    .tbl tr { display: grid; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .tbl th, .tbl td { border: 0; padding: 4px 0; width: auto !important; }
+    .tbl td::before { content: attr(data-h) " : "; color: var(--ink-3); font-size: 13px; }
+  }
 
-  /* États masqués posés uniquement par JS (contenu visible sans JS) */
-  .demo.armed .res-list li { opacity: 0; }
+  /* Tarifs : tableau comparatif (pas de grille de cartes) */
+  .prices { border-top: 1px solid var(--ink); }
+  .prices table { table-layout: fixed; font-size: 14.5px; }
+  .prices th, .prices td { padding: 13px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .prices thead th { padding-top: 24px; padding-bottom: 24px; font-weight: 400; vertical-align: top; }
+  .prices thead th:first-child { width: 31%; padding-left: 0; }
+  .prices tbody th { font-weight: 500; color: var(--ink-2); padding-left: 0; }
+  .prices .plan-name { font-size: 16px; font-weight: 600; display: block; }
+  .prices .plan-for { font-size: 13.5px; color: var(--ink-3); display: block; margin: 2px 0 14px; line-height: 20px; }
+  .prices .amt { font-size: 32px; line-height: 36px; font-weight: 600; font-stretch: 110%; letter-spacing: -.03em; }
+  .prices .per { display: block; font-size: 13px; color: var(--ink-3); margin-bottom: 16px; }
+  .prices .hl { background: var(--accent-soft); }
+  .prices thead .hl { box-shadow: inset 0 3px 0 var(--accent); }
+  .prices td .i { color: var(--ink); margin-top: 3px; }
+  .prices td.no { color: var(--ink-3); }
+  .price-note { margin-top: 18px; font-size: 13.5px; color: var(--ink-3); max-width: 80ch; }
+  .prices-m { display: none; }
+  @media (max-width: 899px) {
+    .prices table { display: none; }
+    .prices-m { display: grid; gap: 0; }
+    .pm { padding: 24px 0; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+    .pm.hl { background: var(--accent-soft); margin: 0 -20px; padding: 24px 20px; box-shadow: inset 0 3px 0 var(--accent); }
+    .pm ul { margin: 8px 0 14px; display: grid; gap: 6px; font-size: 14.5px; color: var(--ink-2); }
+    .pm li { display: flex; gap: 8px; align-items: flex-start; }
+    .pm li .i { margin-top: 4px; color: var(--ink); }
+  }
+
+  /* FAQ */
+  .faq { border-top: 1px solid var(--ink); }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq summary { list-style: none; cursor: pointer; padding: 18px 0; font-weight: 600; display: flex; justify-content: space-between; gap: 16px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary .i { transition: transform .18s var(--ease); margin-top: 5px; }
+  .faq details[open] summary .i { transform: rotate(180deg); }
+  .faq details p { padding: 0 0 20px; color: var(--ink-2); max-width: 68ch; }
+
+  /* Pied */
+  .foot { padding: 56px 0 96px; font-size: 14px; color: var(--ink-2); }
+  .foot .grid12 { row-gap: 32px; }
+  .foot .brand { grid-column: 1 / -1; display: grid; gap: 12px; align-content: start; }
+  .foot .brand p { max-width: 36ch; }
+  .foot nav { grid-column: span 6; }
+  .foot h3 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .foot nav li { margin-bottom: 6px; }
+  .foot nav a { text-decoration: none; }
+  .foot nav a:hover { text-decoration: underline; }
+  .legal { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 20px; font-size: 13px; color: var(--ink-3); display: flex; gap: 24px; flex-wrap: wrap; }
+  @media (min-width: 900px) { .foot .brand { grid-column: 1 / span 5; } .foot nav { grid-column: span 2; } }
+
+  /* Préparation de l'animation (posée seulement si JS actif) */
+  html.js .armed .res li { opacity: 0; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-kanban" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7M12 7v4M16 7v9"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+</svg>
 <a class="skip" href="#contenu">Aller au contenu</a>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 2v4.1c0 3-2.1 5.4-5 6.3-2.9-.9-5-3.3-5-6.3V3.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
-  <symbol id="i-dash" viewBox="0 0 16 16"><path d="M4 8h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="brand" viewBox="0 0 24 24"><rect class="m-bg" width="24" height="24" rx="6"/><circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14 14l4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></symbol>
-</svg>
-
-<header class="site-head">
+<header class="nav">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Scoutra, accueil"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
-    <nav class="site-nav" aria-label="Principale">
-      <a href="#fonctionnement">Fonctionnement</a>
-      <a href="#conformite">Conformité</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="app-recherche.html">Voir l'app</a>
+    <a href="index.html" aria-label="Scoutra, accueil"><svg class="logo" viewBox="0 0 265.19 64" role="img" aria-label="Scoutra"><g class="logo-mark" transform="translate(0 10) scale(.6875)"><path d="M9 52H33A10 10 0 0 0 33 32H21A10 10 0 0 1 21 12H39" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="50" cy="12" r="6" fill="currentColor"/></g><g transform="translate(58 47) scale(0.056391 -0.056391)" fill="currentColor"><path d="M279 -10Q220 -10 173.5 2.5Q127 15 94.5 37.5Q62 60 44.0 92.5Q26 125 25 165H156Q158 136 173.5 117.0Q189 98 217.0 88.5Q245 79 283 79Q337 79 366.5 96.0Q396 113 396 147Q396 172 384.0 186.0Q372 200 344.0 207.0Q316 214 268 220Q189 229 138.5 246.0Q88 263 64.5 294.0Q41 325 41 376Q41 427 70.0 464.0Q99 501 153.0 521.5Q207 542 281 542Q351 542 402.5 522.0Q454 502 483.5 465.0Q513 428 517 376H388Q386 403 372.0 420.0Q358 437 334.0 445.5Q310 454 279 454Q231 454 201.5 437.0Q172 420 172 388Q172 365 185.5 352.0Q199 339 229.0 331.5Q259 324 307 318Q385 310 434.0 293.0Q483 276 506.5 244.0Q530 212 530 157Q530 105 501.0 67.5Q472 30 416.0 10.0Q360 -10 279 -10Z"/><path d="M847 -9Q782 -9 730.0 10.5Q678 30 640.5 66.5Q603 103 583.0 153.5Q563 204 563 267Q563 330 584.0 380.5Q605 431 643.0 467.0Q681 503 734.5 522.5Q788 542 853 542Q928 542 986.0 517.0Q1044 492 1078.0 448.0Q1112 404 1117 345H986Q979 375 960.0 395.0Q941 415 913.0 425.0Q885 435 851 435Q815 435 786.5 423.0Q758 411 738.0 388.5Q718 366 708.0 335.5Q698 305 698 266Q698 212 716.5 174.0Q735 136 769.5 116.5Q804 97 850 97Q887 97 915.5 109.0Q944 121 963.0 142.5Q982 164 988 192H1120Q1114 131 1077.0 85.5Q1040 40 980.5 15.5Q921 -9 847 -9Z"/><path d="M1440 -10Q1375 -10 1322.0 9.0Q1269 28 1230.5 64.0Q1192 100 1171.0 150.5Q1150 201 1150 266Q1150 350 1186.0 411.5Q1222 473 1287.0 507.5Q1352 542 1440 542Q1505 542 1558.0 523.0Q1611 504 1649.0 468.0Q1687 432 1708.0 381.0Q1729 330 1729 266Q1729 183 1693.5 121.0Q1658 59 1593.5 24.5Q1529 -10 1440 -10ZM1440 97Q1488 97 1522.5 117.0Q1557 137 1576.0 175.0Q1595 213 1595 266Q1595 306 1584.0 337.5Q1573 369 1553.0 391.0Q1533 413 1504.5 424.0Q1476 435 1440 435Q1393 435 1358.0 415.5Q1323 396 1304.0 358.0Q1285 320 1285 266Q1285 226 1295.5 194.5Q1306 163 1326.5 141.5Q1347 120 1375.5 108.5Q1404 97 1440 97Z"/><path d="M1990 -9Q1925 -9 1877.5 15.0Q1830 39 1804.5 89.5Q1779 140 1779 221V532H1912V250Q1912 200 1925.0 166.0Q1938 132 1966.0 114.5Q1994 97 2038 97Q2083 97 2116.5 117.0Q2150 137 2168.0 173.0Q2186 209 2186 255V532H2320V0H2192L2186 102H2180Q2156 50 2105.0 20.5Q2054 -9 1990 -9Z"/><path d="M2411.6 0H2545.6V427.48H2666.2V532H2545.6V691.6L2411.6 608.52V532H2371.4V427.48H2411.6Z"/><path d="M2712.24 0V532H2833.24L2838.24 443H2843.24Q2861.24 491 2901.24 515.5Q2941.24 540 2993.24 540Q3005.24 540 3014.74 539.5Q3024.24 539 3032.24 537V414Q3024.24 416 3013.24 416.5Q3002.24 417 2991.24 417Q2946.24 417 2914.24 402.0Q2882.24 387 2864.74 356.5Q2847.24 326 2845.24 281V0Z"/><path d="M3286.24 -9Q3233.24 -9 3188.74 10.0Q3144.24 29 3112.24 64.5Q3080.24 100 3063.24 151.0Q3046.24 202 3046.24 266Q3046.24 352 3076.24 413.5Q3106.24 475 3160.74 508.0Q3215.24 541 3286.24 541Q3334.24 541 3371.74 528.5Q3409.24 516 3436.24 493.0Q3463.24 470 3476.24 439H3483.24L3488.24 532H3614.24V0H3484.24L3482.24 96H3475.24Q3454.24 48 3403.74 19.5Q3353.24 -9 3286.24 -9ZM3329.24 96Q3378.24 96 3411.74 116.5Q3445.24 137 3463.24 170.5Q3481.24 204 3481.24 245V290Q3481.24 331 3463.24 364.0Q3445.24 397 3411.74 416.5Q3378.24 436 3331.24 436Q3285.24 436 3251.74 416.0Q3218.24 396 3199.74 358.0Q3181.24 320 3181.24 266Q3181.24 214 3199.24 175.5Q3217.24 137 3250.24 116.5Q3283.24 96 3329.24 96Z"/></g></svg></a>
+    <nav aria-label="Navigation principale">
+      <ul>
+        <li><a href="#fonctionnement">Fonctionnement</a></li>
+        <li><a href="#pipeline">Suivi des prospects</a></li>
+        <li><a href="#conformite">Conformité</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+      </ul>
     </nav>
-    <div class="head-actions">
-      <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
-        <span class="as-label">Accent</span>
-        <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw sw-orange" aria-hidden="true"></span>Orange</button>
-        <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw sw-bleu" aria-hidden="true"></span>Bleu</button>
-      </div>
-      <a class="login" href="app-recherche.html">Se connecter</a>
-      <a class="btn btn-primary btn-s" href="app-recherche.html">Essayer Scoutra</a>
-    </div>
+    <span class="sp"></span>
+    <a class="login" href="app-recherche.html">Se connecter</a>
+    <a class="btn btn-ink btn-s" href="app-recherche.html">Essayer gratuitement</a>
   </div>
 </header>
 
 <main id="contenu">
-  <section class="hero">
+  <section class="hero rails" aria-labelledby="h-hero">
     <div class="wrap">
-      <h1><span>Décrivez votre cible.</span> <span>Scoutra trouve, vérifie et rédige.</span></h1>
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <p>Écrivez en une phrase qui vous voulez joindre, entreprises ou particuliers, puis choisissez un pays, plusieurs ou le monde entier. Vous recevez une liste de prospects aux coordonnées vérifiées, notés et accompagnés d'un premier message prêt à envoyer.</p>
-          <div class="hero-ctas">
-            <a class="btn btn-primary" href="app-recherche.html">Lancer une recherche</a>
-            <a class="btn btn-ghost" href="#tarifs">Voir les tarifs</a>
+      <div class="grid12">
+        <h1 id="h-hero" class="display">Décrivez votre cible en une phrase. Recevez des prospects vérifiés.</h1>
+        <div class="lede">
+          <p class="copy-18">Six agents cherchent dans les registres, les cartes et les sites publics, vérifient chaque contact, notent chaque prospect de 0 à 100 et rédigent le premier message. Vous relisez, vous envoyez.</p>
+          <div class="ctas">
+            <a class="btn btn-ink" href="app-recherche.html">Lancer une recherche</a>
+            <a class="btn btn-line" href="#tarifs">Voir les tarifs</a>
           </div>
-          <ul class="hero-facts">
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Sources publiques et API officielles uniquement</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Règles de protection des données appliquées pays par pays</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Vous gardez la main : chaque message part de votre compte</li>
-          </ul>
+          <p class="fine">Essai gratuit de 50 crédits, sans carte bancaire.</p>
         </div>
+      </div>
 
-        <div class="demo" id="demo" aria-label="Exemple de recherche (données de démonstration)">
-          <div class="demo-top">
-            <span class="title">Nouvelle recherche</span>
-            <span class="chip"><span class="cc">FR</span>France</span>
-            <span class="chip"><span class="cc">SN</span>Sénégal</span>
-            <span class="chip"><span class="cc">CA</span>Canada</span>
-            <span class="chip">Entreprises</span>
-          </div>
-          <div class="demo-query">
-            <label id="q-label">Votre cible, en langage courant</label>
-            <div class="q-box" aria-labelledby="q-label"><span id="q-text">Restaurants et cafés ouverts depuis moins de 6 mois à Paris, Dakar et Montréal, actifs sur Instagram</span><span class="q-caret" aria-hidden="true"></span></div>
-          </div>
-          <ol class="agents" aria-label="Avancement des agents">
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Interprète</span></li>
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Recherche</span></li>
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Enrichissement</span></li>
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Vérification</span></li>
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Notation</span></li>
-            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Rédaction</span></li>
-          </ol>
-          <div class="res-head" aria-live="polite">
-            <span><strong id="found">6</strong> prospects</span>
-            <span><strong id="verified-count">5</strong> emails vérifiés</span>
-            <span class="muted">Triés par score</span>
-          </div>
-          <ul class="res-list">
-            <li><div class="who"><b>Camille Leroy</b><small>Gérante, Maison Lune Café, Paris, ouvert en août</small></div><span class="cc-cell"><span class="cc">FR</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score top"><span class="score-bar"><i style="--v:93%"></i></span>93</span></li>
-            <li><div class="who"><b>Ibrahima Ndiaye</b><small>Fondateur, Teranga Kitchen, Dakar, ouvert en septembre</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:89%"></i></span>89</span></li>
-            <li><div class="who"><b>Olivia Tremblay</b><small>Copropriétaire, Café Boréal, Montréal, ouvert en juillet</small></div><span class="cc-cell"><span class="cc">CA</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:84%"></i></span>84</span></li>
-            <li><div class="who"><b>Lucas Moreau</b><small>Chef et gérant, Bistrot 1902, Paris, ouvert en octobre</small></div><span class="cc-cell"><span class="cc">FR</span></span><span class="unverified mail">Téléphone seul</span><span class="score"><span class="score-bar"><i style="--v:78%"></i></span>78</span></li>
-            <li><div class="who"><b>Fatou Sarr</b><small>Gérante, Le Baobab Lounge, Dakar, ouvert en juin</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:72%"></i></span>72</span></li>
-            <li><div class="who"><b>Ethan Roy</b><small>Fondateur, Grains et Compagnie, Montréal, ouvert il y a 3 semaines</small></div><span class="cc-cell"><span class="cc">CA</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:67%"></i></span>67</span></li>
-          </ul>
-          <div class="demo-foot">
-            <span>Données de démonstration</span>
-            <button class="replay" type="button" id="replay" hidden>Rejouer la démo</button>
+      <div class="stage" id="demo" aria-label="Démonstration d'une recherche dans Scoutra">
+        <div class="window" aria-hidden="false">
+          <div class="w-bar"><span class="w-url">app.scoutra.ai/recherche</span></div>
+          <div class="w-body">
+            <aside class="w-side" aria-label="Menu de l'application (aperçu)">
+              <svg class="logo" viewBox="0 0 265.19 64" role="img" aria-label="Scoutra"><g class="logo-mark" transform="translate(0 10) scale(.6875)"><path d="M9 52H33A10 10 0 0 0 33 32H21A10 10 0 0 1 21 12H39" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="50" cy="12" r="6" fill="currentColor"/></g><g transform="translate(58 47) scale(0.056391 -0.056391)" fill="currentColor"><path d="M279 -10Q220 -10 173.5 2.5Q127 15 94.5 37.5Q62 60 44.0 92.5Q26 125 25 165H156Q158 136 173.5 117.0Q189 98 217.0 88.5Q245 79 283 79Q337 79 366.5 96.0Q396 113 396 147Q396 172 384.0 186.0Q372 200 344.0 207.0Q316 214 268 220Q189 229 138.5 246.0Q88 263 64.5 294.0Q41 325 41 376Q41 427 70.0 464.0Q99 501 153.0 521.5Q207 542 281 542Q351 542 402.5 522.0Q454 502 483.5 465.0Q513 428 517 376H388Q386 403 372.0 420.0Q358 437 334.0 445.5Q310 454 279 454Q231 454 201.5 437.0Q172 420 172 388Q172 365 185.5 352.0Q199 339 229.0 331.5Q259 324 307 318Q385 310 434.0 293.0Q483 276 506.5 244.0Q530 212 530 157Q530 105 501.0 67.5Q472 30 416.0 10.0Q360 -10 279 -10Z"/><path d="M847 -9Q782 -9 730.0 10.5Q678 30 640.5 66.5Q603 103 583.0 153.5Q563 204 563 267Q563 330 584.0 380.5Q605 431 643.0 467.0Q681 503 734.5 522.5Q788 542 853 542Q928 542 986.0 517.0Q1044 492 1078.0 448.0Q1112 404 1117 345H986Q979 375 960.0 395.0Q941 415 913.0 425.0Q885 435 851 435Q815 435 786.5 423.0Q758 411 738.0 388.5Q718 366 708.0 335.5Q698 305 698 266Q698 212 716.5 174.0Q735 136 769.5 116.5Q804 97 850 97Q887 97 915.5 109.0Q944 121 963.0 142.5Q982 164 988 192H1120Q1114 131 1077.0 85.5Q1040 40 980.5 15.5Q921 -9 847 -9Z"/><path d="M1440 -10Q1375 -10 1322.0 9.0Q1269 28 1230.5 64.0Q1192 100 1171.0 150.5Q1150 201 1150 266Q1150 350 1186.0 411.5Q1222 473 1287.0 507.5Q1352 542 1440 542Q1505 542 1558.0 523.0Q1611 504 1649.0 468.0Q1687 432 1708.0 381.0Q1729 330 1729 266Q1729 183 1693.5 121.0Q1658 59 1593.5 24.5Q1529 -10 1440 -10ZM1440 97Q1488 97 1522.5 117.0Q1557 137 1576.0 175.0Q1595 213 1595 266Q1595 306 1584.0 337.5Q1573 369 1553.0 391.0Q1533 413 1504.5 424.0Q1476 435 1440 435Q1393 435 1358.0 415.5Q1323 396 1304.0 358.0Q1285 320 1285 266Q1285 226 1295.5 194.5Q1306 163 1326.5 141.5Q1347 120 1375.5 108.5Q1404 97 1440 97Z"/><path d="M1990 -9Q1925 -9 1877.5 15.0Q1830 39 1804.5 89.5Q1779 140 1779 221V532H1912V250Q1912 200 1925.0 166.0Q1938 132 1966.0 114.5Q1994 97 2038 97Q2083 97 2116.5 117.0Q2150 137 2168.0 173.0Q2186 209 2186 255V532H2320V0H2192L2186 102H2180Q2156 50 2105.0 20.5Q2054 -9 1990 -9Z"/><path d="M2411.6 0H2545.6V427.48H2666.2V532H2545.6V691.6L2411.6 608.52V532H2371.4V427.48H2411.6Z"/><path d="M2712.24 0V532H2833.24L2838.24 443H2843.24Q2861.24 491 2901.24 515.5Q2941.24 540 2993.24 540Q3005.24 540 3014.74 539.5Q3024.24 539 3032.24 537V414Q3024.24 416 3013.24 416.5Q3002.24 417 2991.24 417Q2946.24 417 2914.24 402.0Q2882.24 387 2864.74 356.5Q2847.24 326 2845.24 281V0Z"/><path d="M3286.24 -9Q3233.24 -9 3188.74 10.0Q3144.24 29 3112.24 64.5Q3080.24 100 3063.24 151.0Q3046.24 202 3046.24 266Q3046.24 352 3076.24 413.5Q3106.24 475 3160.74 508.0Q3215.24 541 3286.24 541Q3334.24 541 3371.74 528.5Q3409.24 516 3436.24 493.0Q3463.24 470 3476.24 439H3483.24L3488.24 532H3614.24V0H3484.24L3482.24 96H3475.24Q3454.24 48 3403.74 19.5Q3353.24 -9 3286.24 -9ZM3329.24 96Q3378.24 96 3411.74 116.5Q3445.24 137 3463.24 170.5Q3481.24 204 3481.24 245V290Q3481.24 331 3463.24 364.0Q3445.24 397 3411.74 416.5Q3378.24 436 3331.24 436Q3285.24 436 3251.74 416.0Q3218.24 396 3199.74 358.0Q3181.24 320 3181.24 266Q3181.24 214 3199.24 175.5Q3217.24 137 3250.24 116.5Q3283.24 96 3329.24 96Z"/></g></svg>
+              <a aria-current="page" href="app-recherche.html"><svg class="i"><use href="#i-search"/></svg>Recherche</a>
+              <a href="app-pipeline.html"><svg class="i"><use href="#i-kanban"/></svg>Pipeline</a>
+              <a href="app-recherche.html"><svg class="i"><use href="#i-users"/></svg>Prospects</a>
+              <a href="app-recherche.html"><svg class="i"><use href="#i-download"/></svg>Exports</a>
+            </aside>
+            <div class="w-main">
+              <div>
+                <div class="q" id="q"><span id="q-text">Cabinets dentaires privés ouverts depuis moins d'un an à Lyon, Casablanca, Montréal et Dakar, sans prise de rendez-vous en ligne</span><span class="q-caret" id="q-caret" hidden></span></div>
+              </div>
+              <div class="q-meta"><span class="cc">FR</span><span class="cc">MA</span><span class="cc">CA</span><span class="cc">SN</span><span>Entreprises</span><span class="sp"></span><span>Lancée à 10:42</span></div>
+              <ol class="agents" aria-label="Agents">
+                <li class="agent" data-state="done"><b><i class="dot"></i>Interprète</b><span>cible prête</span></li>
+                <li class="agent" data-state="done"><b><i class="dot"></i>Recherche</b><span><span data-count="286">286</span> trouvées</span></li>
+                <li class="agent" data-state="done"><b><i class="dot"></i>Enrichit</b><span><span data-count="171">171</span> sites</span></li>
+                <li class="agent" data-state="done"><b><i class="dot"></i>Vérifie</b><span><span data-count="132">132</span> contacts</span></li>
+                <li class="agent" data-state="done"><b><i class="dot"></i>Note</b><span>scores</span></li>
+                <li class="agent" data-state="done"><b><i class="dot"></i>Rédige</b><span><span data-count="8">8</span> prêts</span></li>
+              </ol>
+              <div class="res-head"><b class="h16"><span class="tnum" id="found">8</span> prospects retenus</b><span class="faint label-13">sur 286 analysés</span><span class="sp"></span><span class="faint label-13">Triés par score</span></div>
+              <ol class="res" aria-live="polite">
+                <li aria-current="true"><div class="who"><b>Dr Claire Fontaine</b><span>Cabinet Dentaire Confluence, Lyon</span></div><span class="cc c-cc">FR</span><span class="state ok c-mail"><svg class="i"><use href="#i-check"/></svg>Email vérifié</span><span class="score">94<span class="gauge"><i style="width:94%"></i></span></span></li>
+                <li><div class="who"><b>Dr Youssef Alami</b><span>Centre Dentaire Anfa, Casablanca</span></div><span class="cc c-cc">MA</span><span class="state ok c-mail"><svg class="i"><use href="#i-check"/></svg>Email vérifié</span><span class="score">89<span class="gauge"><i style="width:89%"></i></span></span></li>
+                <li><div class="who"><b>Dr Émilie Gagnon</b><span>Clinique Dentaire Rosemont, Montréal</span></div><span class="cc c-cc">CA</span><span class="state ok c-mail"><svg class="i"><use href="#i-check"/></svg>Email vérifié</span><span class="score">86<span class="gauge"><i style="width:86%"></i></span></span></li>
+                <li><div class="who"><b>Dr Moussa Ndiaye</b><span>Clinique Dentaire Almadies, Dakar</span></div><span class="cc c-cc">SN</span><span class="state ok c-mail"><svg class="i"><use href="#i-check"/></svg>Email vérifié</span><span class="score">82<span class="gauge"><i style="width:82%"></i></span></span></li>
+                <li><div class="who"><b>Dr Sarah Peeters</b><span>Cabinet Sourire Ixelles, Bruxelles</span></div><span class="cc c-cc">BE</span><span class="state none c-mail"><svg class="i"><use href="#i-phone"/></svg>Téléphone seul</span><span class="score">77<span class="gauge"><i style="width:77%"></i></span></span></li>
+                <li><div class="who"><b>Dr Thomas Girard</b><span>Centre Dentaire Part-Dieu, Lyon</span></div><span class="cc c-cc">FR</span><span class="state ok c-mail"><svg class="i"><use href="#i-check"/></svg>Email vérifié</span><span class="score">74<span class="gauge"><i style="width:74%"></i></span></span></li>
+                <li><div class="who"><b>Dr Nadia Benali</b><span>Cabinet Dentaire Maârif, Casablanca</span></div><span class="cc c-cc">MA</span><span class="state warn c-mail"><svg class="i"><use href="#i-alert"/></svg>À confirmer</span><span class="score">68<span class="gauge"><i style="width:68%"></i></span></span></li>
+              </ol>
+            </div>
+            <aside class="w-card" aria-label="Fiche du prospect sélectionné (aperçu)">
+              <div><h3>Dr Claire Fontaine</h3><p class="sub">Fondatrice, Cabinet Dentaire Confluence, Lyon</p></div>
+              <div>
+                <p class="label-13" style="margin-bottom:8px">Pourquoi 94</p>
+                <ul class="why">
+                  <li><b>+30</b>Secteur exact : cabinet dentaire privé</li>
+                  <li><b>+22</b>Fondatrice identifiée sur le site</li>
+                  <li><b>+18</b>Ouvert il y a 4 mois</li>
+                  <li><b>+14</b>6 praticiens, dans la cible</li>
+                  <li><b>+10</b>Rendez-vous par téléphone seulement</li>
+                </ul>
+              </div>
+              <div class="msg"><b>Objet : Rendez-vous en ligne pour Confluence</b><br>Bonjour Docteure Fontaine, félicitations pour l'ouverture du cabinet en juillet. J'ai vu que vos patients doivent encore appeler pour réserver…</div>
+            </aside>
           </div>
         </div>
+        <p class="stage-note">Données de démonstration</p>
+        <button class="replay" id="replay" type="button" hidden><svg class="i"><use href="#i-replay"/></svg>Rejouer</button>
       </div>
     </div>
   </section>
 
-  <section class="block audience" aria-labelledby="h-qui">
+  <section class="facts" aria-label="Sources">
     <div class="wrap">
-      <h2 id="h-qui">Une seule phrase suffit, quelle que soit votre cible.</h2>
-      <div class="aud-grid">
-        <div class="aud"><h3>Entreprises de toutes tailles</h3><p>Des grands groupes aux indépendants, y compris les entreprises créées hier dès qu'elles ont un site, une fiche ou une page en ligne.</p><p class="aud-ex">« Agences de voyage à Lisbonne ouvertes en 2026 »</p></div>
-        <div class="aud"><h3>Particuliers</h3><p>Coachs, créateurs, freelances, commerçants : des personnes qui se rendent joignables pour leur activité, ou qui ont donné leur accord.</p><p class="aud-ex">« Coachs sportifs à Miami qui vendent des programmes en ligne »</p></div>
-        <div class="aud"><h3>Un pays, plusieurs ou le monde</h3><p>Choisissez votre zone. Les sources, la langue des messages et les règles de chaque pays suivent automatiquement.</p><p class="aud-ex">« Distributeurs de matériel médical en Allemagne, au Nigeria et au Brésil »</p></div>
+      <p><b>Sources interrogées</b> : registres d'entreprises (SIRENE, Companies House, OpenCorporates), Google Places API, OpenStreetMap, sites web des entreprises et pages professionnelles publiques. Aucune aspiration de profils sur les réseaux sociaux.</p>
+    </div>
+  </section>
+
+  <section class="sec rails" id="fonctionnement" aria-labelledby="h-fonct">
+    <div class="wrap grid12">
+      <div class="sec-intro side">
+        <h2 id="h-fonct" class="h40">Ce qui se passe pendant les 3 minutes d'une recherche.</h2>
+        <p>Six agents se passent le relais. Chacun laisse une trace : vous voyez ce qu'il a trouvé, où, et pourquoi un prospect a été gardé ou écarté.</p>
+        <p class="faint label-13">Journal réel d'une recherche de démonstration.</p>
+      </div>
+      <div class="sec-body side">
+        <ol class="log">
+          <li><time datetime="10:42:03">10:42:03</time><div><h3>Interprète</h3><p>Transforme votre phrase en fiche cible : secteur, villes, ancienneté, signal à chercher.</p><p class="out">Secteur : cabinet dentaire privé. Villes : Lyon, Casablanca, Montréal, Dakar. Ouverture : après novembre 2025. Signal : pas de prise de rendez-vous en ligne.</p></div></li>
+          <li><time datetime="10:42:11">10:42:11</time><div><h3>Recherche</h3><p>Interroge uniquement les sources autorisées dans chacun des quatre pays.</p><p class="out">286 établissements trouvés dans 5 sources, dont 41 créés depuis moins d'un an.</p></div></li>
+          <li><time datetime="10:43:02">10:43:02</time><div><h3>Enrichissement</h3><p>Lit le site de chaque cabinet pour trouver le décideur, la taille et les canaux de contact affichés.</p><p class="out">171 sites lus. Cabinet Confluence : fondatrice identifiée, 6 praticiens, réservation par téléphone.</p></div></li>
+          <li><time datetime="10:44:20">10:44:20</time><div><h3>Vérification</h3><p>Teste chaque adresse email auprès du serveur de messagerie, valide les numéros et retire les doublons.</p><p class="out">132 contacts testés : 118 valides, 9 à confirmer, 5 rejetés. 14 doublons retirés.</p></div></li>
+          <li><time datetime="10:44:51">10:44:51</time><div><h3>Notation</h3><p>Attribue un score de 0 à 100 avec ses raisons. Les prospects sous 60 sont écartés, mais restent consultables.</p><p class="out">8 prospects au-dessus de 60. Meilleur score : 94.</p></div></li>
+          <li><time datetime="10:45:09">10:45:09</time><div><h3>Rédaction</h3><p>Écrit un premier message par prospect, dans sa langue et pour le canal autorisé dans son pays.</p><p class="out">8 messages prêts : 6 emails, 2 messages WhatsApp professionnels.</p></div></li>
+        </ol>
       </div>
     </div>
   </section>
 
-  <section class="block" id="fonctionnement" aria-labelledby="h-fonct">
-    <div class="wrap">
-      <h2 id="h-fonct">Six agents se passent le relais sur chaque recherche.</h2>
-      <p class="lead">Chacun fait une seule chose et la fait jusqu'au bout. Vous voyez le résultat de chaque étape, et pourquoi un prospect a été retenu.</p>
-      <ol class="steps">
-        <li class="step"><span class="n">1</span><div><h3>Interprète</h3><p>Transforme votre phrase en fiche cible précise : secteur, villes, taille, signaux à chercher.</p><div class="out"><b>Secteur</b> restauration, <b>villes</b> Paris, Dakar, Montréal, <b>ouverture</b> moins de 6 mois, <b>signal</b> compte Instagram actif</div></div></li>
-        <li class="step"><span class="n">2</span><div><h3>Recherche</h3><p>Interroge les sources autorisées dans les pays choisis : registres, annuaires, cartes, sites web, pages professionnelles.</p><div class="out"><b>312</b> établissements trouvés dans 5 sources</div></div></li>
-        <li class="step"><span class="n">3</span><div><h3>Enrichissement</h3><p>Lit le site de chaque entreprise pour trouver le décideur, l'offre, la taille et les canaux de contact affichés.</p><div class="out"><b>Maison Lune Café</b> : ouvert en août, gérante identifiée, réservation par téléphone</div></div></li>
-        <li class="step"><span class="n">4</span><div><h3>Vérification</h3><p>Contrôle que chaque email existe, que le numéro est valide et retire les doublons.</p><div class="out"><b>204</b> emails confirmés, 27 doublons retirés</div></div></li>
-        <li class="step"><span class="n">5</span><div><h3>Notation</h3><p>Donne un score de 0 à 100 avec ses raisons, pour que vous commenciez par les meilleurs.</p><div class="out"><b>93</b> : ouvert il y a 3 mois, gérante trouvée, 2 400 abonnés, pas de réservation en ligne</div></div></li>
-        <li class="step"><span class="n">6</span><div><h3>Rédaction</h3><p>Écrit un premier message adapté au pays, à la langue et au canal. Vous le relisez et l'envoyez vous-même.</p><div class="out">« Bonjour Camille, félicitations pour l'ouverture de Maison Lune en août… »</div></div></li>
-      </ol>
-      <div class="steps-note">
-        <p><b>Formule Pipeline :</b> un septième agent suit chaque prospect après le premier message et vous rappelle les relances du jour, jusqu'à la vente validée.</p>
-        <p><b>Garde-fou :</b> à chaque étape, les règles du pays visé limitent les sources, les canaux et les mentions obligatoires.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="conformite" aria-labelledby="h-conf">
-    <div class="wrap">
-      <h2 id="h-conf">Les règles du pays s'appliquent avant chaque message.</h2>
-      <p class="lead">Scoutra connaît les lois sur les données personnelles des pays que vous ciblez et adapte ce qu'il vous propose. Vous prospectez sans risquer votre réputation.</p>
-      <div class="law-grid">
-        <div class="law-points">
-          <div><h3>Seulement des sources autorisées</h3><p>Registres publics, sites d'entreprises, cartes et API officielles. Aucune aspiration de profils sur les réseaux sociaux.</p></div>
-          <div><h3>Vous envoyez, pas un robot</h3><p>Scoutra rédige, vous relisez et vous envoyez en un clic depuis votre propre compte. Pas de messages automatiques.</p></div>
-          <div><h3>Tout est traçable</h3><p>Pour chaque prospect : la source, la date de collecte et la base légale. Effacement en un clic si une personne le demande.</p></div>
+  <section class="sec score-sec rails" aria-labelledby="h-score">
+    <div class="wrap grid12">
+      <article class="fiche" aria-label="Exemple de fiche prospect">
+        <div class="fiche-h">
+          <div><h3 class="h20">Dr Claire Fontaine</h3><p class="faint label-13">Fondatrice, Cabinet Dentaire Confluence, Lyon <span class="cc">FR</span></p></div>
+          <p class="big">94<small>/100</small></p>
         </div>
-        <div class="law-table">
-          <table>
-            <caption class="sr-only">Règles appliquées par pays (résumé indicatif)</caption>
-            <thead><tr><th scope="col">Pays</th><th scope="col">Entreprises</th><th scope="col">Particuliers</th></tr></thead>
-            <tbody>
-              <tr><td><b>Union européenne</b><small>RGPD et ePrivacy</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable pour email et SMS</span></td></tr>
-              <tr><td><b>Royaume-Uni</b><small>UK GDPR et PECR</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
-              <tr><td><b>États-Unis</b><small>CAN-SPAM et TCPA</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Email autorisé avec désinscription</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Pas d'appels ni SMS sans accord écrit</span></td></tr>
-              <tr><td><b>Canada</b><small>LCAP</small></td><td data-h="Entreprises"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement, sauf adresse pro publiée</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement exprès</span></td></tr>
-              <tr><td><b>Brésil</b><small>LGPD</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, information claire</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement ou contact pro public</span></td></tr>
-              <tr><td><b>Afrique de l'Ouest</b><small>Sénégal CDP, Côte d'Ivoire ARTCI, cadre CEDEAO</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
-              <tr><td><b>Maroc</b><small>Loi 09-08, CNDP</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
-            </tbody>
-          </table>
-          <p class="law-caption">Résumé indicatif pour la maquette, à faire valider par un juriste. Scoutra ne remplace pas un conseil juridique.</p>
+        <div class="fiche-b">
+          <figure>
+            <figcaption class="chart-title">Le secteur et la décideuse pèsent la moitié du score</figcaption>
+            <ul class="bars" id="bars">
+              <li tabindex="0" title="+30 points"><span>Secteur exact : cabinet dentaire privé</span><span class="track"><i class="fill" style="width:100%"></i></span><span class="v">+30</span></li>
+              <li tabindex="0" title="+22 points"><span>Fondatrice identifiée sur le site</span><span class="track"><i class="fill" style="width:73.3%"></i></span><span class="v">+22</span></li>
+              <li tabindex="0" title="+18 points"><span>Cabinet ouvert il y a 4 mois</span><span class="track"><i class="fill" style="width:60%"></i></span><span class="v">+18</span></li>
+              <li tabindex="0" title="+14 points"><span>Taille dans la cible : 6 praticiens</span><span class="track"><i class="fill" style="width:46.7%"></i></span><span class="v">+14</span></li>
+              <li tabindex="0" title="+10 points"><span>Rendez-vous par téléphone seulement</span><span class="track"><i class="fill" style="width:33.3%"></i></span><span class="v">+10</span></li>
+            </ul>
+            <table class="sr-only"><caption>Détail du score de 94</caption><thead><tr><th scope="col">Critère</th><th scope="col">Points</th></tr></thead><tbody><tr><td>Secteur exact</td><td>30</td></tr><tr><td>Fondatrice identifiée</td><td>22</td></tr><tr><td>Ouvert il y a 4 mois</td><td>18</td></tr><tr><td>Taille dans la cible</td><td>14</td></tr><tr><td>Rendez-vous par téléphone seulement</td><td>10</td></tr></tbody></table>
+          </figure>
+          <div>
+            <p class="chart-title" style="margin-bottom:8px">Premier message, email</p>
+            <div class="msg"><b>Objet : Rendez-vous en ligne pour Confluence</b><br><br>Bonjour Docteure Fontaine,<br><br>Félicitations pour l'ouverture du Cabinet Confluence en juillet. J'ai vu que vos patients doivent encore appeler pour réserver. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.<br><br>Auriez-vous 15 minutes jeudi ou vendredi pour en parler ?</div>
+          </div>
         </div>
+        <div class="fiche-f">
+          <span class="state ok"><svg class="i"><use href="#i-check"/></svg>c.fontaine@confluence-dentaire.example confirmé</span>
+          <span class="faint">Source : registre des entreprises, collecté le 22/11/2026</span>
+        </div>
+      </article>
+
+      <div class="targets">
+        <h2 id="h-score" class="h40">Un score que vous pouvez vérifier.</h2>
+        <p>Chaque point a une raison visible et une source. Vous commencez par les meilleurs prospects, et vous savez quoi leur dire.</p>
+        <ul class="t-list">
+          <li><h3>Entreprises</h3><p>De la multinationale à la société créée hier, dès qu'elle existe en ligne.</p><q>Agences de voyage à Lisbonne ouvertes en 2026</q></li>
+          <li><h3>Particuliers</h3><p>Seulement les personnes joignables pour leur activité, par les canaux autorisés dans leur pays.</p><q>Coachs sportifs à Miami qui vendent des programmes en ligne</q></li>
+          <li><h3>Les deux</h3><p>Une même recherche peut mêler entreprises et indépendants, chacun avec ses règles.</p><q>Photographes de mariage et salles de réception à Abidjan</q></li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section class="block" id="tarifs" aria-labelledby="h-tarifs">
-    <div class="wrap">
-      <h2 id="h-tarifs">Des tarifs simples, pensés pour démarrer vite.</h2>
-      <p class="lead">Sans engagement. Commencez par la recherche, passez au suivi quand vos listes grandissent.</p>
-      <div class="plans">
-        <article class="plan" aria-labelledby="p1">
-          <h3 id="p1">Recherche</h3>
-          <p class="for">Pour trouver vos prospects et leur écrire.</p>
-          <p class="price"><span class="amt num">19,99&nbsp;$</span><span class="per">par mois</span></p>
-          <p class="fcfa">par utilisateur, sans engagement</p>
-          <ul>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Entreprises et particuliers, 1 pays, plusieurs ou le monde</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Emails et numéros vérifiés</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Score expliqué et premier message rédigé</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Export CSV et Excel</li>
-            <li class="no"><svg aria-hidden="true"><use href="#i-dash"/></svg>Suivi des prospects et relances</li>
-          </ul>
-          <a class="btn btn-ghost" href="app-recherche.html">Choisir Recherche</a>
-        </article>
-        <article class="plan featured" aria-labelledby="p2">
-          <span class="tag">Pour les closers</span>
-          <h3 id="p2">Pipeline</h3>
-          <p class="for">Pour accompagner chaque prospect jusqu'à la vente validée.</p>
-          <p class="price"><span class="amt num">49,99&nbsp;$</span><span class="per">par mois</span></p>
-          <p class="fcfa">par utilisateur, sans engagement</p>
-          <ul>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tout ce que contient Recherche, avec plus de crédits</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Pipeline : nouveau, contacté, répondu, rendez-vous, validé</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Relances programmées et rappels du jour</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Notes et historique pour chaque prospect</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tableaux de bord : conversion, pays, canaux</li>
-          </ul>
-          <a class="btn btn-primary" href="app-pipeline.html">Choisir Pipeline</a>
-        </article>
-        <article class="plan" aria-labelledby="p3">
-          <h3 id="p3">Licence pays</h3>
-          <p class="for">Pour une entreprise qui installe Scoutra sur ses propres serveurs.</p>
-          <p class="price"><span class="amt num">1&nbsp;990&nbsp;$</span><span class="per">par an et par pays</span></p>
-          <p class="fcfa">jusqu'à 10 utilisateurs</p>
-          <ul>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Toutes les fonctions de Pipeline</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Hébergé chez vous, données chez vous</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Recherches illimitées</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Clé de licence vérifiée hors ligne</li>
-            <li class="note">Clés IA et frais d'API à votre charge</li>
-          </ul>
-          <a class="btn btn-ghost" href="#contact">Demander un devis</a>
-        </article>
+  <section class="sec dark rails" id="pipeline" aria-labelledby="h-pipe">
+    <div class="wrap grid12">
+      <div class="sec-intro side">
+        <h2 id="h-pipe" class="h40" style="color:#fff">Formule Pipeline : chaque prospect suivi jusqu'à la vente.</h2>
+        <p>Nouveau, contacté, répondu, rendez-vous, validé. Scoutra programme les relances, prépare chaque message et vous montre ce qui convertit.</p>
+        <div class="ctas"><a class="btn btn-accent" href="app-pipeline.html">Voir le pipeline</a></div>
       </div>
-      <p class="plans-note">Prix indicatifs en dollars américains, hors taxes. Paiement par carte ; règlement en euros ou en francs CFA possible au taux du jour.</p>
+      <section class="panel-d p-funnel" aria-labelledby="h-funnel">
+        <h3 id="h-funnel">18 ventes sur 754 prospects en 90 jours</h3>
+        <p class="sub">Taux de passage d'une étape à la suivante, équipe Rendezvo</p>
+        <ol class="funnel">
+          <li><span>Contacté</span><span class="track"><i class="fill" style="width:41%"></i></span><span class="conv">41 %</span><span class="v">310</span></li>
+          <li><span>Répondu</span><span class="track"><i class="fill" style="width:20%"></i></span><span class="conv">20 %</span><span class="v">61</span></li>
+          <li><span>Rendez-vous</span><span class="track"><i class="fill" style="width:48%"></i></span><span class="conv">48 %</span><span class="v">29</span></li>
+          <li class="on"><span>Validé</span><span class="track"><i class="fill" style="width:62%"></i></span><span class="conv">62 %</span><span class="v">18</span></li>
+        </ol>
+        <p class="sub" style="margin-top:16px">Le point faible est la réponse : 1 contact sur 5. Les relances WhatsApp répondent 3 fois plus que l'email.</p>
+        <table class="sr-only"><caption>Taux de passage sur 90 jours, à partir de 754 nouveaux prospects</caption><thead><tr><th scope="col">Étape</th><th scope="col">Taux de passage</th><th scope="col">Prospects</th></tr></thead><tbody><tr><th scope="row">Contacté</th><td>41 %</td><td>310</td></tr><tr><th scope="row">Répondu</th><td>20 %</td><td>61</td></tr><tr><th scope="row">Rendez-vous</th><td>48 %</td><td>29</td></tr><tr><th scope="row">Validé</th><td>62 %</td><td>18</td></tr></tbody></table>
+      </section>
+      <section class="panel-d p-todo" aria-labelledby="h-todo">
+        <h3 id="h-todo">Relances du jour</h3>
+        <p class="sub">5 à faire, messages prêts</p>
+        <ul class="todo">
+          <li><div><b>Youssef Alami</b><span>Relance 2, WhatsApp</span></div><time class="late">Hier</time></li>
+          <li><div><b>Émilie Gagnon</b><span>Confirmer le rendez-vous</span></div><time>09:30</time></li>
+          <li><div><b>Moussa Ndiaye</b><span>Envoyer le devis</span></div><time>11:00</time></li>
+          <li><div><b>Sarah Peeters</b><span>Relance 1, téléphone</span></div><time>14:00</time></li>
+        </ul>
+      </section>
+    </div>
+  </section>
+
+  <section class="sec rails" id="conformite" aria-labelledby="h-conf">
+    <div class="wrap grid12">
+      <div class="sec-intro">
+        <h2 id="h-conf" class="h40">Les règles du pays passent avant chaque message.</h2>
+        <p>Scoutra n'utilise que des sources autorisées, ne propose que les canaux permis et garde pour chaque prospect la source, la date et la base légale.</p>
+      </div>
+      <div class="sec-body">
+        <table class="tbl">
+          <thead><tr><th scope="col">Pays ou zone</th><th scope="col">Entreprises</th><th scope="col">Particuliers</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Union européenne<small>RGPD et ePrivacy</small></th><td data-h="Entreprises"><span class="state ok"><svg class="i"><use href="#i-check"/></svg>Intérêt légitime, désinscription en un clic</span></td><td data-h="Particuliers"><span class="state warn"><svg class="i"><use href="#i-shield"/></svg>Consentement préalable pour email et SMS</span></td></tr>
+            <tr><th scope="row">Royaume-Uni<small>UK GDPR et PECR</small></th><td data-h="Entreprises"><span class="state ok"><svg class="i"><use href="#i-check"/></svg>Intérêt légitime, désinscription en un clic</span></td><td data-h="Particuliers"><span class="state warn"><svg class="i"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
+            <tr><th scope="row">États-Unis<small>CAN-SPAM et TCPA</small></th><td data-h="Entreprises"><span class="state ok"><svg class="i"><use href="#i-check"/></svg>Email autorisé avec désinscription</span></td><td data-h="Particuliers"><span class="state warn"><svg class="i"><use href="#i-shield"/></svg>Pas d'appel ni de SMS sans accord écrit</span></td></tr>
+            <tr><th scope="row">Canada<small>LCAP</small></th><td data-h="Entreprises"><span class="state ok"><svg class="i"><use href="#i-check"/></svg>Adresse professionnelle publiée, sans mention contraire</span></td><td data-h="Particuliers"><span class="state warn"><svg class="i"><use href="#i-shield"/></svg>Consentement exprès</span></td></tr>
+            <tr><th scope="row">Maroc, Sénégal, Côte d'Ivoire<small>Lois 09-08, 2008-12, 2013-450</small></th><td data-h="Entreprises"><span class="state ok"><svg class="i"><use href="#i-check"/></svg>Coordonnées professionnelles publiques</span></td><td data-h="Particuliers"><span class="state warn"><svg class="i"><use href="#i-shield"/></svg>Déclaration auprès de l'autorité nationale</span></td></tr>
+          </tbody>
+        </table>
+        <p class="rules-foot">Vous envoyez chaque message vous-même, depuis votre compte. Scoutra n'envoie aucun message automatique et efface un prospect en un clic s'il le demande. Résumé indicatif, ne remplace pas un conseil juridique.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec rails" id="tarifs" aria-labelledby="h-tarifs">
+    <div class="wrap grid12">
+      <div class="sec-intro">
+        <h2 id="h-tarifs" class="h40">Trois formules, sans engagement.</h2>
+        <p>Commencez par la recherche. Passez au Pipeline quand vous voulez suivre chaque prospect jusqu'à la vente.</p>
+      </div>
+      <div class="sec-body prices">
+        <table>
+          <caption class="sr-only">Comparaison des formules</caption>
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Fonction</span></th>
+              <th scope="col"><span class="plan-name">Recherche</span><span class="plan-for">Pour trouver et contacter vos prospects</span><span class="amt">19,99 $</span><span class="per">par mois</span><a class="btn btn-line btn-s" href="app-recherche.html">Choisir Recherche</a></th>
+              <th scope="col" class="hl"><span class="plan-name">Pipeline</span><span class="plan-for">Pour suivre chaque prospect jusqu'à la vente</span><span class="amt">49,99 $</span><span class="per">par mois</span><a class="btn btn-ink btn-s" href="app-pipeline.html">Choisir Pipeline</a></th>
+              <th scope="col"><span class="plan-name">Licence pays</span><span class="plan-for">Installé chez vous, avec vos clés</span><span class="amt">1 990 $</span><span class="per">par an et par pays, 10 utilisateurs</span><a class="btn btn-line btn-s" href="#faq">Parler à l'équipe</a></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Recherche en langage naturel</th><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Entreprises, particuliers ou les deux</th><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Un pays, plusieurs ou le monde</th><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td>Pays de la licence</td></tr>
+            <tr><th scope="row">Vérification, score expliqué, message rédigé</th><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Export CSV et Excel</th><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Pipeline, relances, rappels, notes</th><td class="no">Non inclus</td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Tableaux de bord</th><td class="no">Non inclus</td><td class="hl"><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td><td><svg class="i" aria-label="Inclus"><use href="#i-check"/></svg></td></tr>
+            <tr><th scope="row">Crédits de recherche</th><td>500 par mois</td><td class="hl">2 000 par mois</td><td>Illimités, payés par vos clés API</td></tr>
+            <tr><th scope="row">Hébergement</th><td>Par Scoutra</td><td class="hl">Par Scoutra</td><td>Vos serveurs</td></tr>
+          </tbody>
+        </table>
+        <div class="prices-m">
+          <div class="pm"><span class="plan-name">Recherche</span><span class="amt">19,99 $</span><span class="per">par mois, 500 crédits</span><ul><li><svg class="i"><use href="#i-check"/></svg>Recherche, vérification, score, message</li><li><svg class="i"><use href="#i-check"/></svg>Export CSV et Excel</li></ul><a class="btn btn-line" href="app-recherche.html">Choisir Recherche</a></div>
+          <div class="pm hl"><span class="plan-name">Pipeline</span><span class="amt">49,99 $</span><span class="per">par mois, 2 000 crédits</span><ul><li><svg class="i"><use href="#i-check"/></svg>Tout Recherche</li><li><svg class="i"><use href="#i-check"/></svg>Pipeline, relances, rappels, notes</li><li><svg class="i"><use href="#i-check"/></svg>Tableaux de bord</li></ul><a class="btn btn-ink" href="app-pipeline.html">Choisir Pipeline</a></div>
+          <div class="pm"><span class="plan-name">Licence pays</span><span class="amt">1 990 $</span><span class="per">par an et par pays, 10 utilisateurs</span><ul><li><svg class="i"><use href="#i-check"/></svg>Tout Pipeline, installé chez vous</li><li><svg class="i"><use href="#i-check"/></svg>Vos clés IA et API, crédits illimités</li></ul><a class="btn btn-line" href="#faq">Parler à l'équipe</a></div>
+        </div>
+        <p class="price-note">Prix en dollars américains, hors taxes. Licence pays : +99 $ par an et par utilisateur au-delà de 10. Crédits indicatifs pour la maquette.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec rails" id="faq" aria-labelledby="h-faq">
+    <div class="wrap grid12">
+      <div class="sec-intro side">
+        <h2 id="h-faq" class="h40">Questions fréquentes</h2>
+      </div>
+      <div class="sec-body side faq">
+        <details><summary>D'où viennent les prospects ?<svg class="i"><use href="#i-chevron"/></svg></summary><p>De registres publics d'entreprises, d'API officielles (cartes, annuaires) et des sites web des entreprises. Chaque fiche indique sa source et sa date de collecte.</p></details>
+        <details><summary>Scoutra envoie-t-il les messages à ma place ?<svg class="i"><use href="#i-chevron"/></svg></summary><p>Non. Scoutra rédige, vous relisez et vous envoyez depuis votre propre compte email, WhatsApp Business ou téléphone. C'est plus sûr pour votre réputation et conforme aux règles des plateformes.</p></details>
+        <details><summary>Puis-je cibler des particuliers ?<svg class="i"><use href="#i-chevron"/></svg></summary><p>Oui, s'ils se rendent joignables pour leur activité (coachs, artisans, créateurs) ou s'ils ont donné leur accord. Scoutra n'affiche que les canaux autorisés dans leur pays.</p></details>
+        <details><summary>Qu'est-ce qu'un crédit de recherche ?<svg class="i"><use href="#i-chevron"/></svg></summary><p>Un prospect enrichi et vérifié. Une recherche qui retient 8 prospects sur 286 analysés consomme environ 80 crédits ; l'estimation s'affiche avant de lancer.</p></details>
+        <details><summary>Comment fonctionne la licence pays ?<svg class="i"><use href="#i-chevron"/></svg></summary><p>Vous installez Scoutra sur vos serveurs avec vos propres clés IA et API. Une clé de licence signée indique le pays, la date d'expiration et le nombre d'utilisateurs ; elle se vérifie sans connexion à nos serveurs.</p></details>
+      </div>
     </div>
   </section>
 </main>
 
-<footer class="site-foot" id="contact">
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-about">
-        <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
-        <p>Scoutra trouve, vérifie et rédige pour les commerciaux et les closers, dans le pays de votre choix ou partout dans le monde.</p>
-      </div>
-      <div><h4>Produit</h4><ul><li><a href="#fonctionnement">Fonctionnement</a></li><li><a href="#tarifs">Tarifs</a></li><li><a href="app-recherche.html">Recherche</a></li><li><a href="app-pipeline.html">Pipeline</a></li></ul></div>
-      <div><h4>Confiance</h4><ul><li><a href="#conformite">Conformité par pays</a></li><li><a href="#contact">Accord de traitement</a></li><li><a href="#contact">Politique d'usage</a></li></ul></div>
-      <div><h4>Langue</h4><ul><li><a href="#" aria-current="true">Français</a></li><li><a href="#" lang="en">English</a></li></ul></div>
-    </div>
-    <div class="foot-legal"><span>© 2026 Scoutra</span><span>scoutra.ai</span><span>Maquette de validation. Les personnes, entreprises et chiffres affichés sont fictifs.</span></div>
+<footer class="foot">
+  <div class="wrap grid12">
+    <div class="brand"><svg class="logo" viewBox="0 0 265.19 64" role="img" aria-label="Scoutra"><g class="logo-mark" transform="translate(0 10) scale(.6875)"><path d="M9 52H33A10 10 0 0 0 33 32H21A10 10 0 0 1 21 12H39" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="50" cy="12" r="6" fill="currentColor"/></g><g transform="translate(58 47) scale(0.056391 -0.056391)" fill="currentColor"><path d="M279 -10Q220 -10 173.5 2.5Q127 15 94.5 37.5Q62 60 44.0 92.5Q26 125 25 165H156Q158 136 173.5 117.0Q189 98 217.0 88.5Q245 79 283 79Q337 79 366.5 96.0Q396 113 396 147Q396 172 384.0 186.0Q372 200 344.0 207.0Q316 214 268 220Q189 229 138.5 246.0Q88 263 64.5 294.0Q41 325 41 376Q41 427 70.0 464.0Q99 501 153.0 521.5Q207 542 281 542Q351 542 402.5 522.0Q454 502 483.5 465.0Q513 428 517 376H388Q386 403 372.0 420.0Q358 437 334.0 445.5Q310 454 279 454Q231 454 201.5 437.0Q172 420 172 388Q172 365 185.5 352.0Q199 339 229.0 331.5Q259 324 307 318Q385 310 434.0 293.0Q483 276 506.5 244.0Q530 212 530 157Q530 105 501.0 67.5Q472 30 416.0 10.0Q360 -10 279 -10Z"/><path d="M847 -9Q782 -9 730.0 10.5Q678 30 640.5 66.5Q603 103 583.0 153.5Q563 204 563 267Q563 330 584.0 380.5Q605 431 643.0 467.0Q681 503 734.5 522.5Q788 542 853 542Q928 542 986.0 517.0Q1044 492 1078.0 448.0Q1112 404 1117 345H986Q979 375 960.0 395.0Q941 415 913.0 425.0Q885 435 851 435Q815 435 786.5 423.0Q758 411 738.0 388.5Q718 366 708.0 335.5Q698 305 698 266Q698 212 716.5 174.0Q735 136 769.5 116.5Q804 97 850 97Q887 97 915.5 109.0Q944 121 963.0 142.5Q982 164 988 192H1120Q1114 131 1077.0 85.5Q1040 40 980.5 15.5Q921 -9 847 -9Z"/><path d="M1440 -10Q1375 -10 1322.0 9.0Q1269 28 1230.5 64.0Q1192 100 1171.0 150.5Q1150 201 1150 266Q1150 350 1186.0 411.5Q1222 473 1287.0 507.5Q1352 542 1440 542Q1505 542 1558.0 523.0Q1611 504 1649.0 468.0Q1687 432 1708.0 381.0Q1729 330 1729 266Q1729 183 1693.5 121.0Q1658 59 1593.5 24.5Q1529 -10 1440 -10ZM1440 97Q1488 97 1522.5 117.0Q1557 137 1576.0 175.0Q1595 213 1595 266Q1595 306 1584.0 337.5Q1573 369 1553.0 391.0Q1533 413 1504.5 424.0Q1476 435 1440 435Q1393 435 1358.0 415.5Q1323 396 1304.0 358.0Q1285 320 1285 266Q1285 226 1295.5 194.5Q1306 163 1326.5 141.5Q1347 120 1375.5 108.5Q1404 97 1440 97Z"/><path d="M1990 -9Q1925 -9 1877.5 15.0Q1830 39 1804.5 89.5Q1779 140 1779 221V532H1912V250Q1912 200 1925.0 166.0Q1938 132 1966.0 114.5Q1994 97 2038 97Q2083 97 2116.5 117.0Q2150 137 2168.0 173.0Q2186 209 2186 255V532H2320V0H2192L2186 102H2180Q2156 50 2105.0 20.5Q2054 -9 1990 -9Z"/><path d="M2411.6 0H2545.6V427.48H2666.2V532H2545.6V691.6L2411.6 608.52V532H2371.4V427.48H2411.6Z"/><path d="M2712.24 0V532H2833.24L2838.24 443H2843.24Q2861.24 491 2901.24 515.5Q2941.24 540 2993.24 540Q3005.24 540 3014.74 539.5Q3024.24 539 3032.24 537V414Q3024.24 416 3013.24 416.5Q3002.24 417 2991.24 417Q2946.24 417 2914.24 402.0Q2882.24 387 2864.74 356.5Q2847.24 326 2845.24 281V0Z"/><path d="M3286.24 -9Q3233.24 -9 3188.74 10.0Q3144.24 29 3112.24 64.5Q3080.24 100 3063.24 151.0Q3046.24 202 3046.24 266Q3046.24 352 3076.24 413.5Q3106.24 475 3160.74 508.0Q3215.24 541 3286.24 541Q3334.24 541 3371.74 528.5Q3409.24 516 3436.24 493.0Q3463.24 470 3476.24 439H3483.24L3488.24 532H3614.24V0H3484.24L3482.24 96H3475.24Q3454.24 48 3403.74 19.5Q3353.24 -9 3286.24 -9ZM3329.24 96Q3378.24 96 3411.74 116.5Q3445.24 137 3463.24 170.5Q3481.24 204 3481.24 245V290Q3481.24 331 3463.24 364.0Q3445.24 397 3411.74 416.5Q3378.24 436 3331.24 436Q3285.24 436 3251.74 416.0Q3218.24 396 3199.74 358.0Q3181.24 320 3181.24 266Q3181.24 214 3199.24 175.5Q3217.24 137 3250.24 116.5Q3283.24 96 3329.24 96Z"/></g></svg><p>Prospection multi-agents pour les équipes commerciales, dans le monde entier.</p></div>
+    <nav aria-label="Produit"><h3>Produit</h3><ul><li><a href="app-recherche.html">Recherche</a></li><li><a href="app-pipeline.html">Pipeline</a></li><li><a href="#tarifs">Tarifs</a></li></ul></nav>
+    <nav aria-label="Confiance"><h3>Confiance</h3><ul><li><a href="#conformite">Conformité</a></li><li><a href="#faq">Sources</a></li><li><a href="#faq">Licence</a></li></ul></nav>
+    <nav aria-label="Société"><h3>Société</h3><ul><li><a href="#contenu">À propos</a></li><li><a href="#contenu">Contact</a></li></ul></nav>
+    <p class="legal"><span>© 2026 Scoutra, scoutra.ai</span><span>Maquette de validation : personnes, entreprises et chiffres fictifs.</span></p>
   </div>
 </footer>
 
-<p class="demo-flag">Données de démonstration</p>
+<div class="mock-tools" role="region" aria-label="Options de la maquette">
+  <span class="demo">Données de démonstration</span>
+  <div class="seg" role="group" aria-label="Couleur d'accent">
+    <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw" style="background:#ff5b1f"></span>Orange</button>
+    <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw" style="background:#2b59ff"></span>Bleu</button>
+  </div>
+</div>
 
 <script type="module">
-  import { animate, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
+  import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const demo = document.getElementById("demo");
   const qText = document.getElementById("q-text");
-  const found = document.getElementById("found");
-  const verifiedCount = document.getElementById("verified-count");
+  const caret = document.getElementById("q-caret");
   const replay = document.getElementById("replay");
   const agents = [...demo.querySelectorAll(".agent")];
-  const rows = [...demo.querySelectorAll(".res-list li")];
+  const rows = [...demo.querySelectorAll(".res li")];
+  const counters = [...demo.querySelectorAll("[data-count]")];
+  const found = document.getElementById("found");
   const fullQuery = qText.textContent;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const count = (el, to, d = 0.6) => animate(0, to, { duration: d, ease: "easeOut", onUpdate: (v) => (el.textContent = Math.round(v)) });
   let running = false;
-
-  replay.hidden = false;
-
-  function reset() {
-    demo.classList.add("armed");
-    qText.textContent = "";
-    agents.forEach((a) => (a.dataset.state = "pending"));
-    found.textContent = "0";
-    verifiedCount.textContent = "0";
-  }
 
   async function run() {
     if (running) return;
-    running = true;
-    replay.disabled = true;
-    if (reduce) {
-      // Pas d'animation : on affiche directement l'état final.
-      demo.classList.remove("armed");
-      qText.textContent = fullQuery;
-      agents.forEach((a) => (a.dataset.state = "done"));
-      found.textContent = rows.length;
-      verifiedCount.textContent = rows.filter((r) => r.querySelector(".verified")).length;
-      running = false; replay.disabled = false;
-      return;
+    running = true; replay.hidden = true;
+    demo.classList.add("armed");
+    agents.forEach((a) => (a.dataset.state = "pending"));
+    found.textContent = "0";
+    qText.textContent = ""; caret.hidden = false;
+    for (let i = 1; i <= fullQuery.length; i += 3) { qText.textContent = fullQuery.slice(0, i); await wait(14); }
+    qText.textContent = fullQuery; caret.hidden = true;
+    for (const a of agents) {
+      a.dataset.state = "done";
+      animate(a.querySelector(".dot"), { scale: [0.4, 1] }, { type: "spring", stiffness: 500, damping: 22 });
+      const c = a.querySelector("[data-count]");
+      if (c) count(c, +c.dataset.count, 0.5);
+      await wait(260);
     }
-    reset();
-    demo.classList.add("is-typing");
-    for (let i = 1; i <= fullQuery.length; i++) {
-      qText.textContent = fullQuery.slice(0, i);
-      await wait(22);
-    }
-    demo.classList.remove("is-typing");
-    await wait(250);
-
-    // Interprète, Recherche, Enrichissement : en amont des premiers résultats
-    for (let i = 0; i < 3; i++) {
-      agents[i].dataset.state = "active";
-      await wait(380);
-      agents[i].dataset.state = "done";
-    }
-    agents[3].dataset.state = "active";
-    agents[4].dataset.state = "active";
-    agents[5].dataset.state = "active";
-
-    let v = 0;
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      animate(row, { opacity: [0, 1], y: [8, 0] }, { duration: 0.32, ease: [0.2, 0, 0, 1] });
-      found.textContent = i + 1;
-      if (row.querySelector(".verified")) verifiedCount.textContent = ++v;
-      await wait(420);
-    }
-    agents.slice(3).forEach((a) => (a.dataset.state = "done"));
+    await animate(rows, { opacity: [0, 1], y: [8, 0] }, { delay: stagger(0.08), duration: 0.3, ease: [0.2, 0.7, 0.2, 1] });
+    count(found, rows.length + 1, 0.4);
     demo.classList.remove("armed");
     rows.forEach((r) => (r.style.opacity = ""));
-    running = false; replay.disabled = false;
+    replay.hidden = false; running = false;
   }
 
-  replay.addEventListener("click", run);
-  let played = false;
-  inView(demo, () => { if (!played) { played = true; run(); } }, { amount: 0.4 });
+  if (!reduce) {
+    const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) { io.disconnect(); run(); } }, { threshold: 0.35 });
+    io.observe(demo);
+    replay.addEventListener("click", run);
+  }
+
+  // Barres du score : réponse au survol déjà en CSS ; une seule entrée à l'apparition, si mouvement autorisé
+  if (!reduce) {
+    const fills = document.querySelectorAll("#bars .fill");
+    const io2 = new IntersectionObserver((es) => {
+      if (!es[0].isIntersecting) return; io2.disconnect();
+      animate(fills, { scaleX: [0, 1] }, { delay: stagger(0.06), duration: 0.4, ease: [0.2, 0.7, 0.2, 1] });
+    }, { threshold: 0.5 });
+    io2.observe(document.getElementById("bars"));
+  }
 </script>
 </body>
 </html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scoutra — planche logo</title>
+<link rel="icon" href="a-trace-favicon-32.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,400..700&display=swap">
+<style>
+  :root { --ink:#12141A; --ink-2:#474C57; --ink-3:#6A707C; --line:#E4E6EA; --canvas:#F5F6F7; --orange:#FF5B1F; --blue:#2B59FF; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Mona Sans", system-ui, sans-serif; color:var(--ink); background:var(--canvas); font-size:15px; line-height:1.5; }
+  img { display:block; }
+  .wrap { max-width:1240px; margin:0 auto; padding:48px 32px 80px; }
+  header.top { display:flex; justify-content:space-between; align-items:baseline; gap:24px; border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:40px; }
+  h1 { font-size:28px; font-weight:620; font-stretch:112%; letter-spacing:-.02em; margin:0; }
+  header.top p { margin:0; color:var(--ink-3); max-width:58ch; }
+  section.prop { background:#fff; border:1px solid var(--line); border-radius:12px; margin-bottom:28px; overflow:hidden; }
+  .prop-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:20px 24px; border-bottom:1px solid var(--line); }
+  .prop-head h2 { margin:0; font-size:18px; font-weight:600; }
+  .prop-head h2 span { color:var(--ink-3); font-weight:450; margin-left:8px; }
+  .verdict { font-size:13px; font-weight:560; padding:3px 9px; border-radius:6px; background:#FFEDE5; color:#B83806; }
+  .verdict.no { background:var(--canvas); color:var(--ink-3); }
+  .grid { display:grid; grid-template-columns: 1.35fr 1fr; }
+  .big { padding:56px 40px; display:flex; align-items:center; justify-content:center; min-height:240px; }
+  .big.light { background:#fff; border-right:1px solid var(--line); }
+  .big.dark { background:var(--ink); }
+  .big img { height:84px; width:auto; }
+  .side { display:grid; grid-template-rows: 1fr 1fr; }
+  .side .big { min-height:120px; padding:28px; }
+  .side .big img { height:52px; }
+  .row { display:grid; grid-template-columns: repeat(4, 1fr); border-top:1px solid var(--line); }
+  .cell { padding:20px 24px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:12px; }
+  .cell:last-child { border-right:0; }
+  .cell h3 { margin:0; font-size:12.5px; font-weight:520; color:var(--ink-3); }
+  .sizes { display:flex; align-items:flex-end; gap:20px; }
+  .fav { display:flex; align-items:flex-end; gap:14px; }
+  .fav .tab { display:flex; align-items:center; gap:8px; background:#E9EBEE; border-radius:8px 8px 0 0; padding:7px 12px; font-size:12.5px; color:var(--ink-2); }
+  .zoom { image-rendering: pixelated; }
+  .site { border-top:1px solid var(--line); }
+  .site-bar { display:flex; align-items:center; gap:28px; padding:16px 28px; font-size:14px; color:var(--ink-2); }
+  .site-bar nav { display:flex; gap:22px; }
+  .site-bar .sp { flex:1; }
+  .site-bar .btn { background:var(--ink); color:#fff; border-radius:8px; padding:7px 13px; font-weight:540; }
+  .site-bar.dk { background:var(--ink); color:#C9CDD4; }
+  .site-bar.dk .btn { background:#fff; color:var(--ink); }
+  .notes { padding:18px 24px 22px; border-top:1px solid var(--line); color:var(--ink-2); display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .notes p { margin:0; max-width:62ch; }
+  .notes b { color:var(--ink); font-weight:600; }
+  .reco { background:var(--ink); color:#E6E8EC; border-radius:12px; padding:28px 32px; display:grid; grid-template-columns: 220px 1fr; gap:32px; align-items:center; }
+  .reco h2 { margin:0 0 8px; font-size:20px; color:#fff; font-weight:600; }
+  .reco p { margin:0 0 8px; max-width:70ch; }
+  @media (max-width: 860px) {
+    .grid, .row, .notes, .reco { grid-template-columns:1fr; }
+    .cell { border-right:0; border-bottom:1px solid var(--line); }
+    .big.light { border-right:0; }
+    .site-bar nav { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Scoutra, trois pistes de logo</h1>
+    <p>Logotype tiré de Mona Sans (licence SIL OFL, police de marque de GitHub) avec un « t » redessiné. Symboles dessinés sur une grille de 64. Couleur du symbole : orange #FF5B1F ou bleu #2B59FF selon l'accent retenu.</p>
+  </header>
+
+  <!-- A -->
+  <section class="prop" aria-labelledby="a">
+    <div class="prop-head"><h2 id="a">A. Trace<span>un S tracé comme un itinéraire, qui aboutit au prospect</span></h2><span class="verdict">Recommandée</span></div>
+    <div class="grid">
+      <div class="big light"><img src="a-trace-logo-clair.svg" alt="Logo Scoutra, piste A, sur fond clair"></div>
+      <div class="side">
+        <div class="big dark"><img src="a-trace-logo-sombre.svg" alt="Logo Scoutra, piste A, sur fond sombre"></div>
+        <div class="big" style="background:var(--orange)"><img src="a-trace-logotype.svg" alt="Logotype seul, piste A"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="cell"><h3>Petites tailles (32, 24, 16 px de haut)</h3><div class="sizes"><img src="a-trace-logo-clair.svg" alt="" style="height:32px"><img src="a-trace-logo-clair.svg" alt="" style="height:24px"><img src="a-trace-logo-clair.svg" alt="" style="height:16px"></div></div>
+      <div class="cell"><h3>Favicon 32 px, réel et zoom</h3><div class="fav"><div class="tab"><img src="a-trace-favicon-32.svg" alt="" width="16" height="16">Scoutra</div><img src="a-trace-favicon-32.svg" alt="" width="32" height="32"><img src="a-trace-favicon-32-bleu.svg" alt="" width="32" height="32"></div></div>
+      <div class="cell"><h3>Icône d'application</h3><div class="sizes"><img src="a-trace-icone-app.svg" alt="" width="72" height="72"><img src="a-trace-icone-app.svg" alt="" width="40" height="40"></div></div>
+      <div class="cell"><h3>Symbole seul</h3><div class="sizes"><img src="a-trace-symbole.svg" alt="" width="64" height="64"><img src="a-trace-symbole.svg" alt="" width="24" height="24"></div></div>
+    </div>
+    <div class="site">
+      <div class="site-bar"><img src="a-trace-logo-clair.svg" alt="" style="height:26px"><nav><span>Produit</span><span>Tarifs</span><span>Conformité</span></nav><span class="sp"></span><span>Se connecter</span><span class="btn">Essayer gratuitement</span></div>
+      <div class="site-bar dk"><img src="a-trace-logo-sombre.svg" alt="" style="height:26px"><nav><span>Produit</span><span>Tarifs</span><span>Conformité</span></nav><span class="sp"></span><span>Se connecter</span><span class="btn">Essayer gratuitement</span></div>
+    </div>
+    <div class="notes">
+      <p><b>Idée.</b> Le S n'est pas une lettre posée dans une forme : c'est un trajet à deux virages, comme une route sur une carte, qui se termine sur un point plein. L'éclaireur part, cherche, et trouve. Le point devient un motif réutilisable dans l'interface (prospect trouvé, état « vérifié »).</p>
+      <p><b>Logotype.</b> Mona Sans largeur 112, graisse 600, approche resserrée. Le « t » est redessiné : fût droit sans crochet, sommet biseauté vers l'avant, comme une flèche de cap. Lisible à 16 px, le point reste séparé du tracé jusqu'à 16 px.</p>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="prop" aria-labelledby="b">
+    <div class="prop-head"><h2 id="b">B. Cap<span>une boussole ouverte, l'aiguille sort du cercle</span></h2><span class="verdict no">Alternative</span></div>
+    <div class="grid">
+      <div class="big light"><img src="b-cap-logo-clair.svg" alt="Logo Scoutra, piste B, sur fond clair"></div>
+      <div class="side">
+        <div class="big dark"><img src="b-cap-logo-sombre.svg" alt="Logo Scoutra, piste B, sur fond sombre"></div>
+        <div class="big" style="background:var(--orange)"><img src="b-cap-logotype.svg" alt="Logotype seul, piste B"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="cell"><h3>Petites tailles (32, 24, 16 px de haut)</h3><div class="sizes"><img src="b-cap-logo-clair.svg" alt="" style="height:32px"><img src="b-cap-logo-clair.svg" alt="" style="height:24px"><img src="b-cap-logo-clair.svg" alt="" style="height:16px"></div></div>
+      <div class="cell"><h3>Favicon 32 px, réel et zoom</h3><div class="fav"><div class="tab"><img src="b-cap-favicon-32.svg" alt="" width="16" height="16">Scoutra</div><img src="b-cap-favicon-32.svg" alt="" width="32" height="32"><img src="b-cap-favicon-32-bleu.svg" alt="" width="32" height="32"></div></div>
+      <div class="cell"><h3>Icône d'application</h3><div class="sizes"><img src="b-cap-icone-app.svg" alt="" width="72" height="72"><img src="b-cap-icone-app.svg" alt="" width="40" height="40"></div></div>
+      <div class="cell"><h3>Symbole seul</h3><div class="sizes"><img src="b-cap-symbole.svg" alt="" width="64" height="64"><img src="b-cap-symbole.svg" alt="" width="24" height="24"></div></div>
+    </div>
+    <div class="site">
+      <div class="site-bar"><img src="b-cap-logo-clair.svg" alt="" style="height:26px"><nav><span>Produit</span><span>Tarifs</span><span>Conformité</span></nav><span class="sp"></span><span>Se connecter</span><span class="btn">Essayer gratuitement</span></div>
+    </div>
+    <div class="notes">
+      <p><b>Idée.</b> Le cadran d'une boussole, ouvert au nord-est ; l'aiguille passe par l'ouverture et sort du cercle. Le message : prendre un cap et aller chercher au-delà de son réseau.</p>
+      <p><b>Limite.</b> La boussole est un symbole très utilisé (navigation, voyage). Logotype en largeur normale, plus neutre : moins de caractère que A.</p>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section class="prop" aria-labelledby="c">
+    <div class="prop-head"><h2 id="c">C. Repère<span>un viseur réduit à deux angles, la cible décentrée</span></h2><span class="verdict no">Alternative</span></div>
+    <div class="grid">
+      <div class="big light"><img src="c-repere-logo-clair.svg" alt="Logo Scoutra, piste C, sur fond clair"></div>
+      <div class="side">
+        <div class="big dark"><img src="c-repere-logo-sombre.svg" alt="Logo Scoutra, piste C, sur fond sombre"></div>
+        <div class="big" style="background:var(--orange)"><img src="c-repere-logotype.svg" alt="Logotype seul, piste C"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="cell"><h3>Petites tailles (32, 24, 16 px de haut)</h3><div class="sizes"><img src="c-repere-logo-clair.svg" alt="" style="height:32px"><img src="c-repere-logo-clair.svg" alt="" style="height:24px"><img src="c-repere-logo-clair.svg" alt="" style="height:16px"></div></div>
+      <div class="cell"><h3>Favicon 32 px, réel et zoom</h3><div class="fav"><div class="tab"><img src="c-repere-favicon-32.svg" alt="" width="16" height="16">Scoutra</div><img src="c-repere-favicon-32.svg" alt="" width="32" height="32"><img src="c-repere-favicon-32-bleu.svg" alt="" width="32" height="32"></div></div>
+      <div class="cell"><h3>Icône d'application</h3><div class="sizes"><img src="c-repere-icone-app.svg" alt="" width="72" height="72"><img src="c-repere-icone-app.svg" alt="" width="40" height="40"></div></div>
+      <div class="cell"><h3>Symbole seul</h3><div class="sizes"><img src="c-repere-symbole.svg" alt="" width="64" height="64"><img src="c-repere-symbole.svg" alt="" width="24" height="24"></div></div>
+    </div>
+    <div class="site">
+      <div class="site-bar"><img src="c-repere-logo-clair.svg" alt="" style="height:26px"><nav><span>Produit</span><span>Tarifs</span><span>Conformité</span></nav><span class="sp"></span><span>Se connecter</span><span class="btn">Essayer gratuitement</span></div>
+    </div>
+    <div class="notes">
+      <p><b>Idée.</b> Un viseur dont on ne garde que deux coins opposés ; la cible est décentrée vers le haut, comme un prospect repéré dans le cadre. Logotype en largeur 125 : très large, très affirmé.</p>
+      <p><b>Limite.</b> Le viseur rappelle les icônes de scan et d'appareil photo ; le logotype très large prend beaucoup de place dans un en-tête mobile.</p>
+    </div>
+  </section>
+
+  <div class="reco">
+    <img src="a-trace-icone-app.svg" alt="" width="200" height="200">
+    <div>
+      <h2>Recommandation : A, Trace</h2>
+      <p>C'est la seule piste qui raconte le produit (chercher, puis trouver) sans emprunter un symbole déjà banal. Le S fonctionne seul comme favicon, le point plein devient un motif d'interface, et le « t » biseauté donne au logotype un détail qu'on ne retrouve pas dans une police standard.</p>
+      <p>Utilisation : symbole en couleur d'accent, logotype en encre (#12141A) ou blanc. Taille minimale : 16 px de haut pour le logo complet, 16 px pour le favicon. Zone de protection : la hauteur du point tout autour.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

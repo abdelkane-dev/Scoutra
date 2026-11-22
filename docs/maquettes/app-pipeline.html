@@ -3,449 +3,268 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pipeline — Scoutra (maquette)</title>
+<title>Pipeline — Scoutra</title>
+<link rel="icon" href="../design/logo/a-trace-favicon-32.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@75..125,400..700&display=swap">
 <link rel="stylesheet" href="assets/scoutra.css">
 <script src="assets/accent.js"></script>
 <style>
-  /* Filtres : une ligne, au-dessus de tout ce qu'ils filtrent */
   .filters { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
-  .filters .sel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
-  .filters select {
-    min-height: 36px; padding: 0 30px 0 10px; border-radius: var(--radius-s); border: 1px solid var(--line-2);
-    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23434852' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
-    appearance: none; font-size: 14px; color: var(--ink);
+  .filters .sp { flex: 1; }
+  .sel { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--r-s); background: var(--surface); font-size: 13.5px; font-weight: 500; }
+  .sel .lbl { color: var(--ink-3); font-weight: 400; }
+  .sel .i { color: var(--ink-3); width: 14px; height: 14px; }
+  .range { font-size: 13px; color: var(--ink-3); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kpi { padding: 16px 18px 14px; border-right: 1px solid var(--line); min-width: 0; display: grid; gap: 4px; }
+  .kpi:last-child { border-right: 0; }
+  .kpi h2 { font-size: 13px; font-weight: 500; color: var(--ink-2); line-height: 18px; }
+  .kpi .v { font-size: 32px; line-height: 36px; font-weight: 600; font-stretch: 110%; letter-spacing: -.03em; }
+  .kpi .d { font-size: 12.5px; color: var(--ink-3); }
+  .kpi .d b { color: var(--ok); font-weight: 600; }
+  .kpi svg.spark { width: 100%; height: 32px; margin-top: 6px; overflow: visible; }
+  .spark .base { stroke: var(--line-strong); }
+  .spark .lead { stroke: var(--accent); }
+  .spark circle { fill: var(--accent); }
+
+  .row2 { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+  .todo li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .todo li:last-child { border-bottom: 0; }
+  .todo input { width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--ink); }
+  .todo b { font-weight: 600; }
+  .todo .what { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; margin-top: 2px; }
+  .todo .what .i { width: 14px; height: 14px; color: var(--ink-3); }
+  .todo time { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+  .todo time.late { color: var(--bad); font-weight: 550; display: inline-flex; gap: 4px; align-items: center; }
+  .todo time.late .i { width: 13px; height: 13px; }
+  .todo li.done b, .todo li.done .what { color: var(--ink-3); text-decoration: line-through; }
+  .todo-f { padding: 10px 16px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); }
+
+  .charts { display: grid; grid-template-columns: 1fr 1fr; }
+  .chart { padding: 16px 18px; min-width: 0; }
+  .chart + .chart { border-left: 1px solid var(--line); }
+  .chart h3 { font-size: 13.5px; font-weight: 600; line-height: 19px; }
+  .chart .sub { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+  .hbars { margin-top: 16px; display: grid; gap: 12px; }
+  .hbars li { display: grid; grid-template-columns: 84px minmax(0, 1fr) 46px; gap: 10px; align-items: center; font-size: 13px; position: relative; }
+  .hbars .track { height: 10px; position: relative; }
+  .hbars .fill { position: absolute; inset: 0 auto 0 0; background: var(--line-strong); border-radius: 0 4px 4px 0; transform-origin: left; }
+  .hbars li.top .fill { background: var(--accent); }
+  .hbars .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .hbars li:hover .fill, .hbars li:focus .fill { background: var(--accent-hover); }
+  .hbars li .tip { position: absolute; right: 0; top: -30px; background: var(--ink); color: #fff; font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; }
+  .hbars li:hover .tip, .hbars li:focus .tip { opacity: 1; }
+  .insight { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-2); background: #fafbfb; border-radius: 0 0 var(--r-l) var(--r-l); }
+  .insight b { color: var(--ink); font-weight: 600; }
+
+  .board-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .board-h h2 { font-size: 16px; font-weight: 600; }
+  .board-h p { font-size: 13px; color: var(--ink-3); }
+  .board { display: grid; grid-template-columns: repeat(6, minmax(176px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+  .col { background: #eceef1; border-radius: var(--r-l); padding: 8px; min-height: 200px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 8px; }
+  .col-h { display: flex; align-items: center; gap: 8px; padding: 4px 6px 2px; font-size: 13px; font-weight: 600; }
+  .col-h .n { margin-left: auto; color: var(--ink-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .col-h .sq { width: 8px; height: 8px; border-radius: 2px; background: var(--ink-3); }
+  .col[data-stage="valide"] .sq { background: var(--ok); }
+  .col[data-stage="perdu"] .sq { background: var(--line-strong); }
+  .col[data-stage="rdv"] .sq, .col[data-stage="repondu"] .sq { background: var(--accent); }
+  .col.over { box-shadow: inset 0 0 0 2px var(--accent-line); background: var(--accent-soft); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 10px 12px; display: grid; gap: 6px; cursor: grab; touch-action: none; user-select: none; }
+  .card:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 1px; }
+  .card.dragging { box-shadow: var(--shadow-drag); cursor: grabbing; position: relative; z-index: 5; }
+  .card .t { display: flex; align-items: center; gap: 8px; }
+  .card .t b { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .t .cc { margin-left: auto; }
+  .card .org { font-size: 12.5px; color: var(--ink-3); line-height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .nx { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); line-height: 17px; }
+  .card .nx .i { width: 13px; height: 13px; color: var(--ink-3); }
+  .card .nx.late { color: var(--bad); } .card .nx.late .i { color: var(--bad); }
+  .card .nx.win { color: var(--ok); } .card .nx.win .i { color: var(--ok); }
+  .card .b { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+  .card .av { width: 20px; height: 20px; font-size: 9.5px; }
+  .more { font-size: 12.5px; color: var(--ink-3); padding: 2px 6px; }
+
+  @media (max-width: 1279px) { .row2 { grid-template-columns: minmax(0,1fr); } }
+  @media (max-width: 899px) { .kpis { grid-template-columns: 1fr 1fr; } .kpi:nth-child(2) { border-right: 0; } .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
+  @media (max-width: 640px) {
+    .charts { grid-template-columns: 1fr; } .chart + .chart { border-left: 0; border-top: 1px solid var(--line); }
+    .kpi .v { font-size: 26px; line-height: 30px; }
+    .board { grid-template-columns: repeat(6, 82%); }
+    .filters .range { width: 100%; }
   }
-  .filters .scope { margin-left: auto; font-size: 13px; color: var(--ink-3); }
-
-  /* Ligne du haut : relances + indicateurs */
-  .top-row { margin-top: 16px; display: grid; gap: 16px; }
-  @media (min-width: 1100px) { .top-row { grid-template-columns: 400px minmax(0, 1fr); } }
-
-  .todo .panel-h .badge { margin-left: auto; padding: 3px 9px; border-radius: 999px; background: var(--hl); color: var(--hl-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  @media (max-width: 520px) { .todo .panel-h .sub { display: none; } }
-  .todo-list li { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 10px; align-items: start; padding: 11px 16px; border-top: 1px solid var(--line); }
-  .todo-list li:first-child { border-top: 0; }
-  .todo-list input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent); }
-  .todo-list .t-main b { display: block; font-weight: 600; font-size: 14.5px; }
-  .todo-list .t-main span { display: block; color: var(--ink-2); font-size: 13.5px; }
-  .todo-list .t-when { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-  .todo-list .late { display: inline-flex; gap: 4px; align-items: center; color: var(--accent-ink); font-weight: 600; }
-  .todo-list .late svg { width: 13px; height: 13px; }
-  .todo-list li:has(input:checked) .t-main { text-decoration: line-through; color: var(--ink-3); }
-  .todo-list li:has(input:checked) .t-main span { color: var(--ink-3); }
-  .todo-foot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
-
-  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-  @media (min-width: 720px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  @media (min-width: 1100px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .tile { padding: 16px; display: grid; gap: 4px; align-content: start; }
-  .tile .label { font-size: 13.5px; color: var(--ink-2); }
-  .tile .value { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
-  .tile .delta { font-size: 13px; color: var(--ink-2); }
-  .tile .delta b { font-weight: 600; color: var(--ink); background: var(--hl); color: var(--hl-ink); padding: 0 5px; border-radius: 4px; }
-  .spark { margin-top: 8px; height: 28px; width: 100%; }
-  .spark path { fill: none; stroke: var(--line-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .spark .cur { stroke: var(--accent); }
-  .tiles-wrap { display: grid; gap: 16px; align-content: start; }
-  .tip-line { font-size: 13.5px; color: var(--ink-2); padding: 14px 16px; }
-  .tip-line b { color: var(--ink); font-weight: 600; }
-
-  /* Kanban */
-  .board-sec { margin-top: 16px; }
-  .board-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
-  .board-h h2 { font-size: 17px; font-weight: 600; }
-  .board-h .hint { font-size: 13px; color: var(--ink-3); }
-  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(232px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
-  @media (min-width: 1280px) { .board { grid-auto-columns: minmax(0, 1fr); } }
-  .col { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-m); padding: 8px; min-height: 280px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 8px; transition: background-color .15s ease, border-color .15s ease; }
-  .col.drop { border-color: var(--accent); background: var(--accent-soft); }
-  .col-h { display: flex; align-items: center; gap: 8px; padding: 4px 4px 2px; font-size: 13.5px; font-weight: 600; }
-  .col-h .n { margin-left: auto; font-weight: 500; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-  .col-h svg { width: 14px; height: 14px; }
-  .col[data-stage="valide"] .col-h svg { color: var(--accent); }
-  .col[data-stage="perdu"] .col-h svg { color: var(--ink-3); }
-  .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px;
-    display: grid; gap: 6px; cursor: grab; font-size: 13px;
-  }
-  .card:hover { border-color: var(--line-2); }
-  .card:active { cursor: grabbing; }
-  .card.dragging { opacity: .45; }
-  .card .c-top { display: flex; align-items: center; gap: 8px; }
-  .card .c-top b { font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .card .c-top .cc { margin-left: auto; flex: none; }
-  .card .org { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .card .c-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; justify-content: space-between; color: var(--ink-3); }
-  .card .c-meta .next { flex: 1 1 100%; }
-  .card .score { font-size: 12.5px; gap: 6px; }
-  .card .score-bar { width: 32px; height: 5px; }
-  .card .next { color: var(--ink-2); }
-  .card .next.won { color: var(--accent-ink); font-weight: 600; }
-  .col .more { margin-top: auto; padding: 6px 4px 2px; font-size: 12.5px; color: var(--ink-3); }
-
-  /* Graphiques */
-  .charts { margin-top: 16px; display: grid; gap: 16px; }
-  @media (min-width: 1100px) { .charts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .chart { padding: 16px 18px 12px; position: relative; }
-  .chart h3 { font-size: 15px; font-weight: 600; }
-  .chart .sub { margin-top: 2px; font-size: 13px; color: var(--ink-3); }
-  .chart-body { margin-top: 16px; }
-
-  /* Barres horizontales en HTML (lisibles sans JS) */
-  .hbars { display: grid; gap: 8px; }
-  .hbar { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 12px; padding: 3px 0; border-radius: 4px; }
-  .hbar:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .hbar .name { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hbar .track { position: relative; display: flex; align-items: center; gap: 8px; height: 24px; }
-  .hbar .fill { height: 20px; width: var(--w); min-width: 3px; background: var(--accent); border-radius: 0 4px 4px 0; transition: opacity .12s ease; }
-  .hbar:hover .fill, .hbar:focus-visible .fill { opacity: .82; }
-  .hbar .val { font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .hbar .val small { font-weight: 400; color: var(--ink-3); margin-left: 4px; }
-  .axis-note { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); }
-
-  .data-view { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 13px; }
-  .data-view summary { cursor: pointer; color: var(--ink-2); padding: 4px 0; width: max-content; }
-  .data-view table { margin-top: 6px; font-size: 13px; }
-  .data-view th, .data-view td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); }
-  .data-view td.n, .data-view th.n { text-align: right; }
-
-  /* Courbe (SVG rendu par JS ; tableau affiché sans JS) */
-  .line-wrap { position: relative; }
-  .line-wrap svg text { font-family: var(--font); font-size: 12px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
-  .line-wrap .grid { stroke: var(--line); stroke-width: 1; }
-  .line-wrap .ln { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-  .line-wrap .area { fill: var(--accent); opacity: .1; }
-  .line-wrap .end { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
-  .line-wrap .xhair { stroke: var(--ink-3); stroke-width: 1; }
-  .line-wrap .hov { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
-  .line-wrap .end-label rect { fill: var(--hl); }
-  .line-wrap .end-label text { fill: var(--hl-ink); font-weight: 600; font-size: 12.5px; }
-
-  .chart .tip strong { font-variant-numeric: tabular-nums; }
 </style>
-<noscript><style>.line-wrap { display: none; }</style></noscript>
 </head>
-<body>
-<a class="skip" href="#contenu">Aller au contenu</a>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="brand" viewBox="0 0 24 24"><rect class="m-bg" width="24" height="24" rx="6"/><circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14 14l4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></symbol>
-  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
-  <symbol id="i-board" viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="4" height="13" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="3.5" width="4" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="3.5" width="4" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
-  <symbol id="i-users" viewBox="0 0 20 20"><circle cx="8" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 16.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M13.5 4.5a3 3 0 010 5.5M15.5 12.5c1.2.7 1.9 2 2.1 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
-  <symbol id="i-down" viewBox="0 0 20 20"><path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-gear" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.8V8l2.2 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
-  <symbol id="i-dash" viewBox="0 0 16 16"><path d="M4 8h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<body class="app-body">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-kanban" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7M12 7v4M16 7v9"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
 </svg>
-
+<a class="skip" href="#contenu">Aller au contenu</a>
 <div class="app">
-  <aside class="side" aria-label="Navigation de l'application">
-    <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
-    <nav class="side-nav">
-      <a href="app-recherche.html"><svg aria-hidden="true"><use href="#i-search"/></svg>Recherche</a>
-      <a href="app-pipeline.html" aria-current="page"><svg aria-hidden="true"><use href="#i-board"/></svg>Pipeline</a>
-      <a href="#"><svg aria-hidden="true"><use href="#i-users"/></svg>Tous les prospects</a>
-      <a href="#"><svg aria-hidden="true"><use href="#i-down"/></svg>Exports</a>
-      <a href="#"><svg aria-hidden="true"><use href="#i-gear"/></svg>Paramètres</a>
-    </nav>
-    <div class="side-foot">
-      <div class="credits">Crédits de recherche<br><b>412</b> sur 500 ce mois-ci<div class="meter" role="img" aria-label="412 crédits sur 500"><i style="width:82.4%"></i></div></div>
-      <div class="who-am-i"><span class="avatar" aria-hidden="true">SM</span><span><b>Sofia Mendes</b>Rendezvo, Formule Pipeline</span></div>
-    </div>
-  </aside>
-
-  <div>
-    <header class="topbar">
-      <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
-      <h1>Pipeline</h1>
-      <span class="spacer"></span>
-      <span class="demo-chip">Données de démonstration</span>
-      <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
-        <span class="as-label">Accent</span>
-        <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw sw-orange" aria-hidden="true"></span>Orange</button>
-        <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw sw-bleu" aria-hidden="true"></span>Bleu</button>
-      </div>
-    </header>
-    <nav class="mobile-tabs" aria-label="Sections">
-      <a href="app-recherche.html">Recherche</a>
-      <a href="app-pipeline.html" aria-current="page">Pipeline</a>
-      <a href="#">Prospects</a>
-      <a href="#">Exports</a>
-    </nav>
-
-    <main class="page" id="contenu">
-      <form class="filters" action="#" onsubmit="return false" aria-label="Filtres">
-        <div class="seg" role="radiogroup" aria-label="Période">
-          <label><input type="radio" name="periode" value="7">7 jours</label>
-          <label><input type="radio" name="periode" value="30">30 jours</label>
-          <label><input type="radio" name="periode" value="90" checked>90 jours</label>
-        </div>
-        <label class="sel">Pays
-          <select><option>Tous les pays</option><option>France</option><option>Sénégal</option><option>Canada</option><option>Maroc</option><option>Belgique</option><option>États-Unis</option></select>
-        </label>
-        <label class="sel">Canal
-          <select><option>Tous les canaux</option><option>WhatsApp</option><option>Téléphone</option><option>LinkedIn</option><option>Email</option></select>
-        </label>
-        <span class="scope">Du 24 août au 22 novembre 2026</span>
-      </form>
-
-      <div class="top-row">
-        <section class="panel todo" aria-labelledby="todo-h">
-          <div class="panel-h"><h2 id="todo-h">Relances du jour</h2><span class="sub">dimanche 22 novembre</span><span class="badge">5 à faire</span></div>
-          <ul class="todo-list">
-            <li><input type="checkbox" aria-label="Marquer comme fait : relancer Youssef Alami"><div class="t-main"><b>Youssef Alami</b><span>Relance n°2 par WhatsApp, message prêt</span></div><span class="t-when"><span class="late"><svg aria-hidden="true"><use href="#i-clock"/></svg>En retard</span><br>depuis hier</span></li>
-            <li><input type="checkbox" aria-label="Marquer comme fait : confirmer le rendez-vous de Émilie Gagnon"><div class="t-main"><b>Émilie Gagnon</b><span>Confirmer le rendez-vous de demain 10:00</span></div><span class="t-when">09:30</span></li>
-            <li><input type="checkbox" aria-label="Marquer comme fait : rappeler Moussa Ndiaye"><div class="t-main"><b>Moussa Ndiaye</b><span>Rappel téléphonique, a demandé un devis</span></div><span class="t-when">11:00</span></li>
-            <li><input type="checkbox" aria-label="Marquer comme fait : relancer Sarah Peeters"><div class="t-main"><b>Sarah Peeters</b><span>Relance n°1 par email, sans réponse depuis 5 jours</span></div><span class="t-when">14:00</span></li>
-            <li><input type="checkbox" aria-label="Marquer comme fait : envoyer la proposition à Thomas Girard"><div class="t-main"><b>Thomas Girard</b><span>Envoyer la proposition après le rendez-vous</span></div><span class="t-when">16:30</span></li>
-          </ul>
-          <p class="todo-foot">Chaque relance ouvre un message déjà rédigé. Vous l'envoyez vous-même.</p>
-        </section>
-
-        <div class="tiles-wrap">
-          <div class="tiles">
-            <div class="panel tile"><span class="label">Prospects contactés</span><span class="value">486</span><span class="delta"><b>+12 %</b> vs 90 jours précédents</span>
-              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 22 L12 21 L22 22 L32 19 L42 20 L52 17 L62 16 L72 15 L82 13 L92 11 L102 10"/><path class="cur" d="M102 10 L118 6"/></svg></div>
-            <div class="panel tile"><span class="label">Taux de réponse</span><span class="value">27 %</span><span class="delta"><b>+4 pts</b> vs 90 jours précédents</span>
-              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 20 L12 19 L22 21 L32 18 L42 18 L52 16 L62 17 L72 14 L82 14 L92 12 L102 12"/><path class="cur" d="M102 12 L118 9"/></svg></div>
-            <div class="panel tile"><span class="label">Rendez-vous obtenus</span><span class="value">47</span><span class="delta"><b>+9</b> vs 90 jours précédents</span>
-              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 23 L12 22 L22 20 L32 21 L42 18 L52 18 L62 15 L72 16 L82 13 L92 12 L102 11"/><path class="cur" d="M102 11 L118 8"/></svg></div>
-            <div class="panel tile"><span class="label">Ventes validées</span><span class="value">18</span><span class="delta"><b>+5</b> vs 90 jours précédents</span>
-              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 24 L12 24 L22 22 L32 22 L42 20 L52 21 L62 18 L72 17 L82 16 L92 14 L102 13"/><path class="cur" d="M102 13 L118 9"/></svg></div>
-          </div>
-          <p class="panel tip-line"><b>À retenir :</b> WhatsApp répond trois fois plus que l'email sur vos cibles. Les prospects notés 80 et plus signent deux fois plus souvent.</p>
-        </div>
-      </div>
-
-      <section class="board-sec" aria-labelledby="board-h">
-        <div class="board-h"><h2 id="board-h">Suivi des prospects</h2><span class="hint">Glissez une carte vers une autre étape, ou utilisez les flèches gauche et droite du clavier.</span></div>
-        <p class="sr-only" id="kb-hint">Flèche droite ou gauche pour déplacer ce prospect d'une étape.</p>
-        <p class="sr-only" aria-live="polite" id="board-live"></p>
-        <div class="board" id="board">
-          <div class="col" data-stage="nouveau" aria-labelledby="c1"><div class="col-h"><span id="c1">Nouveau</span><span class="n" data-base="751">754</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Claire Fontaine</b><span class="cc">FR</span></div><span class="org">Cabinet Dentaire Confluence</span><div class="c-meta"><span class="next">Ajoutée aujourd'hui</span><span class="score"><span class="score-bar"><i style="--v:94%"></i></span>94</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Kevin Bouchard</b><span class="cc">CA</span></div><span class="org">Clinique Dentaire Plateau</span><div class="c-meta"><span class="next">Ajouté aujourd'hui</span><span class="score"><span class="score-bar"><i style="--v:63%"></i></span>63</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Nadia Benali</b><span class="cc">MA</span></div><span class="org">Cabinet Dentaire Maârif</span><div class="c-meta"><span class="next">Ajoutée hier</span><span class="score"><span class="score-bar"><i style="--v:68%"></i></span>68</span></div></article>
-            <p class="more">et 751 autres</p></div>
-          <div class="col" data-stage="contacte" aria-labelledby="c2"><div class="col-h"><span id="c2">Contacté</span><span class="n" data-base="308">310</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Youssef Alami</b><span class="cc">MA</span></div><span class="org">Centre Dentaire Anfa</span><div class="c-meta"><span class="next">WhatsApp, relance due</span><span class="score"><span class="score-bar"><i style="--v:89%"></i></span>89</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Sarah Peeters</b><span class="cc">BE</span></div><span class="org">Cabinet Sourire Ixelles</span><div class="c-meta"><span class="next">Email, il y a 5 jours</span><span class="score"><span class="score-bar"><i style="--v:77%"></i></span>77</span></div></article>
-            <p class="more">et 308 autres</p></div>
-          <div class="col" data-stage="repondu" aria-labelledby="c3"><div class="col-h"><span id="c3">Répondu</span><span class="n" data-base="59">61</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Moussa Ndiaye</b><span class="cc">SN</span></div><span class="org">Clinique Dentaire Almadies</span><div class="c-meta"><span class="next">Demande un devis</span><span class="score"><span class="score-bar"><i style="--v:82%"></i></span>82</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Hugo Lambert</b><span class="cc">FR</span></div><span class="org">Dentistes Bellecour</span><div class="c-meta"><span class="next">Rappeler en janvier</span><span class="score"><span class="score-bar"><i style="--v:71%"></i></span>71</span></div></article>
-            <p class="more">et 59 autres</p></div>
-          <div class="col" data-stage="rdv" aria-labelledby="c4"><div class="col-h"><span id="c4">Rendez-vous</span><span class="n" data-base="27">29</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Émilie Gagnon</b><span class="cc">CA</span></div><span class="org">Clinique Dentaire Rosemont</span><div class="c-meta"><span class="next">Demain, 10:00</span><span class="score"><span class="score-bar"><i style="--v:86%"></i></span>86</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Thomas Girard</b><span class="cc">FR</span></div><span class="org">Centre Dentaire Part-Dieu</span><div class="c-meta"><span class="next">Aujourd'hui, fait</span><span class="score"><span class="score-bar"><i style="--v:74%"></i></span>74</span></div></article>
-            <p class="more">et 27 autres</p></div>
-          <div class="col" data-stage="valide" aria-labelledby="c5"><div class="col-h"><svg aria-hidden="true"><use href="#i-check"/></svg><span id="c5">Validé</span><span class="n" data-base="16">18</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Grace Mensah</b><span class="cc">US</span></div><span class="org">Smile Studio Brooklyn</span><div class="c-meta"><span class="next won">Vente validée le 19/11</span><span class="score"><span class="score-bar"><i style="--v:91%"></i></span>91</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Awa Diallo</b><span class="cc">SN</span></div><span class="org">Cabinet Dentaire Mermoz</span><div class="c-meta"><span class="next won">Vente validée le 14/11</span><span class="score"><span class="score-bar"><i style="--v:84%"></i></span>84</span></div></article>
-            <p class="more">et 16 autres</p></div>
-          <div class="col" data-stage="perdu" aria-labelledby="c6"><div class="col-h"><svg aria-hidden="true"><use href="#i-dash"/></svg><span id="c6">Perdu</span><span class="n" data-base="66">68</span></div>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Marc Dubois</b><span class="cc">BE</span></div><span class="org">Centre Dentaire Louise</span><div class="c-meta"><span class="next">Pas de budget cette année</span><span class="score"><span class="score-bar"><i style="--v:58%"></i></span>58</span></div></article>
-            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Leila Haddad</b><span class="cc">MA</span></div><span class="org">Cabinet Dentaire Gauthier</span><div class="c-meta"><span class="next">A choisi un concurrent</span><span class="score"><span class="score-bar"><i style="--v:66%"></i></span>66</span></div></article>
-            <p class="more">et 66 autres</p></div>
-        </div>
-      </section>
-
-      <section class="charts" aria-label="Tableau de bord">
-        <article class="panel chart" aria-labelledby="g1">
-          <h3 id="g1">Entonnoir de conversion</h3>
-          <p class="sub">Prospects à chaque étape, et part de l'étape précédente</p>
-          <div class="chart-body hbars" data-tip-group>
-            <div class="hbar" tabindex="0" data-tip="Trouvés|1 240 prospects|100 % du total"><span class="name">Trouvés</span><span class="track"><span class="fill" style="--w:88%"></span><span class="val">1 240</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Contactés|486 prospects|39 % des trouvés"><span class="name">Contactés</span><span class="track"><span class="fill" style="--w:34.5%"></span><span class="val">486<small>39 %</small></span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Ont répondu|131 prospects|27 % des contactés"><span class="name">Ont répondu</span><span class="track"><span class="fill" style="--w:9.3%"></span><span class="val">131<small>27 %</small></span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Rendez-vous|47 prospects|36 % des réponses"><span class="name">Rendez-vous</span><span class="track"><span class="fill" style="--w:3.3%"></span><span class="val">47<small>36 %</small></span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Validés|18 ventes|38 % des rendez-vous, 1,5 % des trouvés"><span class="name">Validés</span><span class="track"><span class="fill" style="--w:1.3%"></span><span class="val">18<small>38 %</small></span></span></div>
-          </div>
-          <details class="data-view"><summary>Voir les données</summary>
-            <table><thead><tr><th>Étape</th><th class="n">Prospects</th><th class="n">Part de l'étape précédente</th></tr></thead>
-            <tbody><tr><td>Trouvés</td><td class="n">1 240</td><td class="n">—</td></tr><tr><td>Contactés</td><td class="n">486</td><td class="n">39 %</td></tr><tr><td>Ont répondu</td><td class="n">131</td><td class="n">27 %</td></tr><tr><td>Rendez-vous</td><td class="n">47</td><td class="n">36 %</td></tr><tr><td>Validés</td><td class="n">18</td><td class="n">38 %</td></tr></tbody></table>
-          </details>
-        </article>
-
-        <article class="panel chart" aria-labelledby="g2">
-          <h3 id="g2">Réponses reçues par semaine</h3>
-          <p class="sub">12 dernières semaines, tous canaux</p>
-          <div class="chart-body line-wrap" id="line" role="img" aria-label="Réponses par semaine, de 4 en semaine 36 à 20 en semaine 47"></div>
-          <details class="data-view"><summary>Voir les données</summary>
-            <table><thead><tr><th>Semaine</th><th class="n">Réponses</th></tr></thead>
-            <tbody><tr><td>S36 (semaine du 31/08)</td><td class="n">4</td></tr><tr><td>S37 (semaine du 07/09)</td><td class="n">6</td></tr><tr><td>S38 (semaine du 14/09)</td><td class="n">6</td></tr><tr><td>S39 (semaine du 21/09)</td><td class="n">8</td></tr><tr><td>S40 (semaine du 28/09)</td><td class="n">8</td></tr><tr><td>S41 (semaine du 05/10)</td><td class="n">10</td></tr><tr><td>S42 (semaine du 12/10)</td><td class="n">11</td></tr><tr><td>S43 (semaine du 19/10)</td><td class="n">12</td></tr><tr><td>S44 (semaine du 26/10)</td><td class="n">13</td></tr><tr><td>S45 (semaine du 02/11)</td><td class="n">16</td></tr><tr><td>S46 (semaine du 09/11)</td><td class="n">17</td></tr><tr><td>S47 (semaine du 16/11)</td><td class="n">20</td></tr></tbody></table>
-          </details>
-        </article>
-
-        <article class="panel chart" aria-labelledby="g3">
-          <h3 id="g3">Prospects trouvés par pays</h3>
-          <p class="sub">1 240 prospects sur la période</p>
-          <div class="chart-body hbars">
-            <div class="hbar" tabindex="0" data-tip="France|342 prospects|28 % du total"><span class="name">France</span><span class="track"><span class="fill" style="--w:84%"></span><span class="val">342</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Sénégal|268 prospects|22 % du total"><span class="name">Sénégal</span><span class="track"><span class="fill" style="--w:65.8%"></span><span class="val">268</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Canada|214 prospects|17 % du total"><span class="name">Canada</span><span class="track"><span class="fill" style="--w:52.6%"></span><span class="val">214</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Maroc|176 prospects|14 % du total"><span class="name">Maroc</span><span class="track"><span class="fill" style="--w:43.2%"></span><span class="val">176</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Belgique|139 prospects|11 % du total"><span class="name">Belgique</span><span class="track"><span class="fill" style="--w:34.1%"></span><span class="val">139</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="États-Unis|101 prospects|8 % du total"><span class="name">États-Unis</span><span class="track"><span class="fill" style="--w:24.8%"></span><span class="val">101</span></span></div>
-          </div>
-          <details class="data-view"><summary>Voir les données</summary>
-            <table><thead><tr><th>Pays</th><th class="n">Prospects</th><th class="n">Part</th></tr></thead>
-            <tbody><tr><td>France</td><td class="n">342</td><td class="n">28 %</td></tr><tr><td>Sénégal</td><td class="n">268</td><td class="n">22 %</td></tr><tr><td>Canada</td><td class="n">214</td><td class="n">17 %</td></tr><tr><td>Maroc</td><td class="n">176</td><td class="n">14 %</td></tr><tr><td>Belgique</td><td class="n">139</td><td class="n">11 %</td></tr><tr><td>États-Unis</td><td class="n">101</td><td class="n">8 %</td></tr></tbody></table>
-          </details>
-        </article>
-
-        <article class="panel chart" aria-labelledby="g4">
-          <h3 id="g4">Taux de réponse par canal</h3>
-          <p class="sub">Part des prospects contactés qui ont répondu</p>
-          <div class="chart-body hbars">
-            <div class="hbar" tabindex="0" data-tip="WhatsApp|38 %|68 réponses sur 180 contactés"><span class="name">WhatsApp</span><span class="track"><span class="fill" style="--w:76%"></span><span class="val">38 %</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Téléphone|35 %|21 réponses sur 60 contactés"><span class="name">Téléphone</span><span class="track"><span class="fill" style="--w:70%"></span><span class="val">35 %</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="LinkedIn|25 %|24 réponses sur 96 contactés"><span class="name">LinkedIn</span><span class="track"><span class="fill" style="--w:50%"></span><span class="val">25 %</span></span></div>
-            <div class="hbar" tabindex="0" data-tip="Email|12 %|18 réponses sur 150 contactés"><span class="name">Email</span><span class="track"><span class="fill" style="--w:24%"></span><span class="val">12 %</span></span></div>
-          </div>
-          <p class="axis-note">Échelle de 0 à 50 %. Survolez une barre pour le détail.</p>
-          <details class="data-view"><summary>Voir les données</summary>
-            <table><thead><tr><th>Canal</th><th class="n">Contactés</th><th class="n">Réponses</th><th class="n">Taux</th></tr></thead>
-            <tbody><tr><td>WhatsApp</td><td class="n">180</td><td class="n">68</td><td class="n">38 %</td></tr><tr><td>Téléphone</td><td class="n">60</td><td class="n">21</td><td class="n">35 %</td></tr><tr><td>LinkedIn</td><td class="n">96</td><td class="n">24</td><td class="n">25 %</td></tr><tr><td>Email</td><td class="n">150</td><td class="n">18</td><td class="n">12 %</td></tr></tbody></table>
-          </details>
-        </article>
-      </section>
-    </main>
+<aside class="sidebar" aria-label="Menu principal">
+  <a href="index.html" aria-label="Scoutra, site"><svg class="logo" viewBox="0 0 265.19 64" role="img" aria-label="Scoutra"><g class="logo-mark" transform="translate(0 10) scale(.6875)"><path d="M9 52H33A10 10 0 0 0 33 32H21A10 10 0 0 1 21 12H39" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="50" cy="12" r="6" fill="currentColor"/></g><g transform="translate(58 47) scale(0.056391 -0.056391)" fill="currentColor"><path d="M279 -10Q220 -10 173.5 2.5Q127 15 94.5 37.5Q62 60 44.0 92.5Q26 125 25 165H156Q158 136 173.5 117.0Q189 98 217.0 88.5Q245 79 283 79Q337 79 366.5 96.0Q396 113 396 147Q396 172 384.0 186.0Q372 200 344.0 207.0Q316 214 268 220Q189 229 138.5 246.0Q88 263 64.5 294.0Q41 325 41 376Q41 427 70.0 464.0Q99 501 153.0 521.5Q207 542 281 542Q351 542 402.5 522.0Q454 502 483.5 465.0Q513 428 517 376H388Q386 403 372.0 420.0Q358 437 334.0 445.5Q310 454 279 454Q231 454 201.5 437.0Q172 420 172 388Q172 365 185.5 352.0Q199 339 229.0 331.5Q259 324 307 318Q385 310 434.0 293.0Q483 276 506.5 244.0Q530 212 530 157Q530 105 501.0 67.5Q472 30 416.0 10.0Q360 -10 279 -10Z"/><path d="M847 -9Q782 -9 730.0 10.5Q678 30 640.5 66.5Q603 103 583.0 153.5Q563 204 563 267Q563 330 584.0 380.5Q605 431 643.0 467.0Q681 503 734.5 522.5Q788 542 853 542Q928 542 986.0 517.0Q1044 492 1078.0 448.0Q1112 404 1117 345H986Q979 375 960.0 395.0Q941 415 913.0 425.0Q885 435 851 435Q815 435 786.5 423.0Q758 411 738.0 388.5Q718 366 708.0 335.5Q698 305 698 266Q698 212 716.5 174.0Q735 136 769.5 116.5Q804 97 850 97Q887 97 915.5 109.0Q944 121 963.0 142.5Q982 164 988 192H1120Q1114 131 1077.0 85.5Q1040 40 980.5 15.5Q921 -9 847 -9Z"/><path d="M1440 -10Q1375 -10 1322.0 9.0Q1269 28 1230.5 64.0Q1192 100 1171.0 150.5Q1150 201 1150 266Q1150 350 1186.0 411.5Q1222 473 1287.0 507.5Q1352 542 1440 542Q1505 542 1558.0 523.0Q1611 504 1649.0 468.0Q1687 432 1708.0 381.0Q1729 330 1729 266Q1729 183 1693.5 121.0Q1658 59 1593.5 24.5Q1529 -10 1440 -10ZM1440 97Q1488 97 1522.5 117.0Q1557 137 1576.0 175.0Q1595 213 1595 266Q1595 306 1584.0 337.5Q1573 369 1553.0 391.0Q1533 413 1504.5 424.0Q1476 435 1440 435Q1393 435 1358.0 415.5Q1323 396 1304.0 358.0Q1285 320 1285 266Q1285 226 1295.5 194.5Q1306 163 1326.5 141.5Q1347 120 1375.5 108.5Q1404 97 1440 97Z"/><path d="M1990 -9Q1925 -9 1877.5 15.0Q1830 39 1804.5 89.5Q1779 140 1779 221V532H1912V250Q1912 200 1925.0 166.0Q1938 132 1966.0 114.5Q1994 97 2038 97Q2083 97 2116.5 117.0Q2150 137 2168.0 173.0Q2186 209 2186 255V532H2320V0H2192L2186 102H2180Q2156 50 2105.0 20.5Q2054 -9 1990 -9Z"/><path d="M2411.6 0H2545.6V427.48H2666.2V532H2545.6V691.6L2411.6 608.52V532H2371.4V427.48H2411.6Z"/><path d="M2712.24 0V532H2833.24L2838.24 443H2843.24Q2861.24 491 2901.24 515.5Q2941.24 540 2993.24 540Q3005.24 540 3014.74 539.5Q3024.24 539 3032.24 537V414Q3024.24 416 3013.24 416.5Q3002.24 417 2991.24 417Q2946.24 417 2914.24 402.0Q2882.24 387 2864.74 356.5Q2847.24 326 2845.24 281V0Z"/><path d="M3286.24 -9Q3233.24 -9 3188.74 10.0Q3144.24 29 3112.24 64.5Q3080.24 100 3063.24 151.0Q3046.24 202 3046.24 266Q3046.24 352 3076.24 413.5Q3106.24 475 3160.74 508.0Q3215.24 541 3286.24 541Q3334.24 541 3371.74 528.5Q3409.24 516 3436.24 493.0Q3463.24 470 3476.24 439H3483.24L3488.24 532H3614.24V0H3484.24L3482.24 96H3475.24Q3454.24 48 3403.74 19.5Q3353.24 -9 3286.24 -9ZM3329.24 96Q3378.24 96 3411.74 116.5Q3445.24 137 3463.24 170.5Q3481.24 204 3481.24 245V290Q3481.24 331 3463.24 364.0Q3445.24 397 3411.74 416.5Q3378.24 436 3331.24 436Q3285.24 436 3251.74 416.0Q3218.24 396 3199.74 358.0Q3181.24 320 3181.24 266Q3181.24 214 3199.24 175.5Q3217.24 137 3250.24 116.5Q3283.24 96 3329.24 96Z"/></g></svg></a>
+  <button class="ws" type="button" aria-label="Changer d'espace de travail"><span class="ws-av">R</span><span><b>Rendezvo</b><small>Formule Pipeline</small></span><svg class="i"><use href="#i-chevron"/></svg></button>
+  <nav aria-label="Sections"><ul class="snav"><li><a href="app-recherche.html"><svg class="i"><use href="#i-search"/></svg>Recherche<kbd>G R</kbd></a></li><li><a href="app-pipeline.html" aria-current="page"><svg class="i"><use href="#i-kanban"/></svg>Pipeline<kbd>G P</kbd></a></li><li><a href="app-recherche.html#prospects"><svg class="i"><use href="#i-users"/></svg>Prospects<span class="n">1 172</span></a></li><li><a href="app-recherche.html#exports"><svg class="i"><use href="#i-download"/></svg>Exports</a></li><li><a href="app-recherche.html#parametres"><svg class="i"><use href="#i-settings"/></svg>Paramètres</a></li></ul></nav>
+  <p class="side-h">Recherches récentes</p>
+  <ul class="recent">
+    <li><a href="app-recherche.html">Cabinets dentaires, 5 pays</a></li>
+    <li><a href="app-recherche.html">Agences de voyage à Lisbonne</a></li>
+    <li><a href="app-recherche.html">Coachs sportifs à Miami</a></li>
+    <li><a href="app-recherche.html">Distributeurs médicaux, Allemagne</a></li>
+  </ul>
+  <div class="side-foot">
+    <div class="credits"><p><span>Crédits ce mois-ci</span><span><b class="tnum">1 412</b> / 2 000</span></p><div class="bar"><i style="width:70.6%"></i></div></div>
+    <div class="me"><span class="av">SM</span><span>Sofia Mendes<small>sofia@rendezvo.example</small></span></div>
   </div>
+</aside>
+<div class="main">
+  <div class="mobile-bar"><svg class="logo" viewBox="0 0 265.19 64" role="img" aria-label="Scoutra"><g class="logo-mark" transform="translate(0 10) scale(.6875)"><path d="M9 52H33A10 10 0 0 0 33 32H21A10 10 0 0 1 21 12H39" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="50" cy="12" r="6" fill="currentColor"/></g><g transform="translate(58 47) scale(0.056391 -0.056391)" fill="currentColor"><path d="M279 -10Q220 -10 173.5 2.5Q127 15 94.5 37.5Q62 60 44.0 92.5Q26 125 25 165H156Q158 136 173.5 117.0Q189 98 217.0 88.5Q245 79 283 79Q337 79 366.5 96.0Q396 113 396 147Q396 172 384.0 186.0Q372 200 344.0 207.0Q316 214 268 220Q189 229 138.5 246.0Q88 263 64.5 294.0Q41 325 41 376Q41 427 70.0 464.0Q99 501 153.0 521.5Q207 542 281 542Q351 542 402.5 522.0Q454 502 483.5 465.0Q513 428 517 376H388Q386 403 372.0 420.0Q358 437 334.0 445.5Q310 454 279 454Q231 454 201.5 437.0Q172 420 172 388Q172 365 185.5 352.0Q199 339 229.0 331.5Q259 324 307 318Q385 310 434.0 293.0Q483 276 506.5 244.0Q530 212 530 157Q530 105 501.0 67.5Q472 30 416.0 10.0Q360 -10 279 -10Z"/><path d="M847 -9Q782 -9 730.0 10.5Q678 30 640.5 66.5Q603 103 583.0 153.5Q563 204 563 267Q563 330 584.0 380.5Q605 431 643.0 467.0Q681 503 734.5 522.5Q788 542 853 542Q928 542 986.0 517.0Q1044 492 1078.0 448.0Q1112 404 1117 345H986Q979 375 960.0 395.0Q941 415 913.0 425.0Q885 435 851 435Q815 435 786.5 423.0Q758 411 738.0 388.5Q718 366 708.0 335.5Q698 305 698 266Q698 212 716.5 174.0Q735 136 769.5 116.5Q804 97 850 97Q887 97 915.5 109.0Q944 121 963.0 142.5Q982 164 988 192H1120Q1114 131 1077.0 85.5Q1040 40 980.5 15.5Q921 -9 847 -9Z"/><path d="M1440 -10Q1375 -10 1322.0 9.0Q1269 28 1230.5 64.0Q1192 100 1171.0 150.5Q1150 201 1150 266Q1150 350 1186.0 411.5Q1222 473 1287.0 507.5Q1352 542 1440 542Q1505 542 1558.0 523.0Q1611 504 1649.0 468.0Q1687 432 1708.0 381.0Q1729 330 1729 266Q1729 183 1693.5 121.0Q1658 59 1593.5 24.5Q1529 -10 1440 -10ZM1440 97Q1488 97 1522.5 117.0Q1557 137 1576.0 175.0Q1595 213 1595 266Q1595 306 1584.0 337.5Q1573 369 1553.0 391.0Q1533 413 1504.5 424.0Q1476 435 1440 435Q1393 435 1358.0 415.5Q1323 396 1304.0 358.0Q1285 320 1285 266Q1285 226 1295.5 194.5Q1306 163 1326.5 141.5Q1347 120 1375.5 108.5Q1404 97 1440 97Z"/><path d="M1990 -9Q1925 -9 1877.5 15.0Q1830 39 1804.5 89.5Q1779 140 1779 221V532H1912V250Q1912 200 1925.0 166.0Q1938 132 1966.0 114.5Q1994 97 2038 97Q2083 97 2116.5 117.0Q2150 137 2168.0 173.0Q2186 209 2186 255V532H2320V0H2192L2186 102H2180Q2156 50 2105.0 20.5Q2054 -9 1990 -9Z"/><path d="M2411.6 0H2545.6V427.48H2666.2V532H2545.6V691.6L2411.6 608.52V532H2371.4V427.48H2411.6Z"/><path d="M2712.24 0V532H2833.24L2838.24 443H2843.24Q2861.24 491 2901.24 515.5Q2941.24 540 2993.24 540Q3005.24 540 3014.74 539.5Q3024.24 539 3032.24 537V414Q3024.24 416 3013.24 416.5Q3002.24 417 2991.24 417Q2946.24 417 2914.24 402.0Q2882.24 387 2864.74 356.5Q2847.24 326 2845.24 281V0Z"/><path d="M3286.24 -9Q3233.24 -9 3188.74 10.0Q3144.24 29 3112.24 64.5Q3080.24 100 3063.24 151.0Q3046.24 202 3046.24 266Q3046.24 352 3076.24 413.5Q3106.24 475 3160.74 508.0Q3215.24 541 3286.24 541Q3334.24 541 3371.74 528.5Q3409.24 516 3436.24 493.0Q3463.24 470 3476.24 439H3483.24L3488.24 532H3614.24V0H3484.24L3482.24 96H3475.24Q3454.24 48 3403.74 19.5Q3353.24 -9 3286.24 -9ZM3329.24 96Q3378.24 96 3411.74 116.5Q3445.24 137 3463.24 170.5Q3481.24 204 3481.24 245V290Q3481.24 331 3463.24 364.0Q3445.24 397 3411.74 416.5Q3378.24 436 3331.24 436Q3285.24 436 3251.74 416.0Q3218.24 396 3199.74 358.0Q3181.24 320 3181.24 266Q3181.24 214 3199.24 175.5Q3217.24 137 3250.24 116.5Q3283.24 96 3329.24 96Z"/></g></svg><span class="sp"></span><span class="av">SM</span></div>
+  <nav class="mobile-tabs" aria-label="Sections"><a href="app-recherche.html"><svg class="i"><use href="#i-search"/></svg>Recherche</a><a href="app-pipeline.html" aria-current="page"><svg class="i"><use href="#i-kanban"/></svg>Pipeline</a><a href="app-recherche.html#prospects"><svg class="i"><use href="#i-users"/></svg>Prospects</a></nav>
+  <header class="topbar">
+    <div class="crumbs"><b>Pipeline</b></div>
+    <span class="sp"></span>
+    <button class="btn btn-line btn-s" type="button"><svg class="i"><use href="#i-download"/></svg>Exporter</button>
+    <a class="btn btn-accent btn-s" href="app-recherche.html"><svg class="i"><use href="#i-plus"/></svg>Nouvelle recherche</a>
+  </header>
+  <main class="page" id="contenu">
+    <div class="filters">
+      <div class="seg" role="group" aria-label="Période" data-seg><button type="button" aria-pressed="false">7 jours</button><button type="button" aria-pressed="false">30 jours</button><button type="button" aria-pressed="true">90 jours</button></div>
+      <button class="sel" type="button"><span class="lbl">Pays</span>Tous<svg class="i"><use href="#i-chevron"/></svg></button>
+      <button class="sel" type="button"><span class="lbl">Canal</span>Tous<svg class="i"><use href="#i-chevron"/></svg></button>
+      <button class="sel" type="button"><span class="lbl">Responsable</span>Toute l'équipe<svg class="i"><use href="#i-chevron"/></svg></button>
+      <span class="sp"></span><span class="range">Du 24 août au 22 novembre 2026</span>
+    </div>
+
+    <div class="panel kpis"><section class="kpi" aria-label="Prospects contactés"><h2>Prospects contactés</h2><p class="v">310</p><p class="d"><b>+12 %</b> par rapport aux 90 jours précédents</p><svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true"><polyline class="base" points="0.0,29.0 18.2,25.0 36.4,27.0 54.5,21.0 72.7,17.0 90.9,19.0 109.1,15.0 127.3,13.0 145.5,15.0 163.6,9.0" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><polyline class="lead" points="163.6,9.0 181.8,7.0 200.0,3.0" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></section><section class="kpi" aria-label="Taux de réponse"><h2>Taux de réponse</h2><p class="v">20 %</p><p class="d"><b>+4 pts</b> par rapport aux 90 jours précédents</p><svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true"><polyline class="base" points="0.0,29.0 18.2,24.7 36.4,24.7 54.5,20.3 72.7,24.7 90.9,16.0 109.1,11.7 127.3,16.0 145.5,11.7 163.6,7.3" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><polyline class="lead" points="163.6,7.3 181.8,7.3 200.0,3.0" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></section><section class="kpi" aria-label="Rendez-vous obtenus"><h2>Rendez-vous obtenus</h2><p class="v">29</p><p class="d"><b>+9</b> par rapport aux 90 jours précédents</p><svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true"><polyline class="base" points="0.0,29.0 18.2,20.3 36.4,20.3 54.5,29.0 72.7,11.7 90.9,20.3 109.1,11.7 127.3,11.7 145.5,20.3 163.6,3.0" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><polyline class="lead" points="163.6,3.0 181.8,11.7 200.0,11.7" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></section><section class="kpi" aria-label="Ventes validées"><h2>Ventes validées</h2><p class="v">18</p><p class="d"><b>+5</b> par rapport aux 90 jours précédents</p><svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true"><polyline class="base" points="0.0,29.0 18.2,20.3 36.4,20.3 54.5,20.3 72.7,11.7 90.9,20.3 109.1,20.3 127.3,11.7 145.5,11.7 163.6,11.7" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><polyline class="lead" points="163.6,11.7 181.8,11.7 200.0,3.0" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></section></div>
+
+    <div class="row2">
+      <section class="panel" aria-labelledby="h-todo">
+        <div class="panel-h"><h2 id="h-todo">Relances du jour</h2><span class="faint" style="font-size:13px">dimanche 22 novembre</span><span class="sp"></span><span class="label-13" id="todo-left">5 à faire</span></div>
+        <ul class="todo"><li><input type="checkbox" aria-label="Marquer comme fait : Youssef Alami"><div><b>Youssef Alami</b><p class="what"><svg class="i"><use href="#i-chat"/></svg>Relance 2 par WhatsApp, message prêt</p></div><time class="late"><svg class="i"><use href="#i-clock"/></svg>Hier</time></li><li><input type="checkbox" aria-label="Marquer comme fait : Émilie Gagnon"><div><b>Émilie Gagnon</b><p class="what"><svg class="i"><use href="#i-phone"/></svg>Confirmer le rendez-vous de demain 10:00</p></div><time>09:30</time></li><li><input type="checkbox" aria-label="Marquer comme fait : Moussa Ndiaye"><div><b>Moussa Ndiaye</b><p class="what"><svg class="i"><use href="#i-mail"/></svg>Envoyer le devis demandé</p></div><time>11:00</time></li><li><input type="checkbox" aria-label="Marquer comme fait : Sarah Peeters"><div><b>Sarah Peeters</b><p class="what"><svg class="i"><use href="#i-phone"/></svg>Relance 1, sans réponse depuis 5 jours</p></div><time>14:00</time></li><li><input type="checkbox" aria-label="Marquer comme fait : Thomas Girard"><div><b>Thomas Girard</b><p class="what"><svg class="i"><use href="#i-mail"/></svg>Proposition après le rendez-vous</p></div><time>16:30</time></li></ul>
+        <p class="todo-f">Chaque relance ouvre un message déjà rédigé. Vous l'envoyez vous-même.</p>
+      </section>
+      <section class="panel" aria-labelledby="h-perf">
+        <div class="panel-h"><h2 id="h-perf">Ce qui convertit</h2></div>
+        <div class="charts">
+          <figure class="chart"><figcaption><h3>WhatsApp répond 3 fois plus que l'email</h3><p class="sub">Taux de réponse par canal, 90 jours</p></figcaption><ul class="hbars"><li tabindex="0" class="top"><span>WhatsApp</span><span class="track"><i class="fill" style="width:100.0%"></i></span><span class="v">34 %</span><span class="tip">41 réponses sur 121 messages</span></li><li tabindex="0" class=""><span>Téléphone</span><span class="track"><i class="fill" style="width:64.7%"></i></span><span class="v">22 %</span><span class="tip">14 réponses sur 64 appels</span></li><li tabindex="0" class=""><span>Email</span><span class="track"><i class="fill" style="width:32.4%"></i></span><span class="v">11 %</span><span class="tip">14 réponses sur 125 emails</span></li></ul><table class="sr-only"><caption>Taux de réponse par canal</caption><tbody><tr><th scope="row">WhatsApp</th><td>34 %</td><td>41 réponses sur 121 messages</td></tr><tr><th scope="row">Téléphone</th><td>22 %</td><td>14 réponses sur 64 appels</td></tr><tr><th scope="row">Email</th><td>11 %</td><td>14 réponses sur 125 emails</td></tr></tbody></table></figure>
+          <figure class="chart"><figcaption><h3>La France apporte le plus de prospects</h3><p class="sub">Prospects ajoutés par pays, 90 jours</p></figcaption><ul class="hbars"><li tabindex="0" class="top"><span>France</span><span class="track"><i class="fill" style="width:100.0%"></i></span><span class="v">212</span><span class="tip">212 prospects, 5 ventes</span></li><li tabindex="0" class=""><span>Maroc</span><span class="track"><i class="fill" style="width:79.2%"></i></span><span class="v">168</span><span class="tip">168 prospects, 4 ventes</span></li><li tabindex="0" class=""><span>Canada</span><span class="track"><i class="fill" style="width:71.2%"></i></span><span class="v">151</span><span class="tip">151 prospects, 4 ventes</span></li><li tabindex="0" class=""><span>Sénégal</span><span class="track"><i class="fill" style="width:58.5%"></i></span><span class="v">124</span><span class="tip">124 prospects, 3 ventes</span></li><li tabindex="0" class=""><span>Belgique</span><span class="track"><i class="fill" style="width:46.7%"></i></span><span class="v">99</span><span class="tip">99 prospects, 2 ventes</span></li></ul><table class="sr-only"><caption>Prospects par pays</caption><tbody><tr><th scope="row">France</th><td>212</td><td>212 prospects, 5 ventes</td></tr><tr><th scope="row">Maroc</th><td>168</td><td>168 prospects, 4 ventes</td></tr><tr><th scope="row">Canada</th><td>151</td><td>151 prospects, 4 ventes</td></tr><tr><th scope="row">Sénégal</th><td>124</td><td>124 prospects, 3 ventes</td></tr><tr><th scope="row">Belgique</th><td>99</td><td>99 prospects, 2 ventes</td></tr></tbody></table></figure>
+        </div>
+        <p class="insight"><b>À retenir :</b> les prospects notés 80 et plus signent deux fois plus souvent. 11 d'entre eux attendent encore un premier message.</p>
+      </section>
+    </div>
+
+    <div class="board-h"><h2 id="h-board">Suivi des prospects</h2><p>Glissez une carte vers une autre étape, ou sélectionnez-la et utilisez les flèches gauche et droite.</p></div>
+    <div class="board" aria-labelledby="h-board"><section class="col" data-stage="nouveau" aria-label="Nouveau"><h3 class="col-h"><span class="sq"></span>Nouveau<span class="n" data-n="754">754</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Claire Fontaine, Nouveau"><div class="t"><b>Claire Fontaine</b><span class="cc">FR</span></div><p class="org">Cabinet Dentaire Confluence</p><p class="nx "><svg class="i"><use href="#i-plus"/></svg>Ajoutée aujourd&#x27;hui</p><div class="b"><span class="score">94<span class="gauge"><i style="width:94%"></i></span></span><span class="av" title="Responsable">SM</span></div></li><li class="card" tabindex="0" aria-label="Kevin Bouchard, Nouveau"><div class="t"><b>Kevin Bouchard</b><span class="cc">CA</span></div><p class="org">Clinique Dentaire Plateau</p><p class="nx "><svg class="i"><use href="#i-plus"/></svg>Ajouté aujourd&#x27;hui</p><div class="b"><span class="score">63<span class="gauge"><i style="width:63%"></i></span></span><span class="av" title="Responsable">SM</span></div></li><li class="card" tabindex="0" aria-label="Nadia Benali, Nouveau"><div class="t"><b>Nadia Benali</b><span class="cc">MA</span></div><p class="org">Cabinet Dentaire Maârif</p><p class="nx "><svg class="i"><use href="#i-alert"/></svg>Email à confirmer</p><div class="b"><span class="score">68<span class="gauge"><i style="width:68%"></i></span></span><span class="av" title="Responsable">JD</span></div></li></ul><p class="more">751 autres</p></section><section class="col" data-stage="contacte" aria-label="Contacté"><h3 class="col-h"><span class="sq"></span>Contacté<span class="n" data-n="310">310</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Youssef Alami, Contacté"><div class="t"><b>Youssef Alami</b><span class="cc">MA</span></div><p class="org">Centre Dentaire Anfa</p><p class="nx late"><svg class="i"><use href="#i-clock"/></svg>Relance 2 en retard</p><div class="b"><span class="score">89<span class="gauge"><i style="width:89%"></i></span></span><span class="av" title="Responsable">SM</span></div></li><li class="card" tabindex="0" aria-label="Sarah Peeters, Contacté"><div class="t"><b>Sarah Peeters</b><span class="cc">BE</span></div><p class="org">Cabinet Sourire Ixelles</p><p class="nx "><svg class="i"><use href="#i-clock"/></svg>Relance 1 aujourd&#x27;hui</p><div class="b"><span class="score">77<span class="gauge"><i style="width:77%"></i></span></span><span class="av" title="Responsable">JD</span></div></li><li class="card" tabindex="0" aria-label="Inès Haddad, Contacté"><div class="t"><b>Inès Haddad</b><span class="cc">MA</span></div><p class="org">Dentistes Gauthier</p><p class="nx "><svg class="i"><use href="#i-clock"/></svg>Relance 1 jeudi</p><div class="b"><span class="score">71<span class="gauge"><i style="width:71%"></i></span></span><span class="av" title="Responsable">SM</span></div></li></ul><p class="more">307 autres</p></section><section class="col" data-stage="repondu" aria-label="Répondu"><h3 class="col-h"><span class="sq"></span>Répondu<span class="n" data-n="61">61</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Moussa Ndiaye, Répondu"><div class="t"><b>Moussa Ndiaye</b><span class="cc">SN</span></div><p class="org">Clinique Dentaire Almadies</p><p class="nx "><svg class="i"><use href="#i-mail"/></svg>A demandé un devis</p><div class="b"><span class="score">82<span class="gauge"><i style="width:82%"></i></span></span><span class="av" title="Responsable">SM</span></div></li><li class="card" tabindex="0" aria-label="Hugo Lambert, Répondu"><div class="t"><b>Hugo Lambert</b><span class="cc">FR</span></div><p class="org">Dentistes Bellecour</p><p class="nx "><svg class="i"><use href="#i-chat"/></svg>Intéressé, rappeler lundi</p><div class="b"><span class="score">79<span class="gauge"><i style="width:79%"></i></span></span><span class="av" title="Responsable">JD</span></div></li></ul><p class="more">59 autres</p></section><section class="col" data-stage="rdv" aria-label="Rendez-vous"><h3 class="col-h"><span class="sq"></span>Rendez-vous<span class="n" data-n="29">29</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Émilie Gagnon, Rendez-vous"><div class="t"><b>Émilie Gagnon</b><span class="cc">CA</span></div><p class="org">Clinique Dentaire Rosemont</p><p class="nx "><svg class="i"><use href="#i-calendar"/></svg>Demain 10:00, visio</p><div class="b"><span class="score">86<span class="gauge"><i style="width:86%"></i></span></span><span class="av" title="Responsable">SM</span></div></li><li class="card" tabindex="0" aria-label="Thomas Girard, Rendez-vous"><div class="t"><b>Thomas Girard</b><span class="cc">FR</span></div><p class="org">Centre Dentaire Part-Dieu</p><p class="nx "><svg class="i"><use href="#i-calendar"/></svg>Fait le 20/11, proposition</p><div class="b"><span class="score">74<span class="gauge"><i style="width:74%"></i></span></span><span class="av" title="Responsable">SM</span></div></li></ul><p class="more">27 autres</p></section><section class="col" data-stage="valide" aria-label="Validé"><h3 class="col-h"><span class="sq"></span>Validé<span class="n" data-n="18">18</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Grace Mensah, Validé"><div class="t"><b>Grace Mensah</b><span class="cc">US</span></div><p class="org">Smile Studio Brooklyn</p><p class="nx win"><svg class="i"><use href="#i-check"/></svg>Vente validée le 19/11</p><div class="b"><span class="score">91<span class="gauge"><i style="width:91%"></i></span></span><span class="av" title="Responsable">JD</span></div></li><li class="card" tabindex="0" aria-label="Awa Diallo, Validé"><div class="t"><b>Awa Diallo</b><span class="cc">SN</span></div><p class="org">Cabinet Dentaire Mermoz</p><p class="nx win"><svg class="i"><use href="#i-check"/></svg>Vente validée le 14/11</p><div class="b"><span class="score">84<span class="gauge"><i style="width:84%"></i></span></span><span class="av" title="Responsable">SM</span></div></li></ul><p class="more">16 autres</p></section><section class="col" data-stage="perdu" aria-label="Perdu"><h3 class="col-h"><span class="sq"></span>Perdu<span class="n" data-n="68">68</span></h3><ul class="cards" style="display:grid;gap:8px"><li class="card" tabindex="0" aria-label="Marc Dubois, Perdu"><div class="t"><b>Marc Dubois</b><span class="cc">BE</span></div><p class="org">Centre Dentaire Louise</p><p class="nx "><svg class="i"><use href="#i-x"/></svg>Pas de budget cette année</p><div class="b"><span class="score">58<span class="gauge"><i style="width:58%"></i></span></span><span class="av" title="Responsable">JD</span></div></li><li class="card" tabindex="0" aria-label="Leila Haddad, Perdu"><div class="t"><b>Leila Haddad</b><span class="cc">MA</span></div><p class="org">Cabinet Gauthier</p><p class="nx "><svg class="i"><use href="#i-x"/></svg>A déjà un outil</p><div class="b"><span class="score">61<span class="gauge"><i style="width:61%"></i></span></span><span class="av" title="Responsable">SM</span></div></li></ul><p class="more">66 autres</p></section></div>
+    <p class="sr-only" id="live" aria-live="polite"></p>
+  </main>
+</div>
 </div>
 
-<div class="tip" id="tip" role="tooltip" hidden></div>
+<div class="mock-tools" role="region" aria-label="Options de la maquette">
+  <span class="demo">Données de démonstration</span>
+  <div class="seg" role="group" aria-label="Couleur d'accent">
+    <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw" style="background:#ff5b1f"></span>Orange</button>
+    <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw" style="background:#2b59ff"></span>Bleu</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><svg class="i"><use href="#i-check"/></svg><span id="toast-t"></span></div>
 
 <script type="module">
-  import { animate } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
+  import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const tip = document.getElementById("tip");
+  const $ = (id) => document.getElementById(id);
+  const cols = [...document.querySelectorAll(".col")];
+  const label = (c) => c.getAttribute("aria-label");
+  function toast(t) { const el = $("toast"); $("toast-t").textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2200); }
+  function bump(col, d) { const n = col.querySelector(".n"); const v = +n.dataset.n + d; n.dataset.n = v; n.textContent = v.toLocaleString("fr-FR"); }
 
-  /* ---------- Infobulle partagée (textContent uniquement) ---------- */
-  function showTip(lines, x, y) {
-    const [title, value, detail] = lines;
-    const s = document.createElement("strong"); s.textContent = value;
-    const t = document.createElement("div"); t.textContent = title;
-    const d = document.createElement("div"); d.textContent = detail || "";
-    tip.replaceChildren(s, t, d);
-    tip.hidden = false;
-    const w = tip.offsetWidth, h = tip.offsetHeight;
-    const left = Math.min(Math.max(8, x - w / 2), document.documentElement.clientWidth - w - 8);
-    tip.style.left = left + window.scrollX + "px";
-    tip.style.top = y + window.scrollY - h - 10 + "px";
+  function moveCard(card, target, viaKeyboard) {
+    const from = card.closest(".col"); if (!target || target === from) return;
+    target.querySelector(".cards").prepend(card);
+    bump(from, -1); bump(target, +1);
+    card.setAttribute("aria-label", card.querySelector("b").textContent + ", " + label(target));
+    const name = card.querySelector("b").textContent;
+    $("live").textContent = name + " déplacé vers " + label(target);
+    toast(name + " déplacé vers " + label(target));
+    if (!reduce) animate(card, { opacity: [0.4, 1], scale: [0.97, 1] }, { duration: 0.24, ease: [0.2, 0.7, 0.2, 1] });
+    if (viaKeyboard) card.focus();
   }
-  const hideTip = () => (tip.hidden = true);
 
-  document.querySelectorAll(".hbar[data-tip]").forEach((el) => {
-    const lines = el.dataset.tip.split("|");
-    el.setAttribute("aria-label", lines.join(", "));
-    const place = () => { const r = el.querySelector(".fill").getBoundingClientRect(); showTip(lines, r.right, r.top); };
-    el.addEventListener("pointerenter", place);
-    el.addEventListener("focus", place);
-    el.addEventListener("pointerleave", hideTip);
-    el.addEventListener("blur", hideTip);
-  });
-
-  /* ---------- Courbe hebdomadaire ---------- */
-  const weeks = [{"w": "S36", "v": 4, "d": "semaine du 31/08"}, {"w": "S37", "v": 6, "d": "semaine du 07/09"}, {"w": "S38", "v": 6, "d": "semaine du 14/09"}, {"w": "S39", "v": 8, "d": "semaine du 21/09"}, {"w": "S40", "v": 8, "d": "semaine du 28/09"}, {"w": "S41", "v": 10, "d": "semaine du 05/10"}, {"w": "S42", "v": 11, "d": "semaine du 12/10"}, {"w": "S43", "v": 12, "d": "semaine du 19/10"}, {"w": "S44", "v": 13, "d": "semaine du 26/10"}, {"w": "S45", "v": 16, "d": "semaine du 02/11"}, {"w": "S46", "v": 17, "d": "semaine du 09/11"}, {"w": "S47", "v": 20, "d": "semaine du 16/11"}];
-  const host = document.getElementById("line");
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
-
-  function drawLine() {
-    const W = host.clientWidth || 520, H = 220;
-    const m = { l: 30, r: 40, t: 14, b: 26 };
-    const max = 25;
-    const x = (i) => m.l + (i * (W - m.l - m.r)) / (weeks.length - 1);
-    const y = (v) => m.t + (1 - v / max) * (H - m.t - m.b);
-    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" });
-    [0, 10, 20].forEach((v) => {
-      svg.append(el("line", { class: "grid", x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }));
-      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
-    });
-    const step = W < 460 ? 3 : 2;
-    weeks.forEach((w, i) => {
-      const lastI = weeks.length - 1;
-      if (i !== lastI && (i % step !== 0 || lastI - i < step)) return;
-      const t = el("text", { x: x(i), y: H - 6, "text-anchor": "middle" }); t.textContent = w.w; svg.append(t);
-    });
-    const pts = weeks.map((w, i) => `${x(i)},${y(w.v)}`);
-    svg.append(el("path", { class: "area", d: `M${x(0)},${y(0)} L${pts.join(" L")} L${x(weeks.length - 1)},${y(0)} Z` }));
-    const line = el("path", { class: "ln", d: `M${pts.join(" L")}` });
-    svg.append(line);
-    const last = weeks.length - 1;
-    svg.append(el("circle", { class: "end", cx: x(last), cy: y(weeks[last].v), r: 5 }));
-    const g = el("g", { class: "end-label" });
-    const lbl = String(weeks[last].v);
-    g.append(el("rect", { x: x(last) + 9, y: y(weeks[last].v) - 10, width: 8 * lbl.length + 10, height: 20, rx: 4 }));
-    const lt = el("text", { x: x(last) + 14, y: y(weeks[last].v) + 4 }); lt.textContent = lbl; g.append(lt);
-    svg.append(g);
-    // Réticule + infobulle
-    const xh = el("line", { class: "xhair", y1: m.t, y2: H - m.b, visibility: "hidden" });
-    const dot = el("circle", { class: "hov", r: 5, visibility: "hidden" });
-    const hit = el("rect", { x: m.l, y: 0, width: W - m.l - m.r + 20, height: H, fill: "transparent" });
-    svg.append(xh, dot, hit);
-    hit.addEventListener("pointermove", (ev) => {
-      const r = svg.getBoundingClientRect();
-      const px = ev.clientX - r.left;
-      const i = Math.max(0, Math.min(last, Math.round(((px - m.l) / (W - m.l - m.r)) * last)));
-      xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
-      dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(weeks[i].v)); dot.setAttribute("visibility", "visible");
-      showTip([`Semaine ${weeks[i].w.slice(1)}`, `${weeks[i].v} réponses`, weeks[i].d], r.left + x(i), r.top + y(weeks[i].v));
-    });
-    hit.addEventListener("pointerleave", () => { xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); });
-    host.replaceChildren(svg);
-    return line;
-  }
-  const line = drawLine();
-  if (!reduce) {
-    // Apparition unique de la courbe (opacité seulement)
-    animate(host, { opacity: [0, 1] }, { duration: 0.5 });
-  }
-  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawLine, 120); });
-
-  /* ---------- Kanban : glisser-déposer + clavier ---------- */
-  const board = document.getElementById("board");
-  const cols = [...board.querySelectorAll(".col")];
-  const live = document.getElementById("board-live");
-  let dragged = null;
-
-  function updateCounts() {
-    cols.forEach((c) => {
-      const n = c.querySelector(".n");
-      n.textContent = (Number(n.dataset.base) + c.querySelectorAll(".card").length).toLocaleString("fr-FR");
-    });
-  }
-  function moveCard(card, col, focus) {
-    col.insertBefore(card, col.querySelector(".more"));
-    updateCounts();
-    live.textContent = `${card.querySelector("b").textContent} déplacé vers ${col.querySelector(".col-h span[id]").textContent}`;
-    if (!reduce) animate(card, { opacity: [0.3, 1], scale: [0.97, 1] }, { duration: 0.22, ease: [0.2, 0, 0, 1] });
-    if (focus) card.focus();
-  }
-  board.addEventListener("dragstart", (e) => {
-    dragged = e.target.closest(".card"); if (!dragged) return;
-    dragged.classList.add("dragging");
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", "");
-  });
-  board.addEventListener("dragend", () => { dragged && dragged.classList.remove("dragging"); cols.forEach((c) => c.classList.remove("drop")); dragged = null; });
-  cols.forEach((col) => {
-    col.addEventListener("dragover", (e) => { if (!dragged) return; e.preventDefault(); col.classList.add("drop"); });
-    col.addEventListener("dragleave", (e) => { if (!col.contains(e.relatedTarget)) col.classList.remove("drop"); });
-    col.addEventListener("drop", (e) => { e.preventDefault(); col.classList.remove("drop"); if (dragged) moveCard(dragged, col, false); });
-  });
-  board.addEventListener("keydown", (e) => {
-    const card = e.target.closest(".card"); if (!card) return;
+  // Clavier : flèches gauche/droite
+  document.addEventListener("keydown", (e) => {
+    const card = e.target.closest && e.target.closest(".card"); if (!card) return;
     const i = cols.indexOf(card.closest(".col"));
-    if (e.key === "ArrowRight" && i < cols.length - 1) { e.preventDefault(); moveCard(card, cols[i + 1], true); }
-    if (e.key === "ArrowLeft" && i > 0) { e.preventDefault(); moveCard(card, cols[i - 1], true); }
+    if (e.key === "ArrowRight") { e.preventDefault(); moveCard(card, cols[i + 1], true); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); moveCard(card, cols[i - 1], true); }
   });
+
+  // Souris / tactile : glisser-déposer (transform uniquement pendant le geste)
+  let drag = null;
+  document.addEventListener("pointerdown", (e) => {
+    const card = e.target.closest(".card"); if (!card || e.button !== 0) return;
+    drag = { card, x: e.clientX, y: e.clientY, moved: false };
+    card.setPointerCapture(e.pointerId);
+  });
+  document.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    drag.moved = true; drag.card.classList.add("dragging");
+    drag.card.style.transform = `translate(${dx}px, ${dy}px) rotate(1.5deg)`;
+    drag.card.style.pointerEvents = "none";
+    const over = document.elementFromPoint(e.clientX, e.clientY)?.closest(".col");
+    cols.forEach((c) => c.classList.toggle("over", c === over));
+    drag.card.style.pointerEvents = "";
+  });
+  document.addEventListener("pointerup", (e) => {
+    if (!drag) return;
+    const { card, moved } = drag; drag = null;
+    card.classList.remove("dragging"); card.style.transform = "";
+    const target = cols.find((c) => c.classList.contains("over"));
+    cols.forEach((c) => c.classList.remove("over"));
+    if (moved && target) moveCard(card, target);
+  });
+
+  // Relances : cocher
+  document.querySelectorAll(".todo input").forEach((cb) => cb.addEventListener("change", () => {
+    cb.closest("li").classList.toggle("done", cb.checked);
+    const left = document.querySelectorAll(".todo input:not(:checked)").length;
+    $("todo-left").textContent = left ? left + " à faire" : "Tout est fait";
+    if (cb.checked) toast("Relance marquée comme faite");
+  }));
+  document.querySelectorAll("[data-seg]").forEach((g) => g.addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; g.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
+
+  // Une seule entrée au chargement : les barres des graphiques
+  if (!reduce) animate(".hbars .fill", { scaleX: [0, 1] }, { delay: stagger(0.05), duration: 0.4, ease: [0.2, 0.7, 0.2, 1] });
 </script>
 </body>
 </html>
