@@ -17,7 +17,12 @@
     "@scoutra/config": "workspace:*",
     "@scoutra/core": "workspace:*",
     "@scoutra/db": "workspace:*",
-    "@scoutra/queue": "workspace:*"
+    "@scoutra/queue": "workspace:*",
+    "@scoutra/agents": "workspace:*",
+    "@scoutra/ai": "workspace:*",
+    "@scoutra/compliance": "workspace:*",
+    "@scoutra/connectors": "workspace:*",
+    "@scoutra/billing": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

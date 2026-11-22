@@ -3,6 +3,8 @@ import pg from 'pg';
 import type { TestProject } from 'vitest/node';
 import { runMigrations } from '@scoutra/db/migrate';
 import { installQueueSchema } from '@scoutra/queue';
+import { PLAYBOOKS } from '@scoutra/agents';
+import { createDb, seedPlaybooks } from '@scoutra/db';
 
 /**
  * Prépare une base Postgres JETABLE pour les tests d'intégration :
@@ -66,6 +68,10 @@ export default async function setup(project: TestProject) {
   };
   await runMigrations(info.migratorUrl);
   await installQueueSchema(info.migratorUrl);
+  const seed = createDb(info.migratorUrl, { max: 1 });
+  await seedPlaybooks(seed.db, PLAYBOOKS);
+  await seedPlaybooks(seed.db, PLAYBOOKS); // idempotent
+  await seed.close();
   project.provide('db', info);
 
   return async () => {

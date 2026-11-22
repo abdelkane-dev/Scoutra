@@ -8,3 +8,4 @@ export * from './interpreter';
 export * from './planner';
 export * from './enrichment';
 export * from './drafting';
+export * from './playbooks';

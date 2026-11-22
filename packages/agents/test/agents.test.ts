@@ -351,3 +351,29 @@ describe('Rédaction', () => {
     expect(t.subject).toBeTruthy();
   });
 });
+
+describe('playbooks', async () => {
+  const { PLAYBOOKS, suggestPlaybooks, playbookFor } = await import('../src');
+  const { PROSPECTING_MODELS } = await import('@scoutra/core');
+  const { ALL_CONNECTORS } = await import('@scoutra/connectors');
+  it('un playbook valide par modèle (23), sources connues', () => {
+    expect(PLAYBOOKS.map((p) => p.model).sort()).toEqual(
+      PROSPECTING_MODELS.map((m) => m.code).sort(),
+    );
+    const codes = new Set(['web_search', ...ALL_CONNECTORS.map((c) => c.manifest.code)]);
+    for (const p of PLAYBOOKS)
+      for (const c of p.connectors) expect(codes.has(c), `${p.model}:${c}`).toBe(true);
+  });
+  it('particuliers : signaux publics seulement, jamais email/téléphone direct', () => {
+    for (const m of ['b2c', 'c2c'] as const) {
+      const p = playbookFor(m);
+      expect(p.rules.publicSignalsOnly).toBe(true);
+      expect(p.channels).toEqual(['social_page']);
+    }
+  });
+  it('suggestions priorisées par type de compte et secteurs', () => {
+    const s = suggestPlaybooks('agency', ['l_real_estate']);
+    expect(s[0]!.model).toBe('real_estate');
+    expect(suggestPlaybooks('public_sector', [])[0]!.model).toBe('g2b');
+  });
+});

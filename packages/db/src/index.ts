@@ -36,3 +36,4 @@ export const TENANT_TABLES = [
   'suppression_list',
   'tenant_jobs',
 ] as const;
+export * from './playbooks';

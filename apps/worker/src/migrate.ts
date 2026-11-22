@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, migrateEnvSchema } from '@scoutra/config';
+import { PLAYBOOKS } from '@scoutra/agents';
+import { createDb, seedPlaybooks } from '@scoutra/db';
 import { MIGRATIONS_DIR, runMigrations } from '@scoutra/db/migrate';
 import { installQueueSchema } from '@scoutra/queue';
 
@@ -13,6 +15,13 @@ async function main() {
     process.env.SCOUTRA_MIGRATIONS_DIR ?? (existsSync(bundled) ? bundled : MIGRATIONS_DIR);
   await runMigrations(env.DATABASE_MIGRATOR_URL, dir);
   await installQueueSchema(env.DATABASE_MIGRATOR_URL);
+  const handle = createDb(env.DATABASE_MIGRATOR_URL, { max: 1, applicationName: 'scoutra-seed' });
+  try {
+    const n = await seedPlaybooks(handle.db, PLAYBOOKS);
+    console.info(`[migrate] playbooks : ${n} nouvelle(s) version(s)`);
+  } finally {
+    await handle.close();
+  }
   console.info('[migrate] base à jour');
 }
 

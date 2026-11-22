@@ -54,3 +54,18 @@ describe.skipIf(!info.available)('profil d’organisation (type de compte, secte
     );
   });
 });
+
+describe.skipIf(!info.available)('playbooks (données initiales)', () => {
+  it('23 playbooks actifs, lisibles par l’application, non modifiables par elle', async () => {
+    const h = handles(info);
+    try {
+      const rows = await h.app.db
+        .select({ model: schema.playbooks.modelCode, active: schema.playbooks.isActive })
+        .from(schema.playbooks);
+      expect(rows.filter((r) => r.active)).toHaveLength(23);
+      await expectPgError(h.app.db.update(schema.playbooks).set({ isActive: false }), ['42501']);
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});
