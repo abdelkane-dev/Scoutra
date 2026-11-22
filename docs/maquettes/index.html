@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="fr" data-accent="vert">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nyini — Décrivez votre cible. Nyini trouve, vérifie et rédige.</title>
+<meta name="description" content="Nyini est un outil de prospection pour commerciaux et closers : décrivez votre cible en une phrase, Nyini trouve les prospects, vérifie leurs coordonnées et rédige le premier message.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/nyini.css">
+<script src="assets/accent.js"></script>
+<style>
+  .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+  @media (min-width: 768px) { .wrap { padding: 0 32px; } }
+
+  /* En-tête */
+  .site-head { border-bottom: 1px solid var(--line); background: var(--bg); }
+  .site-head .wrap { display: flex; align-items: center; gap: 16px; min-height: 64px; }
+  .site-nav { display: none; gap: 28px; margin-left: 24px; font-size: 15px; }
+  .site-nav a { text-decoration: none; color: var(--ink-2); }
+  .site-nav a:hover { color: var(--ink); }
+  .head-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .head-actions .login, .head-actions .btn { display: none; }
+  .head-actions .login { font-size: 15px; color: var(--ink-2); text-decoration: none; }
+  @media (max-width: 420px) { .accent-switch .as-label { display: none; } }
+  @media (min-width: 960px) {
+    .site-nav { display: flex; }
+    .head-actions .login, .head-actions .btn { display: inline-flex; }
+  }
+
+  /* Hero */
+  .hero { padding: 40px 0 56px; }
+  .hero h1 {
+    font-size: clamp(38px, 6.4vw, 76px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 600;
+    max-width: 15ch;
+  }
+  .hero h1 span { display: block; }
+  .hero-grid { display: grid; gap: 32px; margin-top: 28px; }
+  .hero-copy p { font-size: 18px; color: var(--ink-2); max-width: 38ch; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  .hero-facts { margin-top: 28px; display: grid; gap: 10px; font-size: 14px; color: var(--ink-2); }
+  .hero-facts li { display: flex; gap: 10px; align-items: baseline; }
+  .hero-facts svg { width: 15px; height: 15px; color: var(--accent); flex: none; transform: translateY(2px); }
+  @media (min-width: 960px) {
+    .hero { padding: 56px 0 72px; }
+    .hero h1 { max-width: none; }
+    .hero-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; margin-top: 36px; align-items: start; }
+    .hero-copy { padding-top: 8px; }
+  }
+
+  /* Démo */
+  .demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden; }
+  .demo-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .demo-top .title { font-weight: 600; font-size: 14px; margin-right: auto; }
+  .demo-query { padding: 16px 16px 12px; }
+  .demo-query label { display: block; font-size: 13px; color: var(--ink-3); margin-bottom: 6px; }
+  .q-box {
+    min-height: 56px; padding: 14px 14px; border-radius: var(--radius-m);
+    border: 1px solid var(--line-2); background: var(--bg); font-size: 17px; line-height: 1.4;
+  }
+  .q-caret { display: inline-block; width: 2px; height: 1.1em; vertical-align: -0.15em; background: var(--accent); margin-left: 1px; opacity: 0; }
+  .demo.is-typing .q-caret { opacity: 1; }
+  .agents { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 4px 16px 14px; }
+  @media (max-width: 420px) { .agents { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 640px) { .agents { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  .agent { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-3); min-width: 0; }
+  .agent .dot { position: relative; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none; display: grid; place-items: center; }
+  .agent .dot svg { width: 9px; height: 9px; color: #fff; opacity: 0; }
+  .agent[data-state="done"] { color: var(--ink-2); }
+  .agent[data-state="done"] .dot { background: var(--accent); border-color: var(--accent); }
+  .agent[data-state="done"] .dot svg { opacity: 1; }
+  .agent[data-state="active"] { color: var(--ink); font-weight: 500; }
+  .agent[data-state="active"] .dot { border-color: var(--accent); }
+  .agent[data-state="active"] .dot::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .agent span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .res-head { display: flex; align-items: baseline; gap: 16px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--surface-2); font-size: 13px; color: var(--ink-2); }
+  .res-head strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .res-head .muted { margin-left: auto; color: var(--ink-3); }
+  .res-list li {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; align-items: center;
+    padding: 11px 16px; border-top: 1px solid var(--line);
+  }
+  .res-list .who { min-width: 0; }
+  .res-list .who b { display: block; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res-list .who small { display: block; color: var(--ink-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res-list .mail { display: none; }
+  @media (min-width: 640px) {
+    .res-list li { grid-template-columns: minmax(0, 1fr) 40px 150px 96px; }
+    .res-list .mail { display: inline-flex; }
+  }
+  .res-list .cc-cell { display: none; }
+  @media (min-width: 640px) { .res-list .cc-cell { display: block; } }
+  .demo-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
+  .replay { background: none; border: 0; padding: 6px 0; color: var(--accent-ink); font-weight: 600; cursor: pointer; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+  .js .replay[hidden] { display: none; }
+
+  /* Sections */
+  section.block { padding: 72px 0; border-top: 1px solid var(--line); }
+  .block h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; max-width: 22ch; }
+  .block .lead { margin-top: 14px; font-size: 18px; color: var(--ink-2); max-width: 58ch; }
+
+  /* Agents */
+  .steps { margin-top: 44px; display: grid; gap: 0; counter-reset: step; border-top: 1px solid var(--line); }
+  @media (min-width: 720px) { .steps { grid-template-columns: repeat(2, 1fr); column-gap: 40px; } }
+  @media (min-width: 1040px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+  .step { padding: 24px 0 28px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr; gap: 0 4px; }
+  .step .n { font-size: 15px; font-weight: 600; color: var(--accent-ink); font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .step h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .step p { margin-top: 6px; color: var(--ink-2); font-size: 15px; max-width: 40ch; }
+  .step .out {
+    margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface);
+    border: 1px solid var(--line); font-size: 13.5px; color: var(--ink-2); line-height: 1.45;
+  }
+  .step .out b { color: var(--ink); font-weight: 600; }
+  .steps-note { margin-top: 28px; display: grid; gap: 12px; font-size: 15px; color: var(--ink-2); max-width: 75ch; }
+  .steps-note p { padding-left: 16px; border-left: 2px solid var(--accent); }
+  .steps-note b { color: var(--ink); font-weight: 600; }
+
+  /* Conformité */
+  .law-grid { display: grid; gap: 40px; margin-top: 40px; }
+  @media (min-width: 1040px) { .law-grid { grid-template-columns: 4fr 8fr; gap: 56px; } }
+  .law-points { display: grid; gap: 22px; align-content: start; }
+  .law-points h3 { font-size: 17px; font-weight: 600; }
+  .law-points p { margin-top: 4px; color: var(--ink-2); font-size: 15px; }
+  .law-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); overflow: hidden; }
+  .law-table table { font-size: 14px; }
+  .law-table th, .law-table td { padding: 12px 14px; vertical-align: top; }
+  .law-table thead th { background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .law-table tbody tr + tr td { border-top: 1px solid var(--line); }
+  .law-table td:first-child b { display: block; font-weight: 600; }
+  .law-table td:first-child small { color: var(--ink-3); font-size: 12.5px; }
+  .rule { display: inline-flex; gap: 6px; align-items: baseline; color: var(--ink-2); }
+  .rule svg { width: 13px; height: 13px; flex: none; transform: translateY(2px); }
+  .rule.ok svg { color: var(--accent); }
+  .rule.strict svg { color: var(--ink-2); }
+  .law-caption { padding: 12px 14px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); }
+  @media (max-width: 719px) {
+    .law-table thead { display: none; }
+    .law-table tr { display: block; padding: 14px; }
+    .law-table tbody tr + tr { border-top: 1px solid var(--line); }
+    .law-table tbody tr + tr td { border-top: 0; }
+    .law-table td { display: block; padding: 3px 0; }
+    .law-table td[data-h]::before { content: attr(data-h) " : "; color: var(--ink-3); }
+  }
+
+  /* Tarifs */
+  .plans { margin-top: 44px; display: grid; gap: 16px; }
+  @media (min-width: 960px) { .plans { grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; } }
+  .plan { position: relative; display: flex; flex-direction: column; padding: 26px 24px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); }
+  .plan.featured { border: 2px solid var(--accent); padding: 25px 23px 23px; }
+  .plan .tag { position: absolute; top: -12px; left: 22px; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .plan h3 { font-size: 19px; font-weight: 600; }
+  .plan .for { margin-top: 4px; color: var(--ink-3); font-size: 14px; min-height: 2.9em; }
+  .price { margin-top: 18px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .price .amt { font-size: 44px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+  .price .per { color: var(--ink-2); font-size: 15px; }
+  .price .from { color: var(--ink-2); font-size: 15px; }
+  .fcfa { margin-top: 6px; color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .plan ul { margin-top: 20px; display: grid; gap: 9px; font-size: 14.5px; color: var(--ink-2); flex: 1; }
+  .plan li { display: flex; gap: 9px; align-items: baseline; }
+  .plan li svg { width: 14px; height: 14px; color: var(--accent); flex: none; transform: translateY(2px); }
+  .plan li.no { color: var(--ink-3); }
+  .plan li.no svg { color: var(--line-2); }
+  .plan .btn { margin-top: 24px; width: 100%; }
+  .plans-note { margin-top: 20px; font-size: 14px; color: var(--ink-3); max-width: 80ch; }
+
+  /* Pied de page */
+  .site-foot { border-top: 1px solid var(--line); padding: 48px 0 72px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
+  .foot-grid { display: grid; gap: 32px; }
+  @media (min-width: 860px) { .foot-grid { grid-template-columns: 5fr 2fr 2fr 2fr; } }
+  .foot-grid h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .foot-grid li + li { margin-top: 6px; }
+  .foot-grid a { text-decoration: none; color: var(--ink-2); }
+  .foot-grid a:hover { color: var(--ink); text-decoration: underline; }
+  .foot-about p { margin-top: 12px; max-width: 40ch; }
+  .foot-legal { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 24px; color: var(--ink-3); font-size: 13px; }
+
+  /* États masqués posés uniquement par JS (contenu visible sans JS) */
+  .demo.armed .res-list li { opacity: 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 2v4.1c0 3-2.1 5.4-5 6.3-2.9-.9-5-3.3-5-6.3V3.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 16 16"><path d="M4 8h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="brand" viewBox="0 0 24 24"><rect class="m-bg" width="24" height="24" rx="6"/><circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14 14l4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Nyini, accueil"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>nyini</a>
+    <nav class="site-nav" aria-label="Principale">
+      <a href="#fonctionnement">Fonctionnement</a>
+      <a href="#conformite">Conformité</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="app-recherche.html">Voir l'app</a>
+    </nav>
+    <div class="head-actions">
+      <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
+        <span class="as-label">Accent</span>
+        <button type="button" data-set-accent="vert" aria-pressed="true"><span class="sw sw-vert" aria-hidden="true"></span>Vert</button>
+        <button type="button" data-set-accent="indigo" aria-pressed="false"><span class="sw sw-indigo" aria-hidden="true"></span>Indigo</button>
+      </div>
+      <a class="login" href="app-recherche.html">Se connecter</a>
+      <a class="btn btn-primary btn-s" href="app-recherche.html">Essayer Nyini</a>
+    </div>
+  </div>
+</header>
+
+<main id="contenu">
+  <section class="hero">
+    <div class="wrap">
+      <h1><span>Décrivez votre cible.</span> <span>Nyini trouve, vérifie et rédige.</span></h1>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p>Écrivez en une phrase qui vous voulez joindre, choisissez un pays ou le monde entier. Vous recevez une liste de prospects aux coordonnées vérifiées, notés et accompagnés d'un premier message prêt à envoyer.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary" href="app-recherche.html">Lancer une recherche</a>
+            <a class="btn btn-ghost" href="#tarifs">Voir les tarifs</a>
+          </div>
+          <ul class="hero-facts">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Sources publiques et API officielles uniquement</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Règles de protection des données appliquées pays par pays</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Vous gardez la main : chaque message part de votre compte</li>
+          </ul>
+        </div>
+
+        <div class="demo" id="demo" aria-label="Exemple de recherche (données de démonstration)">
+          <div class="demo-top">
+            <span class="title">Nouvelle recherche</span>
+            <span class="chip"><span class="cc">SN</span>Sénégal</span>
+            <span class="chip"><span class="cc">CI</span>Côte d'Ivoire</span>
+            <span class="chip">Entreprises (B2B)</span>
+          </div>
+          <div class="demo-query">
+            <label id="q-label">Votre cible, en langage courant</label>
+            <div class="q-box" aria-labelledby="q-label"><span id="q-text">PME du BTP à Dakar et Abidjan, avec un site web mais sans CRM</span><span class="q-caret" aria-hidden="true"></span></div>
+          </div>
+          <ol class="agents" aria-label="Avancement des agents">
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Interprète</span></li>
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Recherche</span></li>
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Enrichissement</span></li>
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Vérification</span></li>
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Notation</span></li>
+            <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Rédaction</span></li>
+          </ol>
+          <div class="res-head" aria-live="polite">
+            <span><strong id="found">6</strong> prospects</span>
+            <span><strong id="verified-count">5</strong> emails vérifiés</span>
+            <span class="muted">Triés par score</span>
+          </div>
+          <ul class="res-list">
+            <li><div class="who"><b>Moussa Diop</b><small>Gérant, Diop &amp; Fils Construction, Dakar</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:92%"></i></span>92</span></li>
+            <li><div class="who"><b>Koffi Yao</b><small>Directeur général, Lagune Bâtiment, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:88%"></i></span>88</span></li>
+            <li><div class="who"><b>Aminata Sow</b><small>Responsable achats, Teranga Travaux, Thiès</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:81%"></i></span>81</span></li>
+            <li><div class="who"><b>Jean-Marc Kouassi</b><small>Cofondateur, Ébène Construction, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:76%"></i></span>76</span></li>
+            <li><div class="who"><b>Ndeye Fall</b><small>Gérante, Cap-Vert Rénovation, Dakar</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="unverified mail">Téléphone seul</span><span class="score"><span class="score-bar"><i style="--v:69%"></i></span>69</span></li>
+            <li><div class="who"><b>Serge Bamba</b><small>Directeur technique, Plateau Génie Civil, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:64%"></i></span>64</span></li>
+          </ul>
+          <div class="demo-foot">
+            <span>Données de démonstration</span>
+            <button class="replay" type="button" id="replay" hidden>Rejouer la démo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="fonctionnement" aria-labelledby="h-fonct">
+    <div class="wrap">
+      <h2 id="h-fonct">Six agents se passent le relais sur chaque recherche.</h2>
+      <p class="lead">Chacun fait une seule chose et la fait jusqu'au bout. Vous voyez le résultat de chaque étape, et pourquoi un prospect a été retenu.</p>
+      <ol class="steps">
+        <li class="step"><span class="n">1</span><div><h3>Interprète</h3><p>Transforme votre phrase en fiche cible précise : secteur, villes, taille, signaux à chercher.</p><div class="out"><b>Secteur</b> BTP, <b>villes</b> Dakar, Abidjan, <b>taille</b> 10 à 200 salariés, <b>signal</b> site web sans outil CRM</div></div></li>
+        <li class="step"><span class="n">2</span><div><h3>Recherche</h3><p>Interroge les sources autorisées dans les pays choisis : annuaires, registres publics, cartes, sites web.</p><div class="out"><b>214</b> entreprises trouvées dans 4 sources</div></div></li>
+        <li class="step"><span class="n">3</span><div><h3>Enrichissement</h3><p>Lit le site de chaque entreprise pour trouver le décideur, l'offre, la taille et les canaux de contact affichés.</p><div class="out"><b>Diop &amp; Fils Construction</b> : 45 salariés, gérant identifié, WhatsApp affiché</div></div></li>
+        <li class="step"><span class="n">4</span><div><h3>Vérification</h3><p>Contrôle que chaque email existe, que le numéro est valide et retire les doublons.</p><div class="out"><b>168</b> emails confirmés, 31 doublons retirés</div></div></li>
+        <li class="step"><span class="n">5</span><div><h3>Notation</h3><p>Donne un score de 0 à 100 avec ses raisons, pour que vous commenciez par les meilleurs.</p><div class="out"><b>92</b> : secteur exact, décideur trouvé, site récent, pas de CRM détecté</div></div></li>
+        <li class="step"><span class="n">6</span><div><h3>Rédaction</h3><p>Écrit un premier message adapté au pays, à la langue et au canal. Vous le relisez et l'envoyez vous-même.</p><div class="out">« Bonjour M. Diop, j'ai vu vos chantiers à Ouakam sur votre site… »</div></div></li>
+      </ol>
+      <div class="steps-note">
+        <p><b>Formule Pipeline :</b> un septième agent suit chaque prospect après le premier message et vous rappelle les relances du jour, jusqu'à la vente validée.</p>
+        <p><b>Garde-fou :</b> à chaque étape, les règles du pays visé limitent les sources, les canaux et les mentions obligatoires.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="conformite" aria-labelledby="h-conf">
+    <div class="wrap">
+      <h2 id="h-conf">Les règles du pays s'appliquent avant chaque message.</h2>
+      <p class="lead">Nyini connaît les lois sur les données personnelles des pays que vous ciblez et adapte ce qu'il vous propose. Vous prospectez sans risquer votre réputation.</p>
+      <div class="law-grid">
+        <div class="law-points">
+          <div><h3>Seulement des sources autorisées</h3><p>Registres publics, sites d'entreprises, cartes et API officielles. Aucune aspiration de profils sur les réseaux sociaux.</p></div>
+          <div><h3>Vous envoyez, pas un robot</h3><p>Nyini rédige, vous relisez et vous envoyez en un clic depuis votre propre compte. Pas de messages automatiques.</p></div>
+          <div><h3>Tout est traçable</h3><p>Pour chaque prospect : la source, la date de collecte et la base légale. Effacement en un clic si une personne le demande.</p></div>
+        </div>
+        <div class="law-table">
+          <table>
+            <caption class="sr-only">Règles appliquées par pays (résumé indicatif)</caption>
+            <thead><tr><th scope="col">Pays</th><th scope="col">Entreprises (B2B)</th><th scope="col">Particuliers</th></tr></thead>
+            <tbody>
+              <tr><td><b>Mali</b><small>Loi 2013-015, APDP</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
+              <tr><td><b>Sénégal</b><small>Loi 2008-12, CDP</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
+              <tr><td><b>Côte d'Ivoire</b><small>Loi 2013-450, ARTCI</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
+              <tr><td><b>Union européenne</b><small>RGPD et ePrivacy</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable pour email et SMS</span></td></tr>
+              <tr><td><b>Royaume-Uni</b><small>UK GDPR et PECR</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
+              <tr><td><b>Canada</b><small>LCAP</small></td><td data-h="B2B"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement, sauf adresse pro publiée</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement exprès</span></td></tr>
+              <tr><td><b>États-Unis</b><small>CAN-SPAM et TCPA</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Email autorisé avec désinscription</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Pas d'appels ni SMS sans accord écrit</span></td></tr>
+            </tbody>
+          </table>
+          <p class="law-caption">Résumé indicatif pour la maquette, à faire valider par un juriste. Nyini ne remplace pas un conseil juridique.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="tarifs" aria-labelledby="h-tarifs">
+    <div class="wrap">
+      <h2 id="h-tarifs">Des tarifs simples, en euros et en francs CFA.</h2>
+      <p class="lead">Sans engagement. Commencez par la recherche, passez au suivi quand vos listes grandissent.</p>
+      <div class="plans">
+        <article class="plan" aria-labelledby="p1">
+          <h3 id="p1">Recherche</h3>
+          <p class="for">Pour trouver et contacter vos prospects.</p>
+          <p class="price"><span class="amt num">29&nbsp;€</span><span class="per">par mois</span></p>
+          <p class="fcfa">environ 19&nbsp;000&nbsp;FCFA par mois</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Recherche en langage courant, 1 pays, plusieurs ou le monde</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Emails et numéros vérifiés</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Score expliqué et premier message rédigé</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Export CSV et Excel</li>
+            <li class="no"><svg aria-hidden="true"><use href="#i-dash"/></svg>Suivi des prospects et relances</li>
+          </ul>
+          <a class="btn btn-ghost" href="app-recherche.html">Choisir Recherche</a>
+        </article>
+        <article class="plan featured" aria-labelledby="p2">
+          <span class="tag">Pour les closers</span>
+          <h3 id="p2">Pipeline</h3>
+          <p class="for">Pour suivre chaque prospect jusqu'à la vente.</p>
+          <p class="price"><span class="amt num">79&nbsp;€</span><span class="per">par mois</span></p>
+          <p class="fcfa">environ 52&nbsp;000&nbsp;FCFA par mois</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tout ce que contient Recherche, avec plus de crédits</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Pipeline : nouveau, contacté, répondu, rendez-vous, validé</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Relances programmées et rappels du jour</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Notes et historique par prospect</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tableaux de bord : conversion, pays, canaux</li>
+          </ul>
+          <a class="btn btn-primary" href="app-pipeline.html">Choisir Pipeline</a>
+        </article>
+        <article class="plan" aria-labelledby="p3">
+          <h3 id="p3">Licence pays</h3>
+          <p class="for">Pour une entreprise qui installe Nyini sur ses serveurs.</p>
+          <p class="price"><span class="from">dès</span><span class="amt num">1&nbsp;500&nbsp;€</span><span class="per">par an</span></p>
+          <p class="fcfa">environ 984&nbsp;000&nbsp;FCFA par an et par pays</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Toutes les fonctions de Pipeline</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Hébergé chez vous, avec vos clés IA et API</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Recherches illimitées</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Clé de licence vérifiée hors ligne</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Installation en une commande</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contact">Demander un devis</a>
+        </article>
+      </div>
+      <p class="plans-note">Prix indicatifs, hors taxes. Conversion au taux fixe de 655,957 FCFA pour 1 €, arrondie. Paiement par carte, et mobile money prévu au lancement.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot" id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-about">
+        <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>nyini</a>
+        <p>Nyini veut dire « chercher » en bambara. Conçu à Bamako pour les commerciaux et les closers, au Mali et partout ailleurs.</p>
+      </div>
+      <div><h4>Produit</h4><ul><li><a href="#fonctionnement">Fonctionnement</a></li><li><a href="#tarifs">Tarifs</a></li><li><a href="app-recherche.html">Recherche</a></li><li><a href="app-pipeline.html">Pipeline</a></li></ul></div>
+      <div><h4>Confiance</h4><ul><li><a href="#conformite">Conformité par pays</a></li><li><a href="#contact">Accord de traitement</a></li><li><a href="#contact">Politique d'usage</a></li></ul></div>
+      <div><h4>Langue</h4><ul><li><a href="#" aria-current="true">Français</a></li><li><a href="#" lang="en">English</a></li></ul></div>
+    </div>
+    <div class="foot-legal"><span>© 2026 Nyini</span><span>Maquette de validation. Les personnes, entreprises et chiffres affichés sont fictifs.</span></div>
+  </div>
+</footer>
+
+<p class="demo-flag">Données de démonstration</p>
+
+<script type="module">
+  import { animate, stagger, inView } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const demo = document.getElementById("demo");
+  const qText = document.getElementById("q-text");
+  const found = document.getElementById("found");
+  const verifiedCount = document.getElementById("verified-count");
+  const replay = document.getElementById("replay");
+  const agents = [...demo.querySelectorAll(".agent")];
+  const rows = [...demo.querySelectorAll(".res-list li")];
+  const fullQuery = qText.textContent;
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let running = false;
+
+  replay.hidden = false;
+
+  function reset() {
+    demo.classList.add("armed");
+    qText.textContent = "";
+    agents.forEach((a) => (a.dataset.state = "pending"));
+    found.textContent = "0";
+    verifiedCount.textContent = "0";
+  }
+
+  async function run() {
+    if (running) return;
+    running = true;
+    replay.disabled = true;
+    if (reduce) {
+      // Pas d'animation : on affiche directement l'état final.
+      demo.classList.remove("armed");
+      qText.textContent = fullQuery;
+      agents.forEach((a) => (a.dataset.state = "done"));
+      found.textContent = rows.length;
+      verifiedCount.textContent = rows.filter((r) => r.querySelector(".verified")).length;
+      running = false; replay.disabled = false;
+      return;
+    }
+    reset();
+    demo.classList.add("is-typing");
+    for (let i = 1; i <= fullQuery.length; i++) {
+      qText.textContent = fullQuery.slice(0, i);
+      await wait(22);
+    }
+    demo.classList.remove("is-typing");
+    await wait(250);
+
+    // Interprète, Recherche, Enrichissement : en amont des premiers résultats
+    for (let i = 0; i < 3; i++) {
+      agents[i].dataset.state = "active";
+      await wait(380);
+      agents[i].dataset.state = "done";
+    }
+    agents[3].dataset.state = "active";
+    agents[4].dataset.state = "active";
+    agents[5].dataset.state = "active";
+
+    let v = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      animate(row, { opacity: [0, 1], y: [8, 0] }, { duration: 0.32, ease: [0.2, 0, 0, 1] });
+      found.textContent = i + 1;
+      if (row.querySelector(".verified")) verifiedCount.textContent = ++v;
+      await wait(420);
+    }
+    agents.slice(3).forEach((a) => (a.dataset.state = "done"));
+    demo.classList.remove("armed");
+    rows.forEach((r) => (r.style.opacity = ""));
+    running = false; replay.disabled = false;
+  }
+
+  replay.addEventListener("click", run);
+  let played = false;
+  inView(demo, () => { if (!played) { played = true; run(); } }, { amount: 0.4 });
+</script>
+</body>
+</html>
