@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="fr" data-accent="orange">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline — Scoutra (maquette)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/scoutra.css">
+<script src="assets/accent.js"></script>
+<style>
+  /* Filtres : une ligne, au-dessus de tout ce qu'ils filtrent */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  .filters .sel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
+  .filters select {
+    min-height: 36px; padding: 0 30px 0 10px; border-radius: var(--radius-s); border: 1px solid var(--line-2);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23434852' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+    appearance: none; font-size: 14px; color: var(--ink);
+  }
+  .filters .scope { margin-left: auto; font-size: 13px; color: var(--ink-3); }
+
+  /* Ligne du haut : relances + indicateurs */
+  .top-row { margin-top: 16px; display: grid; gap: 16px; }
+  @media (min-width: 1100px) { .top-row { grid-template-columns: 400px minmax(0, 1fr); } }
+
+  .todo .panel-h .badge { margin-left: auto; padding: 3px 9px; border-radius: 999px; background: var(--hl); color: var(--hl-ink); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .todo-list li { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 10px; align-items: start; padding: 11px 16px; border-top: 1px solid var(--line); }
+  .todo-list li:first-child { border-top: 0; }
+  .todo-list input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent); }
+  .todo-list .t-main b { display: block; font-weight: 600; font-size: 14.5px; }
+  .todo-list .t-main span { display: block; color: var(--ink-2); font-size: 13.5px; }
+  .todo-list .t-when { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .todo-list .late { display: inline-flex; gap: 4px; align-items: center; color: var(--accent-ink); font-weight: 600; }
+  .todo-list .late svg { width: 13px; height: 13px; }
+  .todo-list li:has(input:checked) .t-main { text-decoration: line-through; color: var(--ink-3); }
+  .todo-list li:has(input:checked) .t-main span { color: var(--ink-3); }
+  .todo-foot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
+
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (min-width: 720px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1100px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .tile { padding: 16px; display: grid; gap: 4px; align-content: start; }
+  .tile .label { font-size: 13.5px; color: var(--ink-2); }
+  .tile .value { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .tile .delta { font-size: 13px; color: var(--ink-2); }
+  .tile .delta b { font-weight: 600; color: var(--ink); background: var(--hl); color: var(--hl-ink); padding: 0 5px; border-radius: 4px; }
+  .spark { margin-top: 8px; height: 28px; width: 100%; }
+  .spark path { fill: none; stroke: var(--line-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .spark .cur { stroke: var(--accent); }
+  .tiles-wrap { display: grid; gap: 16px; align-content: start; }
+  .tip-line { font-size: 13.5px; color: var(--ink-2); padding: 14px 16px; }
+  .tip-line b { color: var(--ink); font-weight: 600; }
+
+  /* Kanban */
+  .board-sec { margin-top: 16px; }
+  .board-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  .board-h h2 { font-size: 17px; font-weight: 600; }
+  .board-h .hint { font-size: 13px; color: var(--ink-3); }
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(232px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+  @media (min-width: 1280px) { .board { grid-auto-columns: minmax(0, 1fr); } }
+  .col { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-m); padding: 8px; min-height: 280px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 8px; transition: background-color .15s ease, border-color .15s ease; }
+  .col.drop { border-color: var(--accent); background: var(--accent-soft); }
+  .col-h { display: flex; align-items: center; gap: 8px; padding: 4px 4px 2px; font-size: 13.5px; font-weight: 600; }
+  .col-h .n { margin-left: auto; font-weight: 500; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .col-h svg { width: 14px; height: 14px; }
+  .col[data-stage="valide"] .col-h svg { color: var(--accent); }
+  .col[data-stage="perdu"] .col-h svg { color: var(--ink-3); }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px;
+    display: grid; gap: 6px; cursor: grab; font-size: 13px;
+  }
+  .card:hover { border-color: var(--line-2); }
+  .card:active { cursor: grabbing; }
+  .card.dragging { opacity: .45; }
+  .card .c-top { display: flex; align-items: center; gap: 8px; }
+  .card .c-top b { font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .c-top .cc { margin-left: auto; flex: none; }
+  .card .org { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .c-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; justify-content: space-between; color: var(--ink-3); }
+  .card .c-meta .next { flex: 1 1 100%; }
+  .card .score { font-size: 12.5px; gap: 6px; }
+  .card .score-bar { width: 32px; height: 5px; }
+  .card .next { color: var(--ink-2); }
+  .card .next.won { color: var(--accent-ink); font-weight: 600; }
+  .col .more { margin-top: auto; padding: 6px 4px 2px; font-size: 12.5px; color: var(--ink-3); }
+
+  /* Graphiques */
+  .charts { margin-top: 16px; display: grid; gap: 16px; }
+  @media (min-width: 1100px) { .charts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .chart { padding: 16px 18px 12px; position: relative; }
+  .chart h3 { font-size: 15px; font-weight: 600; }
+  .chart .sub { margin-top: 2px; font-size: 13px; color: var(--ink-3); }
+  .chart-body { margin-top: 16px; }
+
+  /* Barres horizontales en HTML (lisibles sans JS) */
+  .hbars { display: grid; gap: 8px; }
+  .hbar { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 12px; padding: 3px 0; border-radius: 4px; }
+  .hbar:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .hbar .name { font-size: 13.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hbar .track { position: relative; display: flex; align-items: center; gap: 8px; height: 24px; }
+  .hbar .fill { height: 20px; width: var(--w); min-width: 3px; background: var(--accent); border-radius: 0 4px 4px 0; transition: opacity .12s ease; }
+  .hbar:hover .fill, .hbar:focus-visible .fill { opacity: .82; }
+  .hbar .val { font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hbar .val small { font-weight: 400; color: var(--ink-3); margin-left: 4px; }
+  .axis-note { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); }
+
+  .data-view { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 13px; }
+  .data-view summary { cursor: pointer; color: var(--ink-2); padding: 4px 0; width: max-content; }
+  .data-view table { margin-top: 6px; font-size: 13px; }
+  .data-view th, .data-view td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); }
+  .data-view td.n, .data-view th.n { text-align: right; }
+
+  /* Courbe (SVG rendu par JS ; tableau affiché sans JS) */
+  .line-wrap { position: relative; }
+  .line-wrap svg text { font-family: var(--font); font-size: 12px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .line-wrap .grid { stroke: var(--line); stroke-width: 1; }
+  .line-wrap .ln { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .line-wrap .area { fill: var(--accent); opacity: .1; }
+  .line-wrap .end { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+  .line-wrap .xhair { stroke: var(--ink-3); stroke-width: 1; }
+  .line-wrap .hov { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+  .line-wrap .end-label rect { fill: var(--hl); }
+  .line-wrap .end-label text { fill: var(--hl-ink); font-weight: 600; font-size: 12.5px; }
+
+  .chart .tip strong { font-variant-numeric: tabular-nums; }
+</style>
+<noscript><style>.line-wrap { display: none; }</style></noscript>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="brand" viewBox="0 0 24 24"><rect class="m-bg" width="24" height="24" rx="6"/><circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14 14l4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-board" viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="4" height="13" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="3.5" width="4" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="3.5" width="4" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 20 20"><circle cx="8" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 16.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M13.5 4.5a3 3 0 010 5.5M15.5 12.5c1.2.7 1.9 2 2.1 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 20 20"><path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.8V8l2.2 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 16 16"><path d="M4 8h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="side" aria-label="Navigation de l'application">
+    <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
+    <nav class="side-nav">
+      <a href="app-recherche.html"><svg aria-hidden="true"><use href="#i-search"/></svg>Recherche</a>
+      <a href="app-pipeline.html" aria-current="page"><svg aria-hidden="true"><use href="#i-board"/></svg>Pipeline</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-users"/></svg>Tous les prospects</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-down"/></svg>Exports</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-gear"/></svg>Paramètres</a>
+    </nav>
+    <div class="side-foot">
+      <div class="credits">Crédits de recherche<br><b>412</b> sur 500 ce mois-ci<div class="meter" role="img" aria-label="412 crédits sur 500"><i style="width:82.4%"></i></div></div>
+      <div class="who-am-i"><span class="avatar" aria-hidden="true">SM</span><span><b>Sofia Mendes</b>Rendezvo, Formule Pipeline</span></div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
+      <h1>Pipeline</h1>
+      <span class="spacer"></span>
+      <span class="demo-chip">Données de démonstration</span>
+      <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
+        <span class="as-label">Accent</span>
+        <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw sw-orange" aria-hidden="true"></span>Orange</button>
+        <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw sw-bleu" aria-hidden="true"></span>Bleu</button>
+      </div>
+    </header>
+    <nav class="mobile-tabs" aria-label="Sections">
+      <a href="app-recherche.html">Recherche</a>
+      <a href="app-pipeline.html" aria-current="page">Pipeline</a>
+      <a href="#">Prospects</a>
+      <a href="#">Exports</a>
+    </nav>
+
+    <main class="page" id="contenu">
+      <form class="filters" action="#" onsubmit="return false" aria-label="Filtres">
+        <div class="seg" role="radiogroup" aria-label="Période">
+          <label><input type="radio" name="periode" value="7">7 jours</label>
+          <label><input type="radio" name="periode" value="30">30 jours</label>
+          <label><input type="radio" name="periode" value="90" checked>90 jours</label>
+        </div>
+        <label class="sel">Pays
+          <select><option>Tous les pays</option><option>France</option><option>Sénégal</option><option>Canada</option><option>Maroc</option><option>Belgique</option><option>États-Unis</option></select>
+        </label>
+        <label class="sel">Canal
+          <select><option>Tous les canaux</option><option>WhatsApp</option><option>Téléphone</option><option>LinkedIn</option><option>Email</option></select>
+        </label>
+        <span class="scope">Du 24 août au 22 novembre 2026</span>
+      </form>
+
+      <div class="top-row">
+        <section class="panel todo" aria-labelledby="todo-h">
+          <div class="panel-h"><h2 id="todo-h">Relances du jour</h2><span class="sub">dimanche 22 novembre</span><span class="badge">5 à faire</span></div>
+          <ul class="todo-list">
+            <li><input type="checkbox" aria-label="Marquer comme fait : relancer Youssef Alami"><div class="t-main"><b>Youssef Alami</b><span>Relance n°2 par WhatsApp, message prêt</span></div><span class="t-when"><span class="late"><svg aria-hidden="true"><use href="#i-clock"/></svg>En retard</span><br>depuis hier</span></li>
+            <li><input type="checkbox" aria-label="Marquer comme fait : confirmer le rendez-vous de Émilie Gagnon"><div class="t-main"><b>Émilie Gagnon</b><span>Confirmer le rendez-vous de demain 10:00</span></div><span class="t-when">09:30</span></li>
+            <li><input type="checkbox" aria-label="Marquer comme fait : rappeler Moussa Ndiaye"><div class="t-main"><b>Moussa Ndiaye</b><span>Rappel téléphonique, a demandé un devis</span></div><span class="t-when">11:00</span></li>
+            <li><input type="checkbox" aria-label="Marquer comme fait : relancer Sarah Peeters"><div class="t-main"><b>Sarah Peeters</b><span>Relance n°1 par email, sans réponse depuis 5 jours</span></div><span class="t-when">14:00</span></li>
+            <li><input type="checkbox" aria-label="Marquer comme fait : envoyer la proposition à Thomas Girard"><div class="t-main"><b>Thomas Girard</b><span>Envoyer la proposition après le rendez-vous</span></div><span class="t-when">16:30</span></li>
+          </ul>
+          <p class="todo-foot">Chaque relance ouvre un message déjà rédigé. Vous l'envoyez vous-même.</p>
+        </section>
+
+        <div class="tiles-wrap">
+          <div class="tiles">
+            <div class="panel tile"><span class="label">Prospects contactés</span><span class="value">486</span><span class="delta"><b>+12 %</b> vs 90 jours précédents</span>
+              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 22 L12 21 L22 22 L32 19 L42 20 L52 17 L62 16 L72 15 L82 13 L92 11 L102 10"/><path class="cur" d="M102 10 L118 6"/></svg></div>
+            <div class="panel tile"><span class="label">Taux de réponse</span><span class="value">27 %</span><span class="delta"><b>+4 pts</b> vs 90 jours précédents</span>
+              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 20 L12 19 L22 21 L32 18 L42 18 L52 16 L62 17 L72 14 L82 14 L92 12 L102 12"/><path class="cur" d="M102 12 L118 9"/></svg></div>
+            <div class="panel tile"><span class="label">Rendez-vous obtenus</span><span class="value">47</span><span class="delta"><b>+9</b> vs 90 jours précédents</span>
+              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 23 L12 22 L22 20 L32 21 L42 18 L52 18 L62 15 L72 16 L82 13 L92 12 L102 11"/><path class="cur" d="M102 11 L118 8"/></svg></div>
+            <div class="panel tile"><span class="label">Ventes validées</span><span class="value">18</span><span class="delta"><b>+5</b> vs 90 jours précédents</span>
+              <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"><path d="M2 24 L12 24 L22 22 L32 22 L42 20 L52 21 L62 18 L72 17 L82 16 L92 14 L102 13"/><path class="cur" d="M102 13 L118 9"/></svg></div>
+          </div>
+          <p class="panel tip-line"><b>À retenir :</b> WhatsApp répond trois fois plus que l'email sur vos cibles. Les prospects notés 80 et plus signent deux fois plus souvent.</p>
+        </div>
+      </div>
+
+      <section class="board-sec" aria-labelledby="board-h">
+        <div class="board-h"><h2 id="board-h">Suivi des prospects</h2><span class="hint">Glissez une carte vers une autre étape, ou utilisez les flèches gauche et droite du clavier.</span></div>
+        <p class="sr-only" id="kb-hint">Flèche droite ou gauche pour déplacer ce prospect d'une étape.</p>
+        <p class="sr-only" aria-live="polite" id="board-live"></p>
+        <div class="board" id="board">
+          <div class="col" data-stage="nouveau" aria-labelledby="c1"><div class="col-h"><span id="c1">Nouveau</span><span class="n" data-base="751">754</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Claire Fontaine</b><span class="cc">FR</span></div><span class="org">Cabinet Dentaire Confluence</span><div class="c-meta"><span class="next">Ajoutée aujourd'hui</span><span class="score"><span class="score-bar"><i style="--v:94%"></i></span>94</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Kevin Bouchard</b><span class="cc">CA</span></div><span class="org">Clinique Dentaire Plateau</span><div class="c-meta"><span class="next">Ajouté aujourd'hui</span><span class="score"><span class="score-bar"><i style="--v:63%"></i></span>63</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Nadia Benali</b><span class="cc">MA</span></div><span class="org">Cabinet Dentaire Maârif</span><div class="c-meta"><span class="next">Ajoutée hier</span><span class="score"><span class="score-bar"><i style="--v:68%"></i></span>68</span></div></article>
+            <p class="more">et 751 autres</p></div>
+          <div class="col" data-stage="contacte" aria-labelledby="c2"><div class="col-h"><span id="c2">Contacté</span><span class="n" data-base="308">310</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Youssef Alami</b><span class="cc">MA</span></div><span class="org">Centre Dentaire Anfa</span><div class="c-meta"><span class="next">WhatsApp, relance due</span><span class="score"><span class="score-bar"><i style="--v:89%"></i></span>89</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Sarah Peeters</b><span class="cc">BE</span></div><span class="org">Cabinet Sourire Ixelles</span><div class="c-meta"><span class="next">Email, il y a 5 jours</span><span class="score"><span class="score-bar"><i style="--v:77%"></i></span>77</span></div></article>
+            <p class="more">et 308 autres</p></div>
+          <div class="col" data-stage="repondu" aria-labelledby="c3"><div class="col-h"><span id="c3">Répondu</span><span class="n" data-base="59">61</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Moussa Ndiaye</b><span class="cc">SN</span></div><span class="org">Clinique Dentaire Almadies</span><div class="c-meta"><span class="next">Demande un devis</span><span class="score"><span class="score-bar"><i style="--v:82%"></i></span>82</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Hugo Lambert</b><span class="cc">FR</span></div><span class="org">Dentistes Bellecour</span><div class="c-meta"><span class="next">Rappeler en janvier</span><span class="score"><span class="score-bar"><i style="--v:71%"></i></span>71</span></div></article>
+            <p class="more">et 59 autres</p></div>
+          <div class="col" data-stage="rdv" aria-labelledby="c4"><div class="col-h"><span id="c4">Rendez-vous</span><span class="n" data-base="27">29</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Émilie Gagnon</b><span class="cc">CA</span></div><span class="org">Clinique Dentaire Rosemont</span><div class="c-meta"><span class="next">Demain, 10:00</span><span class="score"><span class="score-bar"><i style="--v:86%"></i></span>86</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Thomas Girard</b><span class="cc">FR</span></div><span class="org">Centre Dentaire Part-Dieu</span><div class="c-meta"><span class="next">Aujourd'hui, fait</span><span class="score"><span class="score-bar"><i style="--v:74%"></i></span>74</span></div></article>
+            <p class="more">et 27 autres</p></div>
+          <div class="col" data-stage="valide" aria-labelledby="c5"><div class="col-h"><svg aria-hidden="true"><use href="#i-check"/></svg><span id="c5">Validé</span><span class="n" data-base="16">18</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Grace Mensah</b><span class="cc">US</span></div><span class="org">Smile Studio Brooklyn</span><div class="c-meta"><span class="next won">Vente validée le 19/11</span><span class="score"><span class="score-bar"><i style="--v:91%"></i></span>91</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Awa Diallo</b><span class="cc">SN</span></div><span class="org">Cabinet Dentaire Mermoz</span><div class="c-meta"><span class="next won">Vente validée le 14/11</span><span class="score"><span class="score-bar"><i style="--v:84%"></i></span>84</span></div></article>
+            <p class="more">et 16 autres</p></div>
+          <div class="col" data-stage="perdu" aria-labelledby="c6"><div class="col-h"><svg aria-hidden="true"><use href="#i-dash"/></svg><span id="c6">Perdu</span><span class="n" data-base="66">68</span></div>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Marc Dubois</b><span class="cc">BE</span></div><span class="org">Centre Dentaire Louise</span><div class="c-meta"><span class="next">Pas de budget cette année</span><span class="score"><span class="score-bar"><i style="--v:58%"></i></span>58</span></div></article>
+            <article class="card" tabindex="0" draggable="true" aria-describedby="kb-hint"><div class="c-top"><b>Leila Haddad</b><span class="cc">MA</span></div><span class="org">Cabinet Dentaire Gauthier</span><div class="c-meta"><span class="next">A choisi un concurrent</span><span class="score"><span class="score-bar"><i style="--v:66%"></i></span>66</span></div></article>
+            <p class="more">et 66 autres</p></div>
+        </div>
+      </section>
+
+      <section class="charts" aria-label="Tableau de bord">
+        <article class="panel chart" aria-labelledby="g1">
+          <h3 id="g1">Entonnoir de conversion</h3>
+          <p class="sub">Prospects à chaque étape, et part de l'étape précédente</p>
+          <div class="chart-body hbars" data-tip-group>
+            <div class="hbar" tabindex="0" data-tip="Trouvés|1 240 prospects|100 % du total"><span class="name">Trouvés</span><span class="track"><span class="fill" style="--w:88%"></span><span class="val">1 240</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Contactés|486 prospects|39 % des trouvés"><span class="name">Contactés</span><span class="track"><span class="fill" style="--w:34.5%"></span><span class="val">486<small>39 %</small></span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Ont répondu|131 prospects|27 % des contactés"><span class="name">Ont répondu</span><span class="track"><span class="fill" style="--w:9.3%"></span><span class="val">131<small>27 %</small></span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Rendez-vous|47 prospects|36 % des réponses"><span class="name">Rendez-vous</span><span class="track"><span class="fill" style="--w:3.3%"></span><span class="val">47<small>36 %</small></span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Validés|18 ventes|38 % des rendez-vous, 1,5 % des trouvés"><span class="name">Validés</span><span class="track"><span class="fill" style="--w:1.3%"></span><span class="val">18<small>38 %</small></span></span></div>
+          </div>
+          <details class="data-view"><summary>Voir les données</summary>
+            <table><thead><tr><th>Étape</th><th class="n">Prospects</th><th class="n">Part de l'étape précédente</th></tr></thead>
+            <tbody><tr><td>Trouvés</td><td class="n">1 240</td><td class="n">—</td></tr><tr><td>Contactés</td><td class="n">486</td><td class="n">39 %</td></tr><tr><td>Ont répondu</td><td class="n">131</td><td class="n">27 %</td></tr><tr><td>Rendez-vous</td><td class="n">47</td><td class="n">36 %</td></tr><tr><td>Validés</td><td class="n">18</td><td class="n">38 %</td></tr></tbody></table>
+          </details>
+        </article>
+
+        <article class="panel chart" aria-labelledby="g2">
+          <h3 id="g2">Réponses reçues par semaine</h3>
+          <p class="sub">12 dernières semaines, tous canaux</p>
+          <div class="chart-body line-wrap" id="line" role="img" aria-label="Réponses par semaine, de 4 en semaine 36 à 20 en semaine 47"></div>
+          <details class="data-view"><summary>Voir les données</summary>
+            <table><thead><tr><th>Semaine</th><th class="n">Réponses</th></tr></thead>
+            <tbody><tr><td>S36 (semaine du 31/08)</td><td class="n">4</td></tr><tr><td>S37 (semaine du 07/09)</td><td class="n">6</td></tr><tr><td>S38 (semaine du 14/09)</td><td class="n">6</td></tr><tr><td>S39 (semaine du 21/09)</td><td class="n">8</td></tr><tr><td>S40 (semaine du 28/09)</td><td class="n">8</td></tr><tr><td>S41 (semaine du 05/10)</td><td class="n">10</td></tr><tr><td>S42 (semaine du 12/10)</td><td class="n">11</td></tr><tr><td>S43 (semaine du 19/10)</td><td class="n">12</td></tr><tr><td>S44 (semaine du 26/10)</td><td class="n">13</td></tr><tr><td>S45 (semaine du 02/11)</td><td class="n">16</td></tr><tr><td>S46 (semaine du 09/11)</td><td class="n">17</td></tr><tr><td>S47 (semaine du 16/11)</td><td class="n">20</td></tr></tbody></table>
+          </details>
+        </article>
+
+        <article class="panel chart" aria-labelledby="g3">
+          <h3 id="g3">Prospects trouvés par pays</h3>
+          <p class="sub">1 240 prospects sur la période</p>
+          <div class="chart-body hbars">
+            <div class="hbar" tabindex="0" data-tip="France|342 prospects|28 % du total"><span class="name">France</span><span class="track"><span class="fill" style="--w:84%"></span><span class="val">342</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Sénégal|268 prospects|22 % du total"><span class="name">Sénégal</span><span class="track"><span class="fill" style="--w:65.8%"></span><span class="val">268</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Canada|214 prospects|17 % du total"><span class="name">Canada</span><span class="track"><span class="fill" style="--w:52.6%"></span><span class="val">214</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Maroc|176 prospects|14 % du total"><span class="name">Maroc</span><span class="track"><span class="fill" style="--w:43.2%"></span><span class="val">176</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Belgique|139 prospects|11 % du total"><span class="name">Belgique</span><span class="track"><span class="fill" style="--w:34.1%"></span><span class="val">139</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="États-Unis|101 prospects|8 % du total"><span class="name">États-Unis</span><span class="track"><span class="fill" style="--w:24.8%"></span><span class="val">101</span></span></div>
+          </div>
+          <details class="data-view"><summary>Voir les données</summary>
+            <table><thead><tr><th>Pays</th><th class="n">Prospects</th><th class="n">Part</th></tr></thead>
+            <tbody><tr><td>France</td><td class="n">342</td><td class="n">28 %</td></tr><tr><td>Sénégal</td><td class="n">268</td><td class="n">22 %</td></tr><tr><td>Canada</td><td class="n">214</td><td class="n">17 %</td></tr><tr><td>Maroc</td><td class="n">176</td><td class="n">14 %</td></tr><tr><td>Belgique</td><td class="n">139</td><td class="n">11 %</td></tr><tr><td>États-Unis</td><td class="n">101</td><td class="n">8 %</td></tr></tbody></table>
+          </details>
+        </article>
+
+        <article class="panel chart" aria-labelledby="g4">
+          <h3 id="g4">Taux de réponse par canal</h3>
+          <p class="sub">Part des prospects contactés qui ont répondu</p>
+          <div class="chart-body hbars">
+            <div class="hbar" tabindex="0" data-tip="WhatsApp|38 %|68 réponses sur 180 contactés"><span class="name">WhatsApp</span><span class="track"><span class="fill" style="--w:76%"></span><span class="val">38 %</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Téléphone|35 %|21 réponses sur 60 contactés"><span class="name">Téléphone</span><span class="track"><span class="fill" style="--w:70%"></span><span class="val">35 %</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="LinkedIn|25 %|24 réponses sur 96 contactés"><span class="name">LinkedIn</span><span class="track"><span class="fill" style="--w:50%"></span><span class="val">25 %</span></span></div>
+            <div class="hbar" tabindex="0" data-tip="Email|12 %|18 réponses sur 150 contactés"><span class="name">Email</span><span class="track"><span class="fill" style="--w:24%"></span><span class="val">12 %</span></span></div>
+          </div>
+          <p class="axis-note">Échelle de 0 à 50 %. Survolez une barre pour le détail.</p>
+          <details class="data-view"><summary>Voir les données</summary>
+            <table><thead><tr><th>Canal</th><th class="n">Contactés</th><th class="n">Réponses</th><th class="n">Taux</th></tr></thead>
+            <tbody><tr><td>WhatsApp</td><td class="n">180</td><td class="n">68</td><td class="n">38 %</td></tr><tr><td>Téléphone</td><td class="n">60</td><td class="n">21</td><td class="n">35 %</td></tr><tr><td>LinkedIn</td><td class="n">96</td><td class="n">24</td><td class="n">25 %</td></tr><tr><td>Email</td><td class="n">150</td><td class="n">18</td><td class="n">12 %</td></tr></tbody></table>
+          </details>
+        </article>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script type="module">
+  import { animate } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const tip = document.getElementById("tip");
+
+  /* ---------- Infobulle partagée (textContent uniquement) ---------- */
+  function showTip(lines, x, y) {
+    const [title, value, detail] = lines;
+    const s = document.createElement("strong"); s.textContent = value;
+    const t = document.createElement("div"); t.textContent = title;
+    const d = document.createElement("div"); d.textContent = detail || "";
+    tip.replaceChildren(s, t, d);
+    tip.hidden = false;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    const left = Math.min(Math.max(8, x - w / 2), document.documentElement.clientWidth - w - 8);
+    tip.style.left = left + window.scrollX + "px";
+    tip.style.top = y + window.scrollY - h - 10 + "px";
+  }
+  const hideTip = () => (tip.hidden = true);
+
+  document.querySelectorAll(".hbar[data-tip]").forEach((el) => {
+    const lines = el.dataset.tip.split("|");
+    el.setAttribute("aria-label", lines.join(", "));
+    const place = () => { const r = el.querySelector(".fill").getBoundingClientRect(); showTip(lines, r.right, r.top); };
+    el.addEventListener("pointerenter", place);
+    el.addEventListener("focus", place);
+    el.addEventListener("pointerleave", hideTip);
+    el.addEventListener("blur", hideTip);
+  });
+
+  /* ---------- Courbe hebdomadaire ---------- */
+  const weeks = [{"w": "S36", "v": 4, "d": "semaine du 31/08"}, {"w": "S37", "v": 6, "d": "semaine du 07/09"}, {"w": "S38", "v": 6, "d": "semaine du 14/09"}, {"w": "S39", "v": 8, "d": "semaine du 21/09"}, {"w": "S40", "v": 8, "d": "semaine du 28/09"}, {"w": "S41", "v": 10, "d": "semaine du 05/10"}, {"w": "S42", "v": 11, "d": "semaine du 12/10"}, {"w": "S43", "v": 12, "d": "semaine du 19/10"}, {"w": "S44", "v": 13, "d": "semaine du 26/10"}, {"w": "S45", "v": 16, "d": "semaine du 02/11"}, {"w": "S46", "v": 17, "d": "semaine du 09/11"}, {"w": "S47", "v": 20, "d": "semaine du 16/11"}];
+  const host = document.getElementById("line");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  function drawLine() {
+    const W = host.clientWidth || 520, H = 220;
+    const m = { l: 30, r: 40, t: 14, b: 26 };
+    const max = 25;
+    const x = (i) => m.l + (i * (W - m.l - m.r)) / (weeks.length - 1);
+    const y = (v) => m.t + (1 - v / max) * (H - m.t - m.b);
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" });
+    [0, 10, 20].forEach((v) => {
+      svg.append(el("line", { class: "grid", x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }));
+      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
+    });
+    weeks.forEach((w, i) => {
+      if (i % 2 === 1 && i !== weeks.length - 1) return;
+      const t = el("text", { x: x(i), y: H - 6, "text-anchor": "middle" }); t.textContent = w.w; svg.append(t);
+    });
+    const pts = weeks.map((w, i) => `${x(i)},${y(w.v)}`);
+    svg.append(el("path", { class: "area", d: `M${x(0)},${y(0)} L${pts.join(" L")} L${x(weeks.length - 1)},${y(0)} Z` }));
+    const line = el("path", { class: "ln", d: `M${pts.join(" L")}` });
+    svg.append(line);
+    const last = weeks.length - 1;
+    svg.append(el("circle", { class: "end", cx: x(last), cy: y(weeks[last].v), r: 5 }));
+    const g = el("g", { class: "end-label" });
+    const lbl = String(weeks[last].v);
+    g.append(el("rect", { x: x(last) + 9, y: y(weeks[last].v) - 10, width: 8 * lbl.length + 10, height: 20, rx: 4 }));
+    const lt = el("text", { x: x(last) + 14, y: y(weeks[last].v) + 4 }); lt.textContent = lbl; g.append(lt);
+    svg.append(g);
+    // Réticule + infobulle
+    const xh = el("line", { class: "xhair", y1: m.t, y2: H - m.b, visibility: "hidden" });
+    const dot = el("circle", { class: "hov", r: 5, visibility: "hidden" });
+    const hit = el("rect", { x: m.l, y: 0, width: W - m.l - m.r + 20, height: H, fill: "transparent" });
+    svg.append(xh, dot, hit);
+    hit.addEventListener("pointermove", (ev) => {
+      const r = svg.getBoundingClientRect();
+      const px = ev.clientX - r.left;
+      const i = Math.max(0, Math.min(last, Math.round(((px - m.l) / (W - m.l - m.r)) * last)));
+      xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
+      dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(weeks[i].v)); dot.setAttribute("visibility", "visible");
+      showTip([`Semaine ${weeks[i].w.slice(1)}`, `${weeks[i].v} réponses`, weeks[i].d], r.left + x(i), r.top + y(weeks[i].v));
+    });
+    hit.addEventListener("pointerleave", () => { xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); });
+    host.replaceChildren(svg);
+    return line;
+  }
+  const line = drawLine();
+  if (!reduce) {
+    // Apparition unique de la courbe (opacité seulement)
+    animate(host, { opacity: [0, 1] }, { duration: 0.5 });
+  }
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawLine, 120); });
+
+  /* ---------- Kanban : glisser-déposer + clavier ---------- */
+  const board = document.getElementById("board");
+  const cols = [...board.querySelectorAll(".col")];
+  const live = document.getElementById("board-live");
+  let dragged = null;
+
+  function updateCounts() {
+    cols.forEach((c) => {
+      const n = c.querySelector(".n");
+      n.textContent = (Number(n.dataset.base) + c.querySelectorAll(".card").length).toLocaleString("fr-FR");
+    });
+  }
+  function moveCard(card, col, focus) {
+    col.insertBefore(card, col.querySelector(".more"));
+    updateCounts();
+    live.textContent = `${card.querySelector("b").textContent} déplacé vers ${col.querySelector(".col-h span[id]").textContent}`;
+    if (!reduce) animate(card, { opacity: [0.3, 1], scale: [0.97, 1] }, { duration: 0.22, ease: [0.2, 0, 0, 1] });
+    if (focus) card.focus();
+  }
+  board.addEventListener("dragstart", (e) => {
+    dragged = e.target.closest(".card"); if (!dragged) return;
+    dragged.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+  });
+  board.addEventListener("dragend", () => { dragged && dragged.classList.remove("dragging"); cols.forEach((c) => c.classList.remove("drop")); dragged = null; });
+  cols.forEach((col) => {
+    col.addEventListener("dragover", (e) => { if (!dragged) return; e.preventDefault(); col.classList.add("drop"); });
+    col.addEventListener("dragleave", (e) => { if (!col.contains(e.relatedTarget)) col.classList.remove("drop"); });
+    col.addEventListener("drop", (e) => { e.preventDefault(); col.classList.remove("drop"); if (dragged) moveCard(dragged, col, false); });
+  });
+  board.addEventListener("keydown", (e) => {
+    const card = e.target.closest(".card"); if (!card) return;
+    const i = cols.indexOf(card.closest(".col"));
+    if (e.key === "ArrowRight" && i < cols.length - 1) { e.preventDefault(); moveCard(card, cols[i + 1], true); }
+    if (e.key === "ArrowLeft" && i > 0) { e.preventDefault(); moveCard(card, cols[i - 1], true); }
+  });
+</script>
+</body>
+</html>

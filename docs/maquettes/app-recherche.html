@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="fr" data-accent="orange">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recherche — Scoutra (maquette)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/scoutra.css">
+<script src="assets/accent.js"></script>
+<style>
+  /* Composeur */
+  .composer { padding: 16px; }
+  @media (min-width: 768px) { .composer { padding: 20px; } }
+  .composer > label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+  .composer textarea {
+    width: 100%; min-height: 76px; resize: vertical; padding: 12px 14px; border-radius: var(--radius-m);
+    border: 1px solid var(--line-2); background: var(--bg); font-size: 17px; line-height: 1.45;
+    field-sizing: content; max-height: 220px;
+  }
+  .composer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+  .composer .hint { margin-top: 6px; font-size: 13px; color: var(--ink-3); }
+  .opts { margin-top: 16px; display: grid; gap: 16px; }
+  @media (min-width: 1100px) { .opts { grid-template-columns: auto auto 1fr; align-items: end; gap: 24px; } }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend { padding: 0; font-size: 13px; color: var(--ink-3); margin-bottom: 6px; }
+  .zone-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .countries { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .countries .chip { padding-right: 4px; }
+  .chip .x { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; color: var(--ink-3); }
+  .chip .x:hover { background: var(--surface-2); color: var(--ink); }
+  .chip .x svg { width: 10px; height: 10px; }
+  .add-country { border: 1px dashed var(--line-2); background: transparent; border-radius: 999px; min-height: 28px; padding: 0 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+  .world-note { display: none; font-size: 13.5px; color: var(--ink-2); }
+  .composer:has(input[value="monde"]:checked) .countries { display: none; }
+  .composer:has(input[value="monde"]:checked) .world-note { display: inline; }
+  .go { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  @media (min-width: 1100px) { .go { justify-content: flex-end; } }
+  .go .cost { font-size: 13px; color: var(--ink-3); }
+  .b2c-note {
+    display: none; margin-top: 16px; padding: 12px 14px; border-radius: var(--radius-s);
+    background: var(--accent-soft); color: var(--accent-ink); font-size: 14px; line-height: 1.45; max-width: 90ch;
+  }
+  .b2c-note b { font-weight: 600; }
+  .composer:has(input[value="b2c"]:checked) .b2c-note, .composer:has(input[value="both"]:checked) .b2c-note { display: block; }
+
+  /* Bandeau d'avancement */
+  .run { margin-top: 16px; padding: 14px 16px; }
+  .run-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+  .run-top b { font-weight: 600; }
+  .run-top .meta { color: var(--ink-3); font-size: 13.5px; }
+  .progress { margin-top: 12px; height: 4px; border-radius: 999px; background: var(--accent-soft); overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--accent); transform-origin: 0 50%; transform: scaleX(1); border-radius: 999px; }
+  .run-agents { margin-top: 14px; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px 16px; }
+  @media (min-width: 720px) { .run-agents { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  @media (min-width: 1200px) { .run-agents { grid-template-columns: repeat(6, minmax(0,1fr)); } }
+  .ra { display: grid; grid-template-columns: 16px 1fr; gap: 0 8px; font-size: 13.5px; }
+  .ra .dot { width: 14px; height: 14px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; }
+  .ra .dot svg { width: 9px; height: 9px; color: var(--on-accent); opacity: 0; }
+  .ra[data-state="done"] .dot { background: var(--accent); border-color: var(--accent); }
+  .ra[data-state="done"] .dot svg { opacity: 1; }
+  .ra[data-state="active"] .dot { border-color: var(--accent); }
+  .ra[data-state="active"] .dot::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .ra b { font-weight: 600; }
+  .ra small { grid-column: 2; color: var(--ink-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+
+  /* Résultats + panneau */
+  .work { margin-top: 16px; display: grid; gap: 16px; align-items: start; }
+  @media (min-width: 1280px) { .work { grid-template-columns: minmax(0, 1fr) 372px; } }
+  .res-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .res-tools h2 { font-size: 15px; font-weight: 600; margin-right: 4px; }
+  .res-tools .count { color: var(--ink-3); font-size: 13.5px; font-variant-numeric: tabular-nums; margin-right: auto; }
+  .toggle { min-height: 32px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; color: var(--ink-2); cursor: pointer; }
+  .toggle[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-ink); font-weight: 600; }
+
+  .res-table th, .res-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 14px; }
+  .res-table thead th { font-size: 12.5px; padding-top: 9px; padding-bottom: 9px; background: var(--surface-2); white-space: nowrap; }
+  .res-table tbody tr:last-child td { border-bottom: 0; }
+  .res-table tbody tr { transition: background-color .12s ease; }
+  .res-table tbody tr:hover { background: #fafaf8; }
+  .res-table tbody tr[aria-selected="true"] { background: var(--accent-soft); }
+  .res-table tbody tr[aria-selected="true"] .c-who b { color: var(--accent-ink); }
+  .c-sel { width: 36px; }
+  .c-sel input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .open { all: unset; cursor: pointer; display: block; max-width: 250px; }
+  .open:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  .open b { display: block; font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .open small { display: block; color: var(--ink-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-cc { white-space: nowrap; }
+  .c-cc .city { margin-left: 8px; color: var(--ink-2); font-size: 13.5px; }
+  .c-src { color: var(--ink-2); font-size: 13.5px; }
+  .c-score { position: relative; white-space: nowrap; }
+  .score-btn { all: unset; cursor: help; padding: 4px 2px; border-radius: 4px; }
+  .score-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .why {
+    display: none; position: absolute; z-index: 20; right: 8px; top: calc(100% - 4px); width: 300px;
+    padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m);
+    box-shadow: var(--shadow-float); font-size: 13px; color: var(--ink-2); white-space: normal;
+  }
+  .why strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 6px; }
+  .why li { display: grid; grid-template-columns: 34px 1fr; gap: 6px; padding: 2px 0; }
+  .why .pts { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); text-align: right; }
+  .score-btn:hover + .why, .score-btn:focus-visible + .why { display: block; }
+  .score.top { background: var(--hl); color: var(--hl-ink); padding: 2px 7px 2px 4px; border-radius: 5px; }
+  .c-msg { max-width: 220px; }
+  .msg-prev { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-2); font-size: 13px; line-height: 1.4; }
+  .res-foot { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  @media (max-width: 1679px) { .c-src { display: none; } }
+  @media (max-width: 1279px) and (min-width: 860px) { .c-msg { display: none; } }
+
+  /* Mobile : lignes en cartes */
+  @media (max-width: 859px) {
+    .res-table thead { display: none; }
+    .res-table, .res-table tbody { display: block; }
+    .res-table tr { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .res-table td { display: block; padding: 0; border: 0; }
+    .res-table .c-sel, .res-table .c-src { display: none; }
+    .res-table .c-who { grid-column: 1 / -1; }
+    .res-table .open { max-width: 100%; }
+    .res-table .c-cc { grid-column: 1; }
+    .res-table .c-mail { grid-column: 1; }
+    .res-table .c-score { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+    .res-table .c-msg { grid-column: 1 / -1; max-width: none; }
+    .why { right: 0; width: min(300px, 80vw); }
+  }
+
+  /* Panneau prospect */
+  .prospect { position: sticky; top: 16px; }
+  .pp-head { padding: 16px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; position: relative; }
+  .pp-head h2 { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; padding-right: 36px; }
+  .pp-head .role { color: var(--ink-2); font-size: 14px; }
+  .pp-head .place { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 13.5px; margin-top: 2px; }
+  .pp-close { display: none; position: absolute; right: 10px; top: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; place-items: center; color: var(--ink-2); }
+  .pp-close svg { width: 14px; height: 14px; }
+  .pp-actions { display: flex; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .pp-actions .btn { flex: 1; }
+  .pp-sec { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .pp-sec:last-child { border-bottom: 0; }
+  .pp-sec h3 { font-size: 13.5px; font-weight: 600; margin-bottom: 8px; }
+  .kv { display: grid; grid-template-columns: 92px 1fr; gap: 6px 10px; font-size: 13.5px; }
+  .kv dt { color: var(--ink-3); }
+  .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .kv .verified { margin-top: 2px; }
+  .reasons li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; font-size: 13.5px; padding: 3px 0; color: var(--ink-2); }
+  .reasons .pts { text-align: right; font-weight: 600; color: var(--ink); }
+  .reasons-total { display: flex; justify-content: space-between; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13.5px; }
+  .reasons-total b { font-variant-numeric: tabular-nums; }
+  .msg-tabs { margin-bottom: 10px; }
+  .msg-box { padding: 12px; border-radius: var(--radius-s); background: var(--bg); border: 1px solid var(--line); font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; color: var(--ink); max-height: 260px; overflow: auto; }
+  .msg-subject { font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+  .msg-subject b { color: var(--ink); font-weight: 600; }
+  .msg-note { margin-top: 8px; font-size: 12.5px; color: var(--ink-3); }
+  .erase { margin-top: 10px; background: none; border: 0; padding: 4px 0; color: var(--ink-2); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+  /* Mobile + JS : le panneau devient une feuille en bas d'écran */
+  .scrim { display: none; }
+  @media (max-width: 1279px) {
+    .js .prospect { position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; top: auto; max-height: 88vh; overflow: auto; border-radius: var(--radius-l) var(--radius-l) 0 0; box-shadow: var(--shadow-float); transform: translateY(105%); visibility: hidden; transition: transform .28s cubic-bezier(.2,0,0,1), visibility 0s linear .28s; }
+    .js .prospect.open { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2,0,0,1); }
+    .js .pp-close { display: grid; }
+    .js .scrim.open { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(21,24,28,.32); }
+  }
+  @media (max-width: 1279px) and (prefers-reduced-motion: reduce) {
+    .js .prospect, .js .prospect.open { transition: none; }
+  }
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .js .prospect { left: auto; top: 0; bottom: 0; width: 400px; max-height: none; border-radius: 0; transform: translateX(105%); }
+  }
+
+  .js .res-table.armed tbody tr { opacity: 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="brand" viewBox="0 0 24 24"><rect class="m-bg" width="24" height="24" rx="6"/><circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14 14l4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-board" viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="4" height="13" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="3.5" width="4" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="3.5" width="4" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 20 20"><circle cx="8" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 16.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M13.5 4.5a3 3 0 010 5.5M15.5 12.5c1.2.7 1.9 2 2.1 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 20 20"><path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="side" aria-label="Navigation de l'application">
+    <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
+    <nav class="side-nav">
+      <a href="app-recherche.html" aria-current="page"><svg aria-hidden="true"><use href="#i-search"/></svg>Recherche</a>
+      <a href="app-pipeline.html"><svg aria-hidden="true"><use href="#i-board"/></svg>Pipeline</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-users"/></svg>Tous les prospects</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-down"/></svg>Exports</a>
+      <a href="#"><svg aria-hidden="true"><use href="#i-gear"/></svg>Paramètres</a>
+    </nav>
+    <div class="side-foot">
+      <div class="credits">Crédits de recherche<br><b>412</b> sur 500 ce mois-ci<div class="meter" role="img" aria-label="412 crédits sur 500"><i style="width:82.4%"></i></div></div>
+      <div class="who-am-i"><span class="avatar" aria-hidden="true">SM</span><span><b>Sofia Mendes</b>Rendezvo, Formule Pipeline</span></div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
+      <h1>Recherche</h1>
+      <span class="spacer"></span>
+      <span class="demo-chip">Données de démonstration</span>
+      <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
+        <span class="as-label">Accent</span>
+        <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw sw-orange" aria-hidden="true"></span>Orange</button>
+        <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw sw-bleu" aria-hidden="true"></span>Bleu</button>
+      </div>
+    </header>
+    <nav class="mobile-tabs" aria-label="Sections">
+      <a href="app-recherche.html" aria-current="page">Recherche</a>
+      <a href="app-pipeline.html">Pipeline</a>
+      <a href="#">Prospects</a>
+      <a href="#">Exports</a>
+    </nav>
+
+    <main class="page" id="contenu">
+      <form class="panel composer" action="#" onsubmit="return false">
+        <label for="q">Décrivez votre cible</label>
+        <textarea id="q" name="q" rows="3">Cabinets dentaires privés en France, au Maroc, au Canada, en Belgique et au Sénégal, ouverts récemment ou sans prise de rendez-vous en ligne</textarea>
+        <p class="hint">Écrivez comme vous parleriez à un collègue : secteur, lieu, taille, ancienneté, signaux utiles. Les entreprises créées hier comptent dès qu'elles sont présentes en ligne.</p>
+        <div class="opts">
+          <fieldset>
+            <legend>Zone</legend>
+            <div class="zone-row">
+              <div class="seg">
+                <label><input type="radio" name="zone" value="un">Un pays</label>
+                <label><input type="radio" name="zone" value="plusieurs" checked>Plusieurs</label>
+                <label><input type="radio" name="zone" value="monde">Monde</label>
+              </div>
+              <div class="countries">
+                <span class="chip"><span class="cc">FR</span>France<button type="button" class="x" aria-label="Retirer France"><svg aria-hidden="true"><use href="#i-x"/></svg></button></span>
+                <span class="chip"><span class="cc">MA</span>Maroc<button type="button" class="x" aria-label="Retirer Maroc"><svg aria-hidden="true"><use href="#i-x"/></svg></button></span>
+                <span class="chip"><span class="cc">CA</span>Canada<button type="button" class="x" aria-label="Retirer Canada"><svg aria-hidden="true"><use href="#i-x"/></svg></button></span>
+                <span class="chip"><span class="cc">BE</span>Belgique<button type="button" class="x" aria-label="Retirer Belgique"><svg aria-hidden="true"><use href="#i-x"/></svg></button></span>
+                <span class="chip"><span class="cc">SN</span>Sénégal<button type="button" class="x" aria-label="Retirer Sénégal"><svg aria-hidden="true"><use href="#i-x"/></svg></button></span>
+                <button type="button" class="add-country">Ajouter un pays</button>
+              </div>
+              <span class="world-note">Tous les pays. Les règles de chaque pays restent appliquées.</span>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Type de cible</legend>
+            <div class="seg">
+              <label><input type="radio" name="cible" value="b2b" checked>Entreprises</label>
+              <label><input type="radio" name="cible" value="b2c">Particuliers</label>
+              <label><input type="radio" name="cible" value="both">Les deux</label>
+            </div>
+          </fieldset>
+          <div class="go">
+            <span class="cost">Environ 80 crédits</span>
+            <button type="submit" class="btn btn-primary" id="launch">Lancer la recherche</button>
+          </div>
+        </div>
+        <p class="b2c-note"><b>Particuliers :</b> Scoutra ne retient que des personnes qui affichent publiquement un contact professionnel (coachs, freelances, commerçants) ou qui ont donné leur accord par formulaire. Aucun profil de réseau social n'est aspiré, et les messages sont envoyés par vous, à la main.</p>
+      </form>
+
+      <section class="panel run" aria-labelledby="run-title">
+        <div class="run-top">
+          <b id="run-title">Recherche terminée</b>
+          <span class="meta" id="run-meta">8 prospects retenus sur 286 entreprises analysées</span>
+          <span class="meta">Lancée à 10:42</span>
+        </div>
+        <div class="progress" aria-hidden="true"><i id="run-bar"></i></div>
+        <ol class="run-agents">
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Interprète</b><small>Fiche cible prête</small></li>
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Recherche</b><small data-count="286">286 entreprises</small></li>
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Enrichissement</b><small data-count="171">171 sites lus</small></li>
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Vérification</b><small data-count="132">132 contacts contrôlés</small></li>
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Notation</b><small data-count="8">8 prospects notés</small></li>
+          <li class="ra" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><b>Rédaction</b><small data-count="8">8 messages écrits</small></li>
+        </ol>
+      </section>
+
+      <div class="work">
+        <section class="panel" aria-labelledby="res-title">
+          <div class="res-tools">
+            <h2 id="res-title">Prospects</h2>
+            <span class="count" id="res-count" aria-live="polite">8 résultats</span>
+            <button type="button" class="toggle" aria-pressed="false">Score 70 et plus</button>
+            <button type="button" class="toggle" aria-pressed="false">Email vérifié</button>
+            <button type="button" class="btn btn-ghost btn-s">Exporter en CSV</button>
+          </div>
+          <table class="res-table" id="res-table">
+            <caption class="sr-only">Prospects trouvés, triés par score</caption>
+            <thead><tr>
+              <th scope="col" class="c-sel"><span class="sr-only">Sélection</span></th>
+              <th scope="col">Prospect</th>
+              <th scope="col">Pays</th>
+              <th scope="col" class="c-src">Source</th>
+              <th scope="col">Email</th>
+              <th scope="col">Score</th>
+              <th scope="col" class="c-msg">Message rédigé</th>
+            </tr></thead>
+            <tbody>
+<tr data-id="p1" aria-selected="true">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Claire Fontaine"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p1"><b>Dr Claire Fontaine</b><small>Fondatrice, Cabinet Dentaire Confluence</small></button></td>
+  <td class="c-cc"><span class="cc" title="France">FR</span><span class="city">Lyon</span></td>
+  <td class="c-src">Registre des entreprises</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p1"><span class="score top"><span class="score-bar"><i style="--v:94%"></i></span>94</span></button><div class="why" id="why-p1" role="tooltip"><strong>Score 94 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : cabinet dentaire privé</li><li><span class="pts">+22</span>Fondatrice identifiée sur le site</li><li><span class="pts">+18</span>Cabinet ouvert il y a 4 mois</li><li><span class="pts">+14</span>Taille dans la cible : 6 praticiens</li><li><span class="pts">+10</span>Pas de prise de rendez-vous en ligne</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">Félicitations pour l&#x27;ouverture du Cabinet Confluence en juillet. J&#x27;ai vu que vos patients doivent encore appeler pour réserver. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p2">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Youssef Alami"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p2"><b>Dr Youssef Alami</b><small>Gérant, Centre Dentaire Anfa</small></button></td>
+  <td class="c-cc"><span class="cc" title="Maroc">MA</span><span class="city">Casablanca</span></td>
+  <td class="c-src">Google Places (API)</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p2"><span class="score"><span class="score-bar"><i style="--v:89%"></i></span>89</span></button><div class="why" id="why-p2" role="tooltip"><strong>Score 89 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : cabinet dentaire privé</li><li><span class="pts">+20</span>Gérant identifié</li><li><span class="pts">+15</span>Nombreux avis récents</li><li><span class="pts">+14</span>Taille dans la cible : 9 salariés</li><li><span class="pts">+10</span>Pas de prise de rendez-vous en ligne</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">Votre centre a d&#x27;excellents avis, et plusieurs patients y mentionnent la difficulté à joindre l&#x27;accueil. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p3">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Émilie Gagnon"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p3"><b>Dr Émilie Gagnon</b><small>Copropriétaire, Clinique Dentaire Rosemont</small></button></td>
+  <td class="c-cc"><span class="cc" title="Canada">CA</span><span class="city">Montréal</span></td>
+  <td class="c-src">Site web de l&#x27;entreprise</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p3"><span class="score"><span class="score-bar"><i style="--v:86%"></i></span>86</span></button><div class="why" id="why-p3" role="tooltip"><strong>Score 86 sur 100</strong><ul><li><span class="pts">+28</span>Secteur exact : clinique dentaire</li><li><span class="pts">+22</span>Copropriétaire identifiée</li><li><span class="pts">+14</span>Site web actif</li><li><span class="pts">+12</span>Taille dans la cible : 14 salariés</li><li><span class="pts">+10</span>Recrute une ou un réceptionniste</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">J&#x27;ai vu que la Clinique Rosemont recrute pour sa réception. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p4">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Moussa Ndiaye"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p4"><b>Dr Moussa Ndiaye</b><small>Directeur, Clinique Dentaire Almadies</small></button></td>
+  <td class="c-cc"><span class="cc" title="Sénégal">SN</span><span class="city">Dakar</span></td>
+  <td class="c-src">OpenStreetMap et site web</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p4"><span class="score"><span class="score-bar"><i style="--v:82%"></i></span>82</span></button><div class="why" id="why-p4" role="tooltip"><strong>Score 82 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : clinique dentaire</li><li><span class="pts">+20</span>Directeur identifié</li><li><span class="pts">+12</span>Site web actif</li><li><span class="pts">+10</span>Taille dans la cible : 11 salariés</li><li><span class="pts">+10</span>Pas de prise de rendez-vous en ligne</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">La Clinique Almadies accueille de plus en plus de patients d&#x27;après votre site. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p5">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Sarah Peeters"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p5"><b>Dr Sarah Peeters</b><small>Cogérante, Cabinet Sourire Ixelles</small></button></td>
+  <td class="c-cc"><span class="cc" title="Belgique">BE</span><span class="city">Bruxelles</span></td>
+  <td class="c-src">Annuaire professionnel</td>
+  <td class="c-mail"><span class="unverified">Téléphone seul</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p5"><span class="score"><span class="score-bar"><i style="--v:77%"></i></span>77</span></button><div class="why" id="why-p5" role="tooltip"><strong>Score 77 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : cabinet dentaire privé</li><li><span class="pts">+18</span>Cogérante identifiée</li><li><span class="pts">+15</span>Taille dans la cible : 5 praticiens</li><li><span class="pts">+14</span>WhatsApp professionnel affiché</li><li><span class="pts">0</span>Aucun email trouvé</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">Votre cabinet d&#x27;Ixelles a ouvert ce printemps. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p6">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Thomas Girard"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p6"><b>Dr Thomas Girard</b><small>Directeur médical, Centre Dentaire Part-Dieu</small></button></td>
+  <td class="c-cc"><span class="cc" title="France">FR</span><span class="city">Lyon</span></td>
+  <td class="c-src">Google Places (API)</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p6"><span class="score"><span class="score-bar"><i style="--v:74%"></i></span>74</span></button><div class="why" id="why-p6" role="tooltip"><strong>Score 74 sur 100</strong><ul><li><span class="pts">+24</span>Secteur exact : centre dentaire</li><li><span class="pts">+20</span>Directeur médical identifié</li><li><span class="pts">+12</span>Site web actif</li><li><span class="pts">+10</span>Taille dans la cible : 20 salariés</li><li><span class="pts">+8</span>Avis clients récents</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">Le Centre Part-Dieu reçoit beaucoup d&#x27;avis sur la difficulté à obtenir un créneau. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p7">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Nadia Benali"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p7"><b>Dr Nadia Benali</b><small>Gérante, Cabinet Dentaire Maârif</small></button></td>
+  <td class="c-cc"><span class="cc" title="Maroc">MA</span><span class="city">Casablanca</span></td>
+  <td class="c-src">Site web de l&#x27;entreprise</td>
+  <td class="c-mail"><span class="unverified">Non confirmé</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p7"><span class="score"><span class="score-bar"><i style="--v:68%"></i></span>68</span></button><div class="why" id="why-p7" role="tooltip"><strong>Score 68 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : cabinet dentaire privé</li><li><span class="pts">+16</span>Gérante identifiée</li><li><span class="pts">+12</span>Taille dans la cible : 4 salariés</li><li><span class="pts">+10</span>Pas de prise de rendez-vous en ligne</li><li><span class="pts">0</span>Email non confirmé : le domaine accepte tout</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">J&#x27;ai consulté le site du Cabinet Maârif. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+<tr data-id="p8">
+  <td class="c-sel"><input type="checkbox" aria-label="Sélectionner Dr Kevin Bouchard"></td>
+  <td class="c-who"><button type="button" class="open" data-open="p8"><b>Dr Kevin Bouchard</b><small>Directeur, Clinique Dentaire Plateau</small></button></td>
+  <td class="c-cc"><span class="cc" title="Canada">CA</span><span class="city">Montréal</span></td>
+  <td class="c-src">Registre des entreprises</td>
+  <td class="c-mail"><span class="verified"><svg aria-hidden="true"><use href="#i-check"/></svg>Vérifié</span></td>
+  <td class="c-score"><button type="button" class="score-btn" aria-describedby="why-p8"><span class="score"><span class="score-bar"><i style="--v:63%"></i></span>63</span></button><div class="why" id="why-p8" role="tooltip"><strong>Score 63 sur 100</strong><ul><li><span class="pts">+30</span>Secteur exact : clinique dentaire</li><li><span class="pts">+14</span>Directeur identifié</li><li><span class="pts">+9</span>Site web peu mis à jour</li><li><span class="pts">+10</span>Taille dans la cible : 16 salariés</li><li><span class="pts">0</span>Utilise déjà un agenda en ligne</li></ul></div></td>
+  <td class="c-msg"><span class="msg-prev">J&#x27;ai vu que la Clinique Plateau propose déjà un agenda en ligne : nos rappels par SMS pourraient réduire vos absences. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.</span></td>
+</tr>
+            </tbody>
+          </table>
+          <div class="res-foot"><span>Survolez un score pour voir ses raisons.</span><span>Données de démonstration, personnes et entreprises fictives.</span></div>
+        </section>
+
+        <div class="scrim" id="scrim"></div>
+        <aside class="panel prospect" id="prospect" aria-labelledby="pp-name">
+          <div class="pp-head">
+            <h2 id="pp-name">Dr Claire Fontaine</h2>
+            <p class="role" id="pp-role">Fondatrice, Cabinet Dentaire Confluence</p>
+            <p class="place"><span class="cc" id="pp-cc">FR</span><span id="pp-place">Lyon, France</span></p>
+            <button type="button" class="pp-close" id="pp-close" aria-label="Fermer la fiche"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+          </div>
+          <div class="pp-actions">
+            <button type="button" class="btn btn-primary btn-s">Ajouter au pipeline</button>
+            <button type="button" class="btn btn-ghost btn-s" id="copy">Copier le message</button>
+          </div>
+          <div class="pp-sec">
+            <h3>Coordonnées</h3>
+            <dl class="kv">
+              <dt>Email</dt><dd><span id="pp-email">c.fontaine@confluence-dentaire.example</span><br><span class="verified" id="pp-mailstate"><svg aria-hidden="true"><use href="#i-check"/></svg>Confirmé par le serveur mail</span></dd>
+              <dt>Téléphone</dt><dd class="num" id="pp-phone">+33 4 00 00 01 01</dd>
+              <dt>Site web</dt><dd id="pp-site">confluence-dentaire.example</dd>
+            </dl>
+          </div>
+          <div class="pp-sec">
+            <h3>Pourquoi ce score</h3>
+            <ul class="reasons" id="pp-reasons"><li><span class="pts num">+30</span><span>Secteur exact : cabinet dentaire privé</span></li><li><span class="pts num">+22</span><span>Fondatrice identifiée sur le site</span></li><li><span class="pts num">+18</span><span>Cabinet ouvert il y a 4 mois</span></li><li><span class="pts num">+14</span><span>Taille dans la cible : 6 praticiens</span></li><li><span class="pts num">+10</span><span>Pas de prise de rendez-vous en ligne</span></li></ul>
+            <div class="reasons-total"><span>Score</span><b id="pp-score">94 sur 100</b></div>
+          </div>
+          <div class="pp-sec">
+            <h3>Premier message</h3>
+            <div class="seg msg-tabs" role="radiogroup" aria-label="Canal du message">
+              <label><input type="radio" name="canal" value="email" checked>Email</label>
+              <label><input type="radio" name="canal" value="wa">WhatsApp</label>
+            </div>
+            <p class="msg-subject" id="pp-subject-wrap"><b>Objet :</b> <span id="pp-subject">Rendez-vous en ligne pour Cabinet Dentaire Confluence</span></p>
+            <div class="msg-box" id="pp-msg" tabindex="0" aria-label="Message rédigé">Bonjour Docteure Fontaine,
+
+Félicitations pour l&#x27;ouverture du Cabinet Confluence en juillet. J&#x27;ai vu que vos patients doivent encore appeler pour réserver. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.
+
+Auriez-vous 15 minutes jeudi ou vendredi pour en parler ?
+
+Bien cordialement,
+Sofia Mendes
+Rendezvo</div>
+            <p class="msg-note">Relisez avant d'envoyer. Scoutra n'envoie rien à votre place.</p>
+          </div>
+          <div class="pp-sec">
+            <h3>Origine des données</h3>
+            <dl class="kv">
+              <dt>Source</dt><dd id="pp-source">Registre des entreprises</dd>
+              <dt>Collecté le</dt><dd class="num" id="pp-date">22/11/2026</dd>
+              <dt>Base légale</dt><dd id="pp-basis">Intérêt légitime (B2B), information au premier contact</dd>
+              <dt>Règle</dt><dd id="pp-rule">France : RGPD, CNIL</dd>
+            </dl>
+            <button type="button" class="erase">Effacer ce prospect et ses données</button>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="application/json" id="data">{"p1": {"name": "Dr Claire Fontaine", "role": "Fondatrice", "org": "Cabinet Dentaire Confluence", "city": "Lyon", "country": "France", "cc": "FR", "source": "Registre des entreprises", "email": "c.fontaine@confluence-dentaire.example", "mail": "ok", "phone": "+33 4 00 00 01 01", "site": "confluence-dentaire.example", "reasons": [["+30", "Secteur exact : cabinet dentaire privé"], ["+22", "Fondatrice identifiée sur le site"], ["+18", "Cabinet ouvert il y a 4 mois"], ["+14", "Taille dans la cible : 6 praticiens"], ["+10", "Pas de prise de rendez-vous en ligne"]], "subject": "Rendez-vous en ligne pour Cabinet Dentaire Confluence", "msg": "Bonjour Docteure Fontaine,\n\nFélicitations pour l'ouverture du Cabinet Confluence en juillet. J'ai vu que vos patients doivent encore appeler pour réserver. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteure Fontaine, Sofia de Rendezvo. Votre cabinet a ouvert en juillet et les rendez-vous se prennent encore par téléphone. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "France : RGPD, CNIL", "date": "22/11/2026", "score": 94}, "p2": {"name": "Dr Youssef Alami", "role": "Gérant", "org": "Centre Dentaire Anfa", "city": "Casablanca", "country": "Maroc", "cc": "MA", "source": "Google Places (API)", "email": "contact@anfa-dentaire.example", "mail": "ok", "phone": "+212 5 00 00 02 02", "site": "anfa-dentaire.example", "reasons": [["+30", "Secteur exact : cabinet dentaire privé"], ["+20", "Gérant identifié"], ["+15", "Nombreux avis récents"], ["+14", "Taille dans la cible : 9 salariés"], ["+10", "Pas de prise de rendez-vous en ligne"]], "subject": "Rendez-vous en ligne pour Centre Dentaire Anfa", "msg": "Bonjour Docteur Alami,\n\nVotre centre a d'excellents avis, et plusieurs patients y mentionnent la difficulté à joindre l'accueil. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteur Alami, Sofia de Rendezvo. Vos patients saluent votre centre mais disent avoir du mal à joindre l'accueil. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Maroc : loi 09-08, CNDP", "date": "22/11/2026", "score": 89}, "p3": {"name": "Dr Émilie Gagnon", "role": "Copropriétaire", "org": "Clinique Dentaire Rosemont", "city": "Montréal", "country": "Canada", "cc": "CA", "source": "Site web de l'entreprise", "email": "e.gagnon@cliniquerosemont.example", "mail": "ok", "phone": "+1 514 000 0303", "site": "cliniquerosemont.example", "reasons": [["+28", "Secteur exact : clinique dentaire"], ["+22", "Copropriétaire identifiée"], ["+14", "Site web actif"], ["+12", "Taille dans la cible : 14 salariés"], ["+10", "Recrute une ou un réceptionniste"]], "subject": "Rendez-vous en ligne pour Clinique Dentaire Rosemont", "msg": "Bonjour Docteure Gagnon,\n\nJ'ai vu que la Clinique Rosemont recrute pour sa réception. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteure Gagnon, Sofia de Rendezvo. J'ai vu que vous recrutez pour la réception : un agenda en ligne pourrait vous soulager. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Canada : LCAP, adresse pro publiée", "date": "22/11/2026", "score": 86}, "p4": {"name": "Dr Moussa Ndiaye", "role": "Directeur", "org": "Clinique Dentaire Almadies", "city": "Dakar", "country": "Sénégal", "cc": "SN", "source": "OpenStreetMap et site web", "email": "direction@almadies-dentaire.example", "mail": "ok", "phone": "+221 33 000 04 04", "site": "almadies-dentaire.example", "reasons": [["+30", "Secteur exact : clinique dentaire"], ["+20", "Directeur identifié"], ["+12", "Site web actif"], ["+10", "Taille dans la cible : 11 salariés"], ["+10", "Pas de prise de rendez-vous en ligne"]], "subject": "Rendez-vous en ligne pour Clinique Dentaire Almadies", "msg": "Bonjour Docteur Ndiaye,\n\nLa Clinique Almadies accueille de plus en plus de patients d'après votre site. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteur Ndiaye, Sofia de Rendezvo. Nous aidons des cliniques à passer au rendez-vous en ligne. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Sénégal : loi 2008-12, CDP", "date": "22/11/2026", "score": 82}, "p5": {"name": "Dr Sarah Peeters", "role": "Cogérante", "org": "Cabinet Sourire Ixelles", "city": "Bruxelles", "country": "Belgique", "cc": "BE", "source": "Annuaire professionnel", "email": "", "mail": "none", "phone": "+32 2 000 05 05", "site": "sourire-ixelles.example", "reasons": [["+30", "Secteur exact : cabinet dentaire privé"], ["+18", "Cogérante identifiée"], ["+15", "Taille dans la cible : 5 praticiens"], ["+14", "WhatsApp professionnel affiché"], ["0", "Aucun email trouvé"]], "subject": "Rendez-vous en ligne pour Cabinet Sourire Ixelles", "msg": "Bonjour Docteure Peeters,\n\nVotre cabinet d'Ixelles a ouvert ce printemps. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteure Peeters, Sofia de Rendezvo. Votre WhatsApp professionnel est affiché sur votre site. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Belgique : RGPD, APD", "date": "21/11/2026", "score": 77}, "p6": {"name": "Dr Thomas Girard", "role": "Directeur médical", "org": "Centre Dentaire Part-Dieu", "city": "Lyon", "country": "France", "cc": "FR", "source": "Google Places (API)", "email": "t.girard@partdieu-dentaire.example", "mail": "ok", "phone": "+33 4 00 00 06 06", "site": "partdieu-dentaire.example", "reasons": [["+24", "Secteur exact : centre dentaire"], ["+20", "Directeur médical identifié"], ["+12", "Site web actif"], ["+10", "Taille dans la cible : 20 salariés"], ["+8", "Avis clients récents"]], "subject": "Rendez-vous en ligne pour Centre Dentaire Part-Dieu", "msg": "Bonjour Docteur Girard,\n\nLe Centre Part-Dieu reçoit beaucoup d'avis sur la difficulté à obtenir un créneau. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteur Girard, Sofia de Rendezvo. Vos patients cherchent des créneaux plus facilement. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "France : RGPD, CNIL", "date": "21/11/2026", "score": 74}, "p7": {"name": "Dr Nadia Benali", "role": "Gérante", "org": "Cabinet Dentaire Maârif", "city": "Casablanca", "country": "Maroc", "cc": "MA", "source": "Site web de l'entreprise", "email": "cabinet@maarif-dentaire.example", "mail": "risky", "phone": "+212 5 00 00 07 07", "site": "maarif-dentaire.example", "reasons": [["+30", "Secteur exact : cabinet dentaire privé"], ["+16", "Gérante identifiée"], ["+12", "Taille dans la cible : 4 salariés"], ["+10", "Pas de prise de rendez-vous en ligne"], ["0", "Email non confirmé : le domaine accepte tout"]], "subject": "Rendez-vous en ligne pour Cabinet Dentaire Maârif", "msg": "Bonjour Docteure Benali,\n\nJ'ai consulté le site du Cabinet Maârif. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteure Benali, Sofia de Rendezvo. Nous aidons des cabinets à passer au rendez-vous en ligne. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Maroc : loi 09-08, CNDP", "date": "21/11/2026", "score": 68}, "p8": {"name": "Dr Kevin Bouchard", "role": "Directeur", "org": "Clinique Dentaire Plateau", "city": "Montréal", "country": "Canada", "cc": "CA", "source": "Registre des entreprises", "email": "k.bouchard@cliniqueplateau.example", "mail": "ok", "phone": "+1 514 000 0808", "site": "cliniqueplateau.example", "reasons": [["+30", "Secteur exact : clinique dentaire"], ["+14", "Directeur identifié"], ["+9", "Site web peu mis à jour"], ["+10", "Taille dans la cible : 16 salariés"], ["0", "Utilise déjà un agenda en ligne"]], "subject": "Rendez-vous en ligne pour Clinique Dentaire Plateau", "msg": "Bonjour Docteur Bouchard,\n\nJ'ai vu que la Clinique Plateau propose déjà un agenda en ligne : nos rappels par SMS pourraient réduire vos absences. Rendezvo aide des cabinets comme le vôtre à proposer la prise de rendez-vous en ligne et à réduire les absences grâce aux rappels automatiques.\n\nAuriez-vous 15 minutes jeudi ou vendredi pour en parler ?\n\nBien cordialement,\nSofia Mendes\nRendezvo", "wa": "Bonjour Docteur Bouchard, Sofia de Rendezvo. Nos rappels par SMS pourraient réduire vos absences. Je peux vous expliquer en 2 minutes ?", "basis": "Intérêt légitime (B2B), information au premier contact", "rule": "Canada : LCAP, adresse pro publiée", "date": "21/11/2026", "score": 63}}</script>
+<script type="module">
+  import { animate } from "https://cdn.jsdelivr.net/npm/motion@14.14.0/+esm";
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const data = JSON.parse(document.getElementById("data").textContent);
+  const table = document.getElementById("res-table");
+  const rows = [...table.querySelectorAll("tbody tr")];
+  const panel = document.getElementById("prospect");
+  const scrim = document.getElementById("scrim");
+  const $ = (id) => document.getElementById(id);
+  const wide = () => window.matchMedia("(min-width: 1280px)").matches;
+  let currentId = rows[0].dataset.id;
+
+  /* ---- Fiche prospect ---- */
+  function fill(id) {
+    const p = data[id];
+    currentId = id;
+    $("pp-name").textContent = p.name;
+    $("pp-role").textContent = `${p.role}, ${p.org}`;
+    $("pp-cc").textContent = p.cc;
+    $("pp-place").textContent = `${p.city}, ${p.country}`;
+    $("pp-email").textContent = p.email || "Aucun email trouvé";
+    const st = $("pp-mailstate");
+    st.className = p.mail === "ok" ? "verified" : "unverified";
+    st.lastChild.textContent = p.mail === "ok" ? "Confirmé par le serveur mail" : p.mail === "risky" ? "Non confirmé : le domaine accepte toutes les adresses" : "Contact par téléphone ou WhatsApp";
+    st.querySelector("svg").style.display = p.mail === "ok" ? "" : "none";
+    $("pp-phone").textContent = p.phone;
+    $("pp-site").textContent = p.site;
+    const ul = $("pp-reasons");
+    ul.replaceChildren(...p.reasons.map(([pts, txt]) => {
+      const li = document.createElement("li");
+      const a = document.createElement("span"); a.className = "pts num"; a.textContent = pts;
+      const b = document.createElement("span"); b.textContent = txt;
+      li.append(a, b); return li;
+    }));
+    $("pp-score").textContent = `${p.score} sur 100`;
+    $("pp-source").textContent = p.source;
+    $("pp-date").textContent = p.date;
+    $("pp-basis").textContent = p.basis;
+    $("pp-rule").textContent = p.rule;
+    showMessage();
+    rows.forEach((r) => r.setAttribute("aria-selected", String(r.dataset.id === id)));
+  }
+
+  function showMessage() {
+    const p = data[currentId];
+    const canal = document.querySelector('input[name="canal"]:checked').value;
+    $("pp-subject-wrap").hidden = canal !== "email";
+    $("pp-subject").textContent = p.subject;
+    $("pp-msg").textContent = canal === "email" ? p.msg : p.wa;
+  }
+  document.querySelectorAll('input[name="canal"]').forEach((r) => r.addEventListener("change", showMessage));
+
+  let lastTrigger = null;
+  function openPanel(trigger) {
+    if (wide()) {
+      if (!reduce) animate(panel, { opacity: [0.4, 1] }, { duration: 0.2 });
+      return;
+    }
+    lastTrigger = trigger;
+    panel.classList.add("open");
+    scrim.classList.add("open");
+    $("pp-close").focus();
+  }
+  function closePanel() {
+    panel.classList.remove("open");
+    scrim.classList.remove("open");
+    if (lastTrigger) lastTrigger.focus();
+  }
+  $("pp-close").addEventListener("click", closePanel);
+  scrim.addEventListener("click", closePanel);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && panel.classList.contains("open")) closePanel(); });
+
+  table.addEventListener("click", (e) => {
+    const btn = e.target.closest(".open");
+    if (!btn) return;
+    fill(btn.dataset.open);
+    openPanel(btn);
+  });
+
+  $("copy").addEventListener("click", async (e) => {
+    const b = e.currentTarget;
+    try { await navigator.clipboard.writeText($("pp-msg").textContent); } catch (_) {}
+    b.textContent = "Message copié";
+    setTimeout(() => (b.textContent = "Copier le message"), 1600);
+  });
+
+  document.querySelectorAll(".toggle").forEach((t) => t.addEventListener("click", () => {
+    t.setAttribute("aria-pressed", String(t.getAttribute("aria-pressed") !== "true"));
+  }));
+
+  /* ---- Recherche en direct : les prospects arrivent un à un ---- */
+  const agents = [...document.querySelectorAll(".ra")];
+  const bar = $("run-bar");
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let running = false;
+
+  async function live() {
+    if (running) return;
+    running = true;
+    const total = rows.length;
+    if (reduce) { running = false; return; } // état final déjà affiché
+    table.classList.add("armed");
+    $("run-title").textContent = "Recherche en cours";
+    $("run-meta").textContent = "Les agents travaillent en parallèle";
+    $("res-count").textContent = "0 résultat";
+    agents.forEach((a, i) => { a.dataset.state = i === 0 ? "active" : "pending"; });
+    const smalls = agents.map((a) => a.querySelector("small"));
+    const finals = smalls.map((s) => s.textContent);
+    smalls.slice(1).forEach((s) => (s.textContent = "En attente"));
+    bar.style.transform = "scaleX(0.04)";
+
+    await wait(450);
+    agents[0].dataset.state = "done";
+    agents[1].dataset.state = "active"; smalls[1].textContent = "Recherche…";
+    animate(bar, { transform: ["scaleX(0.04)", "scaleX(0.3)"] }, { duration: 0.6 });
+    await wait(600);
+    agents[1].dataset.state = "done"; smalls[1].textContent = finals[1];
+    agents.slice(2).forEach((a) => (a.dataset.state = "active"));
+    smalls.slice(2).forEach((s) => (s.textContent = "En cours"));
+
+    for (let i = 0; i < total; i++) {
+      animate(rows[i], { opacity: [0, 1], y: [6, 0] }, { duration: 0.3, ease: [0.2, 0, 0, 1] });
+      $("res-count").textContent = `${i + 1} résultat${i ? "s" : ""}`;
+      smalls[4].textContent = `${i + 1} prospects notés`;
+      smalls[5].textContent = `${i + 1} messages écrits`;
+      const f = 0.3 + 0.7 * ((i + 1) / total);
+      bar.style.transform = `scaleX(${f})`;
+      await wait(360);
+    }
+    agents.forEach((a) => (a.dataset.state = "done"));
+    smalls.forEach((s, i) => (s.textContent = finals[i]));
+    $("run-title").textContent = "Recherche terminée";
+    $("run-meta").textContent = `${total} prospects retenus sur 286 entreprises analysées`;
+    table.classList.remove("armed");
+    rows.forEach((r) => { r.style.opacity = ""; r.style.transform = ""; });
+    running = false;
+  }
+
+  $("launch").addEventListener("click", live);
+  live();
+</script>
+</body>
+</html>
