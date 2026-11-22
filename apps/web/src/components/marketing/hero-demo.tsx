@@ -95,6 +95,7 @@ export function HeroDemo() {
   const query = t('marketing.hero.query');
   const [p, setP] = React.useState<Phase>(() => FINAL(query.length));
   const [run, setRun] = React.useState(0);
+  const [played, setPlayed] = React.useState(false);
 
   React.useEffect(() => {
     if (reduce) {
@@ -116,7 +117,10 @@ export function HeroDemo() {
       at(typeMs + 250 + i * 330, () => setP((s) => ({ ...s, agents: i + 1 }))),
     );
     ROWS.forEach((_, i) => at(typeMs + 900 + i * 260, () => setP((s) => ({ ...s, rows: i + 1 }))));
-    at(typeMs + 900 + ROWS.length * 260 + 200, () => setP((s) => ({ ...s, done: true })));
+    at(typeMs + 900 + ROWS.length * 260 + 200, () => {
+      setP((s) => ({ ...s, done: true }));
+      setPlayed(true);
+    });
     return () => {
       cancelled = true;
       timers.forEach(clearTimeout);
@@ -300,7 +304,7 @@ export function HeroDemo() {
           </aside>
         </div>
       </div>
-      {p.done && !reduce ? (
+      {played && p.done ? (
         <button
           type="button"
           onClick={() => setRun((n) => n + 1)}

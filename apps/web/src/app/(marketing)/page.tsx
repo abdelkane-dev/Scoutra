@@ -5,6 +5,7 @@ import { buttonVariants, cn, CountryCode, Status } from '@scoutra/ui';
 import { getT } from '@/lib/i18n/server';
 import { HeroDemo } from '@/components/marketing/hero-demo';
 import { Grid12, Rails, Wrap } from '@/components/marketing/frame';
+import { formatUsd } from '@/lib/format';
 import { CREDIT_PACKS, PLANS, ROLLOVER_SHARE, WRITING_SURCHARGE } from '@/lib/pricing';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,12 +24,7 @@ const bodySide = 'col-span-12 min-w-0 lg:col-span-7 lg:col-start-6';
 export default async function LandingPage() {
   const { t, locale } = await getT();
   const nf = new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US');
-  const money = (v: number) =>
-    new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: v % 1 ? 2 : 0,
-    }).format(v);
+  const money = (v: number) => formatUsd(v, locale);
   const pct = new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
     style: 'percent',
   }).format(ROLLOVER_SHARE);

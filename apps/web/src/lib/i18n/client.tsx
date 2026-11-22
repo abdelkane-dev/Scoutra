@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import type { Locale, MessageKey } from '@scoutra/i18n';
+import { formatUsd } from '../format';
 
 type Dict = Record<string, unknown>;
 const I18nContext = React.createContext<{ locale: Locale; messages: Dict } | null>(null);
@@ -52,12 +53,7 @@ export function useFormat() {
       n: (v: number, o?: Intl.NumberFormatOptions) => new Intl.NumberFormat(tag, o).format(v),
       pct: (v: number) =>
         new Intl.NumberFormat(tag, { style: 'percent', maximumFractionDigits: 0 }).format(v),
-      money: (v: number, currency = 'USD') =>
-        new Intl.NumberFormat(tag, {
-          style: 'currency',
-          currency,
-          maximumFractionDigits: v % 1 ? 2 : 0,
-        }).format(v),
+      money: (v: number) => formatUsd(v, locale),
       country: (code: string) => new Intl.DisplayNames([tag], { type: 'region' }).of(code) ?? code,
       tag,
     };
