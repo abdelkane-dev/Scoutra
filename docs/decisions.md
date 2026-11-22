@@ -17,3 +17,8 @@
 - 22/11/2026 — Inscription fermée sauf premier compte ou invitation (pas d'inscription ouverte en auto-hébergement ni en SaaS).
 - 22/11/2026 — 2FA TOTP disponible (obligatoire pour les admins à imposer, voir PROGRESS.md).
 - 22/11/2026 — Design : refonte en cours d'après des références réelles ; police Mona Sans envisagée pour la marque (à valider).
+- 22/11/2026 — Logo retenu : A « Trace » (S-itinéraire + point, logotype Mona Sans avec t redessiné). Couleur : orange #FF5B1F (texte sur orange en encre ; orange foncé #B23A0B pour le texte). Sélecteur d'accent retiré du produit.
+- 22/11/2026 — Quotas : gros volume exigé par le porteur ; barème calculé sur les coûts réels (docs/offres/credits.md).
+- 22/11/2026 — Marchés prioritaires : Afrique de l'Ouest, Europe, Amérique du Nord ; Asie plus tard (non prioritaire).
+- 22/11/2026 — Rôles d'organisation : owner (propriétaire), admin, manager (chef d'équipe), member (commercial/closer), viewer (lecture seule), billing (facturation). Console opérateur séparée (super-admin plateforme, mode SaaS uniquement), hors rôles d'organisation.
+- 22/11/2026 — Navigation de l'app enrichie (espaces : accueil, recherche, prospects, signaux, pipeline, séquences, messages, tâches, rapports, équipe, intégrations, conformité, paramètres).
