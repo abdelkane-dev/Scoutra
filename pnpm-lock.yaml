@@ -71,6 +71,9 @@ importers:
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@scoutra/agents':
+        specifier: workspace:*
+        version: link:../../packages/agents
       '@scoutra/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -171,6 +174,9 @@ importers:
       '@scoutra/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@scoutra/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@scoutra/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -348,6 +354,9 @@ importers:
 
   packages/queue:
     dependencies:
+      '@scoutra/billing':
+        specifier: workspace:*
+        version: link:../billing
       '@scoutra/core':
         specifier: workspace:*
         version: link:../core

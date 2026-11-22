@@ -75,5 +75,5 @@ export function PageHeader({
 
 /** Zone de contenu sous l'en-tête. */
 export function PageBody({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn('grid content-start gap-4 px-3 py-4 sm:px-6 sm:py-5', className)}>{children}</div>;
+  return <div className={cn('grid min-w-0 content-start gap-4 px-3 py-4 sm:px-6 sm:py-5 [&>*]:min-w-0', className)}>{children}</div>;
 }

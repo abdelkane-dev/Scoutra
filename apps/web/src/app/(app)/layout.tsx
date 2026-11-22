@@ -13,7 +13,7 @@ export const metadata: Metadata = { robots: { index: false } };
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [ctx, locale] = await Promise.all([getAppContext(), getLocale()]);
-  const messages = pickMessages(locale, ['common', 'app', 'prospectingModels', 'prospectKinds', 'auth', 'home', 'search']);
+  const messages = pickMessages(locale, ['common', 'app', 'prospectingModels', 'prospectKinds', 'auth', 'home', 'search', 'work']);
   return (
     <I18nProvider locale={locale} messages={messages}>
       <AppProvider value={ctx}>
