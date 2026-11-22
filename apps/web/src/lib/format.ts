@@ -1,7 +1,7 @@
 import type { Locale } from '@scoutra/i18n';
 
 const NBSP = String.fromCharCode(0xa0);
-const tag =(l: Locale) => (l === 'fr' ? 'fr-FR' : 'en-US');
+const tag = (l: Locale) => (l === 'fr' ? 'fr-FR' : 'en-US');
 
 /** Montant en dollars : « 19,99 $ » en français, « $19.99 » en anglais (pas de « $US »). */
 export function formatUsd(v: number, locale: Locale) {
