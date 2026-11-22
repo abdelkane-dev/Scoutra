@@ -37,6 +37,32 @@ export function can(role: unknown, action: unknown): boolean {
   return RANK[role] >= RANK[ACTIONS[action as Action]];
 }
 
+/**
+ * Actions sensibles : un owner/admin doit avoir activé la 2FA pour les effectuer (E3).
+ */
+export const SENSITIVE_ACTIONS: ReadonlySet<Action> = new Set<Action>([
+  'org:update',
+  'org:delete',
+  'member:invite',
+  'member:remove',
+  'member:change_role',
+  'prospect:export',
+  'apikey:manage',
+  'billing:manage',
+  'license:manage',
+  'audit:read',
+]);
+
+export function requiresTwoFactor(role: unknown, action: Action): boolean {
+  return (role === 'owner' || role === 'admin') && SENSITIVE_ACTIONS.has(action);
+}
+
+/** Un acteur ne gère (retire, modifie) que des membres de rang strictement inférieur. */
+export function canManageMember(actor: unknown, target: unknown): boolean {
+  if (!isOrgRole(actor) || !isOrgRole(target)) return false;
+  return actor === 'owner' || RANK[actor] > RANK[target];
+}
+
 /** Actions de consultation (encore permises quand la licence est en lecture seule). */
 export function isReadAction(action: Action): boolean {
   return /:(read|list|export)$/.test(action);

@@ -10,6 +10,8 @@ export const fr = {
   errors: {
     unauthenticated: 'Veuillez vous connecter.',
     forbidden: 'Vous n’avez pas les droits pour cette action.',
+    two_factor_required:
+      'Activez la double authentification (2FA) sur votre compte pour effectuer cette action.',
     not_found: 'Introuvable.',
     invalid_input: 'Certaines informations sont invalides.',
     conflict: 'Cette action entre en conflit avec l’état actuel.',

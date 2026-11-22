@@ -8,6 +8,7 @@ export const en: Messages = {
   errors: {
     unauthenticated: 'Please sign in.',
     forbidden: 'You are not allowed to do this.',
+    two_factor_required: 'Enable two-factor authentication (2FA) on your account to do this.',
     not_found: 'Not found.',
     invalid_input: 'Some information is invalid.',
     conflict: 'This action conflicts with the current state.',

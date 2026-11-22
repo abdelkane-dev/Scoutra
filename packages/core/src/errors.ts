@@ -5,6 +5,7 @@
 export type AppErrorCode =
   | 'unauthenticated'
   | 'forbidden'
+  | 'two_factor_required'
   | 'not_found'
   | 'invalid_input'
   | 'conflict'
@@ -16,6 +17,7 @@ export type AppErrorCode =
 const STATUS: Record<AppErrorCode, number> = {
   unauthenticated: 401,
   forbidden: 403,
+  two_factor_required: 403,
   not_found: 404,
   invalid_input: 400,
   conflict: 409,

@@ -63,6 +63,32 @@ export const webEnvSchema = baseSchema
       .enum(['true', 'false'])
       .default('true')
       .transform((v) => v === 'true'),
+    /** 2FA exigée pour les actions sensibles des owners/admins (désactivable en recette uniquement). */
+    SCOUTRA_ENFORCE_ADMIN_2FA: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((v) => v === 'true'),
+    /** En-tête portant l'IP client, posé par VOTRE reverse proxy (qui doit écraser la valeur client). */
+    SCOUTRA_CLIENT_IP_HEADER: z
+      .string()
+      .regex(/^[a-z0-9-]{2,40}$/)
+      .default('x-forwarded-for'),
+    /** Proxys de confiance (IP ou CIDR, séparés par des virgules) qui ajoutent cet en-tête. */
+    SCOUTRA_TRUSTED_PROXIES: z
+      .string()
+      .optional()
+      .transform((v) =>
+        v
+          ? v
+              .split(',')
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : [],
+      )
+      .refine(
+        (list) => list.every((x) => /^[0-9a-fA-F:.]+(\/\d{1,3})?$/.test(x)),
+        'IP ou CIDR attendus',
+      ),
     GOOGLE_CLIENT_ID: z.string().min(10).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(10).optional(),
   })

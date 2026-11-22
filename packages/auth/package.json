@@ -13,6 +13,7 @@
     "@node-rs/argon2": "^2.2.2",
     "@scoutra/config": "workspace:*",
     "@scoutra/core": "workspace:*",
+    "@scoutra/crypto": "workspace:*",
     "@scoutra/db": "workspace:*",
     "better-auth": "^1.7.27",
     "zod": "^4.6.7"

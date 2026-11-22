@@ -157,6 +157,9 @@ importers:
       '@scoutra/core':
         specifier: workspace:*
         version: link:../core
+      '@scoutra/crypto':
+        specifier: workspace:*
+        version: link:../crypto
       '@scoutra/db':
         specifier: workspace:*
         version: link:../db
