@@ -95,7 +95,7 @@ AGPL / GPL = non pour du code repris dans un SaaS fermé), maintenance (dernier 
 
 ### 3.5 Ton statut (point bloquant pour vendre)
 Sans entreprise enregistrée, impossible de signer des contrats solides, d'encaisser proprement (Stripe n'est pas disponible au Mali) ou de facturer à l'international.
-Recommandation : créer une structure à l'**API-Mali (guichet unique, Bamako ; entreprise individuelle ≈ 72 h, ≈ 8 400 FCFA)** — entreprise individuelle pour démarrer vite, ou SARL si associés/investisseurs. Pour l'encaissement : mobile money / cartes via un agrégateur ouest-africain (CinetPay, PayDunya…) et un « merchant of record » international (Lemon Squeezy / Paddle) — conditions d'éligibilité à vérifier une fois la structure créée.
+Recommandation : créer une structure à l'**API-Mali (guichet unique, Bamako ; entreprise individuelle ≈ 72 h, ≈ 8 400 FCFA)** — entreprise individuelle pour démarrer vite, ou SARL si associés/investisseurs. Pour l'encaissement : Stripe, Paddle et Lemon Squeezy ne servent pas un marchand malien (Lemon Squeezy ferme en mars 2027). Pistes : PayDunya, CinetPay ou Hub2 (Orange Money, Moov, cartes ; RCCM et compte bancaire malien probablement exigés), Payoneer pour recevoir de l'étranger, Stripe Atlas (société US) à étudier. Détail : `docs/recherche/verifications.md`.
 
 ---
 
