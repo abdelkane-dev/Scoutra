@@ -13,8 +13,8 @@
 - [x] Recherche concurrents et taxonomie des modèles de prospection (fait : `docs/recherche/concurrents.md`)
 - [ ] Interface : design system et écrans de base (frontend-dev, après les maquettes)
 - [ ] Renommage du dépôt (à faire dans GitHub > Settings)
-- [ ] Refonte design + logo d'après des références réelles (en cours)
-- [ ] Revue sécurité du socle (en cours)
+- [ ] Refonte design + logo d'après des références réelles (fait : docs/design/, en attente du choix logo + couleur)
+- [ ] Revue sécurité du socle (fait : docs/securite/revue-etape1.md ; constats 1-10, 12-14 corrigés avec tests, 195 tests, CI GitHub verte)
 
 ### Reste à faire (socle)
 - [ ] Construire l'image Docker et lancer `docker compose` sur une machine avec Docker
