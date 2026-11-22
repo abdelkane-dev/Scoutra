@@ -14,6 +14,8 @@ export interface SessionUser {
   name: string;
   emailVerified: boolean;
   twoFactorEnabled: boolean;
+  /** Opérateur plateforme (console SaaS prévue, non implémentée). */
+  platformRole: string | null;
 }
 
 export interface OrgContext {
@@ -34,12 +36,13 @@ export async function requireSession() {
   return s;
 }
 
-function toUser(u: {
+export function toUser(u: {
   id: string;
   email: string;
   name: string;
   emailVerified: boolean;
   twoFactorEnabled?: boolean | null;
+  platformRole?: string | null;
 }): SessionUser {
   return {
     id: u.id,
@@ -47,6 +50,7 @@ function toUser(u: {
     name: u.name,
     emailVerified: u.emailVerified,
     twoFactorEnabled: !!u.twoFactorEnabled,
+    platformRole: u.platformRole ?? null,
   };
 }
 

@@ -1,9 +1,51 @@
-/* Tailwind CSS v4 : configuration dans le CSS. Le thème (couleurs Scoutra, typographies)
-   est à compléter par le frontend (voir docs/maquettes). */
+/* Tailwind CSS v4 : configuration dans le CSS. Jetons Scoutra : packages/ui/src/styles/tokens.css. */
 @import 'tailwindcss';
+@import '../../../../packages/ui/src/styles/tokens.css';
+
+@source '../../../../packages/ui/src';
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    var(--font-mona), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 12px;
 }
 
 @media (prefers-reduced-motion: reduce) {

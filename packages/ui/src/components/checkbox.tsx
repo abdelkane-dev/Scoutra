@@ -4,7 +4,10 @@ import { Checkbox as CheckboxPrimitive, Switch as SwitchPrimitive } from 'radix-
 import { Check, Minus } from 'lucide-react';
 import { cn } from '../lib/cn';
 
-export function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+export function Checkbox({
+  className,
+  ...props
+}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
   return (
     <CheckboxPrimitive.Root
       className={cn(

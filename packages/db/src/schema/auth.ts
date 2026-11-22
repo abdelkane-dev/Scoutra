@@ -21,16 +21,27 @@ import {
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  emailVerified: boolean('email_verified').notNull().default(false),
-  image: text('image'),
-  twoFactorEnabled: boolean('two_factor_enabled').default(false),
-  createdAt: ts('created_at').notNull().defaultNow(),
-  updatedAt: ts('updated_at').notNull().defaultNow(),
-});
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    email: text('email').notNull().unique(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+    image: text('image'),
+    twoFactorEnabled: boolean('two_factor_enabled').default(false),
+    /** Opérateur plateforme (console super-admin, mode SaaS) : posé hors API, jamais par l'utilisateur. */
+    platformRole: text('platform_role'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    updatedAt: ts('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    check(
+      'users_platform_role_valid',
+      sql`${t.platformRole} is null or ${t.platformRole} = 'operator'`,
+    ),
+  ],
+);
 
 export const organizations = pgTable(
   'organizations',
@@ -118,7 +129,10 @@ export const members = pgTable(
   (t) => [
     unique('members_org_user_unique').on(t.organizationId, t.userId),
     index('members_user_id_idx').on(t.userId),
-    check('members_role_valid', sql`${t.role} in ('owner', 'admin', 'member')`),
+    check(
+      'members_role_valid',
+      sql`${t.role} in ('owner', 'admin', 'manager', 'member', 'viewer', 'billing')`,
+    ),
   ],
 );
 
@@ -141,7 +155,10 @@ export const invitations = pgTable(
   (t) => [
     index('invitations_org_idx').on(t.organizationId),
     index('invitations_email_idx').on(t.email),
-    check('invitations_role_valid', sql`${t.role} is null or ${t.role} in ('admin', 'member')`),
+    check(
+      'invitations_role_valid',
+      sql`${t.role} is null or ${t.role} in ('admin', 'manager', 'member', 'viewer', 'billing')`,
+    ),
   ],
 );
 

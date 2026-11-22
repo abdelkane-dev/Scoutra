@@ -15,7 +15,10 @@ export function TabsList({ className, ...props }: React.ComponentProps<typeof Ta
   );
 }
 
-export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+export function TabsTrigger({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
       className={cn(
@@ -27,6 +30,9 @@ export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof
   );
 }
 
-export function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Content>) {
+export function TabsContent({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Content>) {
   return <TabsPrimitive.Content className={cn('outline-none', className)} {...props} />;
 }

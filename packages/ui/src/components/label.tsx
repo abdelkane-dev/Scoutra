@@ -21,7 +21,11 @@ export function Field({
   error?: React.ReactNode;
   optional?: React.ReactNode;
   className?: string;
-  children: React.ReactElement<{ id?: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean }>;
+  children: React.ReactElement<{
+    id?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+  }>;
 }) {
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;

@@ -146,3 +146,28 @@
 @utility tnum {
   font-variant-numeric: tabular-nums;
 }
+
+/* Animations d'ouverture (transform et opacité uniquement ; neutralisées si mouvement réduit) */
+@keyframes sc-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sc-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes sc-slide-left {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+@keyframes sc-slide-right {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}

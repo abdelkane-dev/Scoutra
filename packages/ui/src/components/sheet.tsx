@@ -49,17 +49,43 @@ export function SheetContent({
   );
 }
 export function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('grid gap-1 border-b border-line px-5 py-4 pr-14', className)} {...props} />;
+  return (
+    <div className={cn('grid gap-1 border-b border-line px-5 py-4 pr-14', className)} {...props} />
+  );
 }
 export function SheetBody({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('grid flex-1 content-start gap-5 overflow-y-auto px-5 py-5', className)} {...props} />;
+  return (
+    <div
+      className={cn('grid flex-1 content-start gap-5 overflow-y-auto px-5 py-5', className)}
+      {...props}
+    />
+  );
 }
 export function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('flex flex-wrap items-center gap-2 border-t border-line bg-canvas px-5 py-3', className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-2 border-t border-line bg-canvas px-5 py-3',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
-export function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
+export function SheetTitle({
+  className,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Title>) {
   return <SheetPrimitive.Title className={cn('t-heading-20', className)} {...props} />;
 }
-export function SheetDescription({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Description>) {
-  return <SheetPrimitive.Description className={cn('text-label-13 font-normal text-ink-3', className)} {...props} />;
+export function SheetDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Description>) {
+  return (
+    <SheetPrimitive.Description
+      className={cn('text-label-13 font-normal text-ink-3', className)}
+      {...props}
+    />
+  );
 }

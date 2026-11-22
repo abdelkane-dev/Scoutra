@@ -33,7 +33,11 @@ describe.skipIf(!info.available)('Better Auth (Postgres réel)', () => {
       .set({ twoFactorEnabled: on })
       .where(eq(schema.users.email, email));
   const verifyAll = () => authDb.db.update(schema.users).set({ emailVerified: true });
-  async function inviteAndJoin(by: Headers, email: string, role: 'admin' | 'member') {
+  async function inviteAndJoin(
+    by: Headers,
+    email: string,
+    role: 'admin' | 'manager' | 'member' | 'viewer' | 'billing',
+  ) {
     const inv = await auth.api.createInvitation({
       headers: by,
       body: { email, role, organizationId: orgId },
@@ -214,6 +218,62 @@ describe.skipIf(!info.available)('Better Auth (Postgres réel)', () => {
         body: { memberId: m.id, role: 'admin', organizationId: orgId },
       });
       expect((await memberOf('member@test.invalid')).role).toBe('admin');
+    });
+  });
+
+  describe('rôles étendus (manager, viewer, billing)', () => {
+    it('un admin invite un manager, un viewer et un billing (rôles connus de Better Auth)', async () => {
+      await inviteAndJoin(H['admin@test.invalid']!, 'manager@test.invalid', 'manager');
+      await inviteAndJoin(H['admin@test.invalid']!, 'viewer@test.invalid', 'viewer');
+      await inviteAndJoin(H['admin@test.invalid']!, 'billing@test.invalid', 'billing');
+      expect((await memberOf('manager@test.invalid')).role).toBe('manager');
+      expect((await memberOf('viewer@test.invalid')).role).toBe('viewer');
+      expect((await memberOf('billing@test.invalid')).role).toBe('billing');
+    });
+
+    it('un manager ne peut ni inviter ni retirer ; un viewer non plus', async () => {
+      await setTwoFactor('manager@test.invalid', true);
+      await expect(
+        auth.api.createInvitation({
+          headers: H['manager@test.invalid'],
+          body: { email: 'x1@test.invalid', role: 'member', organizationId: orgId },
+        }),
+      ).rejects.toThrow();
+      const viewer = await memberOf('viewer@test.invalid');
+      await expect(
+        auth.api.removeMember({
+          headers: H['manager@test.invalid'],
+          body: { memberIdOrEmail: viewer.id, organizationId: orgId },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        auth.api.createInvitation({
+          headers: H['viewer@test.invalid'],
+          body: { email: 'x2@test.invalid', role: 'viewer', organizationId: orgId },
+        }),
+      ).rejects.toThrow();
+      expect((await memberOf('viewer@test.invalid')).role).toBe('viewer');
+    });
+
+    it('un rôle inconnu est refusé à l’invitation', async () => {
+      await expect(
+        auth.api.createInvitation({
+          headers: H.owner,
+          body: { email: 'x3@test.invalid', role: 'superadmin' as never, organizationId: orgId },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('opérateur plateforme : ni l’API ni le rôle d’authentification ne peuvent le poser', async () => {
+      await expect(
+        auth.api.updateUser({
+          headers: H['viewer@test.invalid'],
+          body: { platformRole: 'operator' } as never,
+        }),
+      ).rejects.toThrow();
+      await expect(
+        authDb.db.update(schema.users).set({ platformRole: 'operator' }),
+      ).rejects.toThrow();
     });
   });
 

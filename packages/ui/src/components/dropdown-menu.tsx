@@ -81,10 +81,18 @@ export function DropdownMenuRadioItem({
   );
 }
 
-export function DropdownMenuLabel({ className, ...props }: React.ComponentProps<typeof Menu.Label>) {
-  return <Menu.Label className={cn('px-2 pb-1 pt-1.5 text-label-12 text-ink-3', className)} {...props} />;
+export function DropdownMenuLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof Menu.Label>) {
+  return (
+    <Menu.Label className={cn('px-2 pb-1 pt-1.5 text-label-12 text-ink-3', className)} {...props} />
+  );
 }
-export function DropdownMenuSeparator({ className, ...props }: React.ComponentProps<typeof Menu.Separator>) {
+export function DropdownMenuSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof Menu.Separator>) {
   return <Menu.Separator className={cn('-mx-1 my-1 h-px bg-line', className)} {...props} />;
 }
 export function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<'span'>) {

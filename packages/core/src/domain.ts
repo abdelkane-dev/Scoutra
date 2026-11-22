@@ -105,8 +105,18 @@ export const VERIFICATION_STATUSES = [
 ] as const;
 export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
 
-/** Rôles d'une organisation, du plus élevé au plus bas. */
-export const ORG_ROLES = ['owner', 'admin', 'member'] as const;
+/**
+ * Rôles d'une organisation (décision du 22/11/2026). Ce n'est PAS une hiérarchie linéaire :
+ * `billing` ne voit que la facturation, `viewer` ne fait que lire. Les permissions effectives
+ * sont définies par la matrice de @scoutra/auth (access.ts), à refus par défaut.
+ * - owner : propriétaire (tout, dont suppression, licence, changement de rôles)
+ * - admin : administration (membres, clés API, conformité), pas la facturation
+ * - manager : chef d'équipe (pipeline, séquences, assignations, rapports de l'équipe)
+ * - member : commercial/closer (ses recherches, ses prospects, son pipeline)
+ * - viewer : lecture seule
+ * - billing : facturation et crédits uniquement
+ */
+export const ORG_ROLES = ['owner', 'admin', 'manager', 'member', 'viewer', 'billing'] as const;
 export type OrgRole = (typeof ORG_ROLES)[number];
 export const orgRoleSchema = z.enum(ORG_ROLES);
 

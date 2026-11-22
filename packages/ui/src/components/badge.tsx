@@ -30,7 +30,12 @@ export function Badge({
 /** État : toujours icône + mot (une couleur n'est jamais seule porteuse d'information). */
 export type StatusTone = 'ok' | 'warn' | 'bad' | 'none';
 const statusIcon = { ok: Check, warn: TriangleAlert, bad: X, none: Minus } as const;
-const statusColor = { ok: 'text-ok', warn: 'text-warn', bad: 'text-bad', none: 'text-ink-3' } as const;
+const statusColor = {
+  ok: 'text-ok',
+  warn: 'text-warn',
+  bad: 'text-bad',
+  none: 'text-ink-3',
+} as const;
 
 export function Status({
   tone,
@@ -44,7 +49,9 @@ export function Status({
   soft?: boolean;
 }) {
   const Icon = statusIcon[tone];
-  const softBg = { ok: 'bg-ok-soft', warn: 'bg-warn-soft', bad: 'bg-bad-soft', none: 'bg-sunken' }[tone];
+  const softBg = { ok: 'bg-ok-soft', warn: 'bg-warn-soft', bad: 'bg-bad-soft', none: 'bg-sunken' }[
+    tone
+  ];
   return (
     <span
       className={cn(
@@ -61,7 +68,15 @@ export function Status({
 }
 
 /** Code pays ISO dans un rectangle 4 px (pas d'emoji drapeau). */
-export function CountryCode({ code, title, className }: { code: string; title?: string; className?: string }) {
+export function CountryCode({
+  code,
+  title,
+  className,
+}: {
+  code: string;
+  title?: string;
+  className?: string;
+}) {
   return (
     <abbr
       title={title}
@@ -76,13 +91,26 @@ export function CountryCode({ code, title, className }: { code: string; title?: 
 }
 
 /** Score : nombre tabulaire + jauge 40×4. */
-export function Score({ value, className, label }: { value: number; className?: string; label?: string }) {
+export function Score({
+  value,
+  className,
+  label,
+}: {
+  value: number;
+  className?: string;
+  label?: string;
+}) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
   return (
-    <span className={cn('inline-flex items-center gap-2 text-label-14 font-semibold tnum', className)}>
+    <span
+      className={cn('inline-flex items-center gap-2 text-label-14 font-semibold tnum', className)}
+    >
       <span aria-label={label}>{v}</span>
       <span className="h-1 w-10 overflow-hidden rounded-[2px] bg-sunken" aria-hidden>
-        <span className="block h-full origin-left rounded-[2px] bg-accent" style={{ transform: `scaleX(${v / 100})` }} />
+        <span
+          className="block h-full origin-left rounded-[2px] bg-accent"
+          style={{ transform: `scaleX(${v / 100})` }}
+        />
       </span>
     </span>
   );

@@ -57,12 +57,20 @@ export function Separator({ className, vertical }: { className?: string; vertica
 
 /** Panneau de l'app : bordure, pas d'ombre (rayon 10). */
 export function Panel({ className, ...props }: React.ComponentProps<'section'>) {
-  return <section className={cn('min-w-0 rounded-lg border border-line bg-surface', className)} {...props} />;
+  return (
+    <section
+      className={cn('min-w-0 rounded-lg border border-line bg-surface', className)}
+      {...props}
+    />
+  );
 }
 export function PanelHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('flex min-h-[52px] flex-wrap items-center gap-2.5 border-b border-line px-4 py-2.5', className)}
+      className={cn(
+        'flex min-h-[52px] flex-wrap items-center gap-2.5 border-b border-line px-4 py-2.5',
+        className,
+      )}
       {...props}
     />
   );

@@ -118,8 +118,12 @@ tools/license-cli  Génération de clés et signature de licences
    (défaut `x-forwarded-for`) et `SCOUTRA_TRUSTED_PROXIES` (IP/CIDR du proxy, ex.
    `172.18.0.0/16` pour un proxy dans le réseau Docker). Une limite de 10 tentatives par email
    et par 15 minutes s'applique en plus, quelle que soit l'IP.
-3. **2FA.** Les owners et admins doivent activer la double authentification pour les actions
-   sensibles (invitations, rôles, clés API, export, facturation, licence) : l'API répond
+3. **Rôles et 2FA.** Rôles d'organisation : `owner`, `admin`, `manager` (chef d'équipe),
+   `member` (membre / commercial : ses propres recherches et prospects), `viewer` (lecture seule),
+   `billing` (facturation et crédits). Matrice unique à refus par défaut :
+   `packages/auth/src/access.ts` ; `GET /api/me` renvoie les permissions effectives. Toute
+   personne qui effectue une action sensible (invitations, rôles, clés API, intégrations, export,
+   facturation, licence, conformité, audit) doit avoir activé la 2FA : l'API répond
    `403 two_factor_required`. `SCOUTRA_ENFORCE_ADMIN_2FA=false` est réservé à la recette.
 4. **Pays d'établissement.** Il est choisi à la création de l'organisation et n'est plus
    modifiable par l'interface (il pilote la licence et les règles juridiques).

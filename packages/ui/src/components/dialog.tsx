@@ -9,7 +9,10 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;
 
-export function DialogOverlay({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+export function DialogOverlay({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
       className={cn(
@@ -27,7 +30,10 @@ export function DialogContent({
   hideClose,
   closeLabel = 'Fermer',
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & { hideClose?: boolean; closeLabel?: string }) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  hideClose?: boolean;
+  closeLabel?: string;
+}) {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -58,9 +64,17 @@ export function DialogHeader({ className, ...props }: React.ComponentProps<'div'
 export function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return <div className={cn('flex flex-wrap justify-end gap-2 pt-1', className)} {...props} />;
 }
-export function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
+export function DialogTitle({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return <DialogPrimitive.Title className={cn('t-heading-16', className)} {...props} />;
 }
-export function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn('text-copy-14 text-ink-2', className)} {...props} />;
+export function DialogDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return (
+    <DialogPrimitive.Description className={cn('text-copy-14 text-ink-2', className)} {...props} />
+  );
 }

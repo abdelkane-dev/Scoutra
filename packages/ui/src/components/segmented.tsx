@@ -19,7 +19,11 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md';
 }) {
   return (
-    <div role="group" aria-label={label} className={cn('inline-flex gap-0.5 rounded-md bg-sunken p-[3px]', className)}>
+    <div
+      role="group"
+      aria-label={label}
+      className={cn('inline-flex gap-0.5 rounded-md bg-sunken p-[3px]', className)}
+    >
       {options.map((o) => (
         <button
           key={o.value}
@@ -29,7 +33,9 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={cn(
             'inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm border border-transparent font-medium text-ink-2 transition-colors hover:text-ink disabled:opacity-50 aria-pressed:border-line aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-[0_1px_1px_rgba(18,20,26,.05)] [&_svg]:size-3.5',
-            size === 'md' ? 'min-h-[30px] px-[11px] text-[13.5px] max-sm:min-h-[38px]' : 'min-h-6 px-2 text-label-12 max-sm:min-h-8',
+            size === 'md'
+              ? 'min-h-[30px] px-[11px] text-[13.5px] max-sm:min-h-[38px]'
+              : 'min-h-6 px-2 text-label-12 max-sm:min-h-8',
           )}
         >
           {o.label}
