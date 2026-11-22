@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="fr" data-accent="vert">
+<html lang="fr" data-accent="orange">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nyini — Décrivez votre cible. Nyini trouve, vérifie et rédige.</title>
-<meta name="description" content="Nyini est un outil de prospection pour commerciaux et closers : décrivez votre cible en une phrase, Nyini trouve les prospects, vérifie leurs coordonnées et rédige le premier message.">
+<title>Scoutra — Décrivez votre cible. Scoutra trouve, vérifie et rédige.</title>
+<meta name="description" content="Scoutra est un outil de prospection pour commerciaux et closers : décrivez votre cible en une phrase, Scoutra trouve les prospects, vérifie leurs coordonnées et rédige le premier message.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/nyini.css">
+<link rel="stylesheet" href="assets/scoutra.css">
 <script src="assets/accent.js"></script>
 <style>
   .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -66,7 +66,7 @@
   @media (min-width: 640px) { .agents { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
   .agent { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-3); min-width: 0; }
   .agent .dot { position: relative; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none; display: grid; place-items: center; }
-  .agent .dot svg { width: 9px; height: 9px; color: #fff; opacity: 0; }
+  .agent .dot svg { width: 9px; height: 9px; color: var(--on-accent); opacity: 0; }
   .agent[data-state="done"] { color: var(--ink-2); }
   .agent[data-state="done"] .dot { background: var(--accent); border-color: var(--accent); }
   .agent[data-state="done"] .dot svg { opacity: 1; }
@@ -86,6 +86,7 @@
   .res-list .who b { display: block; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .res-list .who small { display: block; color: var(--ink-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .res-list .mail { display: none; }
+  .score.top { background: var(--hl); color: var(--hl-ink); padding: 2px 7px 2px 4px; border-radius: 5px; }
   @media (min-width: 640px) {
     .res-list li { grid-template-columns: minmax(0, 1fr) 40px 150px 96px; }
     .res-list .mail { display: inline-flex; }
@@ -100,6 +101,14 @@
   section.block { padding: 72px 0; border-top: 1px solid var(--line); }
   .block h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.1; letter-spacing: -0.025em; font-weight: 600; max-width: 22ch; }
   .block .lead { margin-top: 14px; font-size: 18px; color: var(--ink-2); max-width: 58ch; }
+
+  /* Pour qui */
+  .aud-grid { margin-top: 36px; display: grid; gap: 28px; }
+  @media (min-width: 900px) { .aud-grid { grid-template-columns: repeat(3, 1fr); gap: 40px; } }
+  .aud { padding-top: 18px; border-top: 3px solid var(--accent); }
+  .aud h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .aud p { margin-top: 8px; color: var(--ink-2); font-size: 15.5px; max-width: 42ch; }
+  .aud .aud-ex { margin-top: 14px; display: inline-block; padding: 4px 8px; border-radius: 5px; background: var(--hl); color: var(--hl-ink); font-size: 14px; }
 
   /* Agents */
   .steps { margin-top: 44px; display: grid; gap: 0; counter-reset: step; border-top: 1px solid var(--line); }
@@ -150,7 +159,7 @@
   @media (min-width: 960px) { .plans { grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; } }
   .plan { position: relative; display: flex; flex-direction: column; padding: 26px 24px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); }
   .plan.featured { border: 2px solid var(--accent); padding: 25px 23px 23px; }
-  .plan .tag { position: absolute; top: -12px; left: 22px; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .plan .tag { position: absolute; top: -12px; left: 22px; background: var(--accent); color: var(--on-accent); font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
   .plan h3 { font-size: 19px; font-weight: 600; }
   .plan .for { margin-top: 4px; color: var(--ink-3); font-size: 14px; min-height: 2.9em; }
   .price { margin-top: 18px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
@@ -163,6 +172,7 @@
   .plan li svg { width: 14px; height: 14px; color: var(--accent); flex: none; transform: translateY(2px); }
   .plan li.no { color: var(--ink-3); }
   .plan li.no svg { color: var(--line-2); }
+  .plan li.note { display: block; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13.5px; }
   .plan .btn { margin-top: 24px; width: 100%; }
   .plans-note { margin-top: 20px; font-size: 14px; color: var(--ink-3); max-width: 80ch; }
 
@@ -193,7 +203,7 @@
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Nyini, accueil"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>nyini</a>
+    <a class="brand" href="index.html" aria-label="Scoutra, accueil"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
     <nav class="site-nav" aria-label="Principale">
       <a href="#fonctionnement">Fonctionnement</a>
       <a href="#conformite">Conformité</a>
@@ -203,11 +213,11 @@
     <div class="head-actions">
       <div class="accent-switch" role="group" aria-label="Couleur d'accent de la maquette">
         <span class="as-label">Accent</span>
-        <button type="button" data-set-accent="vert" aria-pressed="true"><span class="sw sw-vert" aria-hidden="true"></span>Vert</button>
-        <button type="button" data-set-accent="indigo" aria-pressed="false"><span class="sw sw-indigo" aria-hidden="true"></span>Indigo</button>
+        <button type="button" data-set-accent="orange" aria-pressed="true"><span class="sw sw-orange" aria-hidden="true"></span>Orange</button>
+        <button type="button" data-set-accent="bleu" aria-pressed="false"><span class="sw sw-bleu" aria-hidden="true"></span>Bleu</button>
       </div>
       <a class="login" href="app-recherche.html">Se connecter</a>
-      <a class="btn btn-primary btn-s" href="app-recherche.html">Essayer Nyini</a>
+      <a class="btn btn-primary btn-s" href="app-recherche.html">Essayer Scoutra</a>
     </div>
   </div>
 </header>
@@ -215,10 +225,10 @@
 <main id="contenu">
   <section class="hero">
     <div class="wrap">
-      <h1><span>Décrivez votre cible.</span> <span>Nyini trouve, vérifie et rédige.</span></h1>
+      <h1><span>Décrivez votre cible.</span> <span>Scoutra trouve, vérifie et rédige.</span></h1>
       <div class="hero-grid">
         <div class="hero-copy">
-          <p>Écrivez en une phrase qui vous voulez joindre, choisissez un pays ou le monde entier. Vous recevez une liste de prospects aux coordonnées vérifiées, notés et accompagnés d'un premier message prêt à envoyer.</p>
+          <p>Écrivez en une phrase qui vous voulez joindre, entreprises ou particuliers, puis choisissez un pays, plusieurs ou le monde entier. Vous recevez une liste de prospects aux coordonnées vérifiées, notés et accompagnés d'un premier message prêt à envoyer.</p>
           <div class="hero-ctas">
             <a class="btn btn-primary" href="app-recherche.html">Lancer une recherche</a>
             <a class="btn btn-ghost" href="#tarifs">Voir les tarifs</a>
@@ -233,13 +243,14 @@
         <div class="demo" id="demo" aria-label="Exemple de recherche (données de démonstration)">
           <div class="demo-top">
             <span class="title">Nouvelle recherche</span>
+            <span class="chip"><span class="cc">FR</span>France</span>
             <span class="chip"><span class="cc">SN</span>Sénégal</span>
-            <span class="chip"><span class="cc">CI</span>Côte d'Ivoire</span>
-            <span class="chip">Entreprises (B2B)</span>
+            <span class="chip"><span class="cc">CA</span>Canada</span>
+            <span class="chip">Entreprises</span>
           </div>
           <div class="demo-query">
             <label id="q-label">Votre cible, en langage courant</label>
-            <div class="q-box" aria-labelledby="q-label"><span id="q-text">PME du BTP à Dakar et Abidjan, avec un site web mais sans CRM</span><span class="q-caret" aria-hidden="true"></span></div>
+            <div class="q-box" aria-labelledby="q-label"><span id="q-text">Restaurants et cafés ouverts depuis moins de 6 mois à Paris, Dakar et Montréal, actifs sur Instagram</span><span class="q-caret" aria-hidden="true"></span></div>
           </div>
           <ol class="agents" aria-label="Avancement des agents">
             <li class="agent" data-state="done"><span class="dot"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>Interprète</span></li>
@@ -255,12 +266,12 @@
             <span class="muted">Triés par score</span>
           </div>
           <ul class="res-list">
-            <li><div class="who"><b>Moussa Diop</b><small>Gérant, Diop &amp; Fils Construction, Dakar</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:92%"></i></span>92</span></li>
-            <li><div class="who"><b>Koffi Yao</b><small>Directeur général, Lagune Bâtiment, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:88%"></i></span>88</span></li>
-            <li><div class="who"><b>Aminata Sow</b><small>Responsable achats, Teranga Travaux, Thiès</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:81%"></i></span>81</span></li>
-            <li><div class="who"><b>Jean-Marc Kouassi</b><small>Cofondateur, Ébène Construction, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:76%"></i></span>76</span></li>
-            <li><div class="who"><b>Ndeye Fall</b><small>Gérante, Cap-Vert Rénovation, Dakar</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="unverified mail">Téléphone seul</span><span class="score"><span class="score-bar"><i style="--v:69%"></i></span>69</span></li>
-            <li><div class="who"><b>Serge Bamba</b><small>Directeur technique, Plateau Génie Civil, Abidjan</small></div><span class="cc-cell"><span class="cc">CI</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:64%"></i></span>64</span></li>
+            <li><div class="who"><b>Camille Leroy</b><small>Gérante, Maison Lune Café, Paris, ouvert en août</small></div><span class="cc-cell"><span class="cc">FR</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score top"><span class="score-bar"><i style="--v:93%"></i></span>93</span></li>
+            <li><div class="who"><b>Ibrahima Ndiaye</b><small>Fondateur, Teranga Kitchen, Dakar, ouvert en septembre</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:89%"></i></span>89</span></li>
+            <li><div class="who"><b>Olivia Tremblay</b><small>Copropriétaire, Café Boréal, Montréal, ouvert en juillet</small></div><span class="cc-cell"><span class="cc">CA</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:84%"></i></span>84</span></li>
+            <li><div class="who"><b>Lucas Moreau</b><small>Chef et gérant, Bistrot 1902, Paris, ouvert en octobre</small></div><span class="cc-cell"><span class="cc">FR</span></span><span class="unverified mail">Téléphone seul</span><span class="score"><span class="score-bar"><i style="--v:78%"></i></span>78</span></li>
+            <li><div class="who"><b>Fatou Sarr</b><small>Gérante, Le Baobab Lounge, Dakar, ouvert en juin</small></div><span class="cc-cell"><span class="cc">SN</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:72%"></i></span>72</span></li>
+            <li><div class="who"><b>Ethan Roy</b><small>Fondateur, Grains et Compagnie, Montréal, ouvert il y a 3 semaines</small></div><span class="cc-cell"><span class="cc">CA</span></span><span class="verified mail"><svg aria-hidden="true"><use href="#i-check"/></svg>Email vérifié</span><span class="score"><span class="score-bar"><i style="--v:67%"></i></span>67</span></li>
           </ul>
           <div class="demo-foot">
             <span>Données de démonstration</span>
@@ -271,17 +282,28 @@
     </div>
   </section>
 
+  <section class="block audience" aria-labelledby="h-qui">
+    <div class="wrap">
+      <h2 id="h-qui">Une seule phrase suffit, quelle que soit votre cible.</h2>
+      <div class="aud-grid">
+        <div class="aud"><h3>Entreprises de toutes tailles</h3><p>Des grands groupes aux indépendants, y compris les entreprises créées hier dès qu'elles ont un site, une fiche ou une page en ligne.</p><p class="aud-ex">« Agences de voyage à Lisbonne ouvertes en 2026 »</p></div>
+        <div class="aud"><h3>Particuliers</h3><p>Coachs, créateurs, freelances, commerçants : des personnes qui se rendent joignables pour leur activité, ou qui ont donné leur accord.</p><p class="aud-ex">« Coachs sportifs à Miami qui vendent des programmes en ligne »</p></div>
+        <div class="aud"><h3>Un pays, plusieurs ou le monde</h3><p>Choisissez votre zone. Les sources, la langue des messages et les règles de chaque pays suivent automatiquement.</p><p class="aud-ex">« Distributeurs de matériel médical en Allemagne, au Nigeria et au Brésil »</p></div>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="fonctionnement" aria-labelledby="h-fonct">
     <div class="wrap">
       <h2 id="h-fonct">Six agents se passent le relais sur chaque recherche.</h2>
       <p class="lead">Chacun fait une seule chose et la fait jusqu'au bout. Vous voyez le résultat de chaque étape, et pourquoi un prospect a été retenu.</p>
       <ol class="steps">
-        <li class="step"><span class="n">1</span><div><h3>Interprète</h3><p>Transforme votre phrase en fiche cible précise : secteur, villes, taille, signaux à chercher.</p><div class="out"><b>Secteur</b> BTP, <b>villes</b> Dakar, Abidjan, <b>taille</b> 10 à 200 salariés, <b>signal</b> site web sans outil CRM</div></div></li>
-        <li class="step"><span class="n">2</span><div><h3>Recherche</h3><p>Interroge les sources autorisées dans les pays choisis : annuaires, registres publics, cartes, sites web.</p><div class="out"><b>214</b> entreprises trouvées dans 4 sources</div></div></li>
-        <li class="step"><span class="n">3</span><div><h3>Enrichissement</h3><p>Lit le site de chaque entreprise pour trouver le décideur, l'offre, la taille et les canaux de contact affichés.</p><div class="out"><b>Diop &amp; Fils Construction</b> : 45 salariés, gérant identifié, WhatsApp affiché</div></div></li>
-        <li class="step"><span class="n">4</span><div><h3>Vérification</h3><p>Contrôle que chaque email existe, que le numéro est valide et retire les doublons.</p><div class="out"><b>168</b> emails confirmés, 31 doublons retirés</div></div></li>
-        <li class="step"><span class="n">5</span><div><h3>Notation</h3><p>Donne un score de 0 à 100 avec ses raisons, pour que vous commenciez par les meilleurs.</p><div class="out"><b>92</b> : secteur exact, décideur trouvé, site récent, pas de CRM détecté</div></div></li>
-        <li class="step"><span class="n">6</span><div><h3>Rédaction</h3><p>Écrit un premier message adapté au pays, à la langue et au canal. Vous le relisez et l'envoyez vous-même.</p><div class="out">« Bonjour M. Diop, j'ai vu vos chantiers à Ouakam sur votre site… »</div></div></li>
+        <li class="step"><span class="n">1</span><div><h3>Interprète</h3><p>Transforme votre phrase en fiche cible précise : secteur, villes, taille, signaux à chercher.</p><div class="out"><b>Secteur</b> restauration, <b>villes</b> Paris, Dakar, Montréal, <b>ouverture</b> moins de 6 mois, <b>signal</b> compte Instagram actif</div></div></li>
+        <li class="step"><span class="n">2</span><div><h3>Recherche</h3><p>Interroge les sources autorisées dans les pays choisis : registres, annuaires, cartes, sites web, pages professionnelles.</p><div class="out"><b>312</b> établissements trouvés dans 5 sources</div></div></li>
+        <li class="step"><span class="n">3</span><div><h3>Enrichissement</h3><p>Lit le site de chaque entreprise pour trouver le décideur, l'offre, la taille et les canaux de contact affichés.</p><div class="out"><b>Maison Lune Café</b> : ouvert en août, gérante identifiée, réservation par téléphone</div></div></li>
+        <li class="step"><span class="n">4</span><div><h3>Vérification</h3><p>Contrôle que chaque email existe, que le numéro est valide et retire les doublons.</p><div class="out"><b>204</b> emails confirmés, 27 doublons retirés</div></div></li>
+        <li class="step"><span class="n">5</span><div><h3>Notation</h3><p>Donne un score de 0 à 100 avec ses raisons, pour que vous commenciez par les meilleurs.</p><div class="out"><b>93</b> : ouvert il y a 3 mois, gérante trouvée, 2 400 abonnés, pas de réservation en ligne</div></div></li>
+        <li class="step"><span class="n">6</span><div><h3>Rédaction</h3><p>Écrit un premier message adapté au pays, à la langue et au canal. Vous le relisez et l'envoyez vous-même.</p><div class="out">« Bonjour Camille, félicitations pour l'ouverture de Maison Lune en août… »</div></div></li>
       </ol>
       <div class="steps-note">
         <p><b>Formule Pipeline :</b> un septième agent suit chaque prospect après le premier message et vous rappelle les relances du jour, jusqu'à la vente validée.</p>
@@ -293,28 +315,28 @@
   <section class="block" id="conformite" aria-labelledby="h-conf">
     <div class="wrap">
       <h2 id="h-conf">Les règles du pays s'appliquent avant chaque message.</h2>
-      <p class="lead">Nyini connaît les lois sur les données personnelles des pays que vous ciblez et adapte ce qu'il vous propose. Vous prospectez sans risquer votre réputation.</p>
+      <p class="lead">Scoutra connaît les lois sur les données personnelles des pays que vous ciblez et adapte ce qu'il vous propose. Vous prospectez sans risquer votre réputation.</p>
       <div class="law-grid">
         <div class="law-points">
           <div><h3>Seulement des sources autorisées</h3><p>Registres publics, sites d'entreprises, cartes et API officielles. Aucune aspiration de profils sur les réseaux sociaux.</p></div>
-          <div><h3>Vous envoyez, pas un robot</h3><p>Nyini rédige, vous relisez et vous envoyez en un clic depuis votre propre compte. Pas de messages automatiques.</p></div>
+          <div><h3>Vous envoyez, pas un robot</h3><p>Scoutra rédige, vous relisez et vous envoyez en un clic depuis votre propre compte. Pas de messages automatiques.</p></div>
           <div><h3>Tout est traçable</h3><p>Pour chaque prospect : la source, la date de collecte et la base légale. Effacement en un clic si une personne le demande.</p></div>
         </div>
         <div class="law-table">
           <table>
             <caption class="sr-only">Règles appliquées par pays (résumé indicatif)</caption>
-            <thead><tr><th scope="col">Pays</th><th scope="col">Entreprises (B2B)</th><th scope="col">Particuliers</th></tr></thead>
+            <thead><tr><th scope="col">Pays</th><th scope="col">Entreprises</th><th scope="col">Particuliers</th></tr></thead>
             <tbody>
-              <tr><td><b>Mali</b><small>Loi 2013-015, APDP</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
-              <tr><td><b>Sénégal</b><small>Loi 2008-12, CDP</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
-              <tr><td><b>Côte d'Ivoire</b><small>Loi 2013-450, ARTCI</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et droit d'opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
-              <tr><td><b>Union européenne</b><small>RGPD et ePrivacy</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable pour email et SMS</span></td></tr>
-              <tr><td><b>Royaume-Uni</b><small>UK GDPR et PECR</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
-              <tr><td><b>Canada</b><small>LCAP</small></td><td data-h="B2B"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement, sauf adresse pro publiée</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement exprès</span></td></tr>
-              <tr><td><b>États-Unis</b><small>CAN-SPAM et TCPA</small></td><td data-h="B2B"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Email autorisé avec désinscription</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Pas d'appels ni SMS sans accord écrit</span></td></tr>
+              <tr><td><b>Union européenne</b><small>RGPD et ePrivacy</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable pour email et SMS</span></td></tr>
+              <tr><td><b>Royaume-Uni</b><small>UK GDPR et PECR</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, désinscription simple</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
+              <tr><td><b>États-Unis</b><small>CAN-SPAM et TCPA</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Email autorisé avec désinscription</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Pas d'appels ni SMS sans accord écrit</span></td></tr>
+              <tr><td><b>Canada</b><small>LCAP</small></td><td data-h="Entreprises"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement, sauf adresse pro publiée</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement exprès</span></td></tr>
+              <tr><td><b>Brésil</b><small>LGPD</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Intérêt légitime, information claire</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement ou contact pro public</span></td></tr>
+              <tr><td><b>Afrique de l'Ouest</b><small>Sénégal CDP, Côte d'Ivoire ARTCI, cadre CEDEAO</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Contacts pro publics ou consentement</span></td></tr>
+              <tr><td><b>Maroc</b><small>Loi 09-08, CNDP</small></td><td data-h="Entreprises"><span class="rule ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Autorisé, avec information et opposition</span></td><td data-h="Particuliers"><span class="rule strict"><svg aria-hidden="true"><use href="#i-shield"/></svg>Consentement préalable</span></td></tr>
             </tbody>
           </table>
-          <p class="law-caption">Résumé indicatif pour la maquette, à faire valider par un juriste. Nyini ne remplace pas un conseil juridique.</p>
+          <p class="law-caption">Résumé indicatif pour la maquette, à faire valider par un juriste. Scoutra ne remplace pas un conseil juridique.</p>
         </div>
       </div>
     </div>
@@ -322,16 +344,16 @@
 
   <section class="block" id="tarifs" aria-labelledby="h-tarifs">
     <div class="wrap">
-      <h2 id="h-tarifs">Des tarifs simples, en euros et en francs CFA.</h2>
+      <h2 id="h-tarifs">Des tarifs simples, pensés pour démarrer vite.</h2>
       <p class="lead">Sans engagement. Commencez par la recherche, passez au suivi quand vos listes grandissent.</p>
       <div class="plans">
         <article class="plan" aria-labelledby="p1">
           <h3 id="p1">Recherche</h3>
-          <p class="for">Pour trouver et contacter vos prospects.</p>
-          <p class="price"><span class="amt num">29&nbsp;€</span><span class="per">par mois</span></p>
-          <p class="fcfa">environ 19&nbsp;000&nbsp;FCFA par mois</p>
+          <p class="for">Pour trouver vos prospects et leur écrire.</p>
+          <p class="price"><span class="amt num">19,99&nbsp;$</span><span class="per">par mois</span></p>
+          <p class="fcfa">par utilisateur, sans engagement</p>
           <ul>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Recherche en langage courant, 1 pays, plusieurs ou le monde</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Entreprises et particuliers, 1 pays, plusieurs ou le monde</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Emails et numéros vérifiés</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Score expliqué et premier message rédigé</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Export CSV et Excel</li>
@@ -342,34 +364,34 @@
         <article class="plan featured" aria-labelledby="p2">
           <span class="tag">Pour les closers</span>
           <h3 id="p2">Pipeline</h3>
-          <p class="for">Pour suivre chaque prospect jusqu'à la vente.</p>
-          <p class="price"><span class="amt num">79&nbsp;€</span><span class="per">par mois</span></p>
-          <p class="fcfa">environ 52&nbsp;000&nbsp;FCFA par mois</p>
+          <p class="for">Pour accompagner chaque prospect jusqu'à la vente validée.</p>
+          <p class="price"><span class="amt num">49,99&nbsp;$</span><span class="per">par mois</span></p>
+          <p class="fcfa">par utilisateur, sans engagement</p>
           <ul>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tout ce que contient Recherche, avec plus de crédits</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Pipeline : nouveau, contacté, répondu, rendez-vous, validé</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Relances programmées et rappels du jour</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Notes et historique par prospect</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Notes et historique pour chaque prospect</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Tableaux de bord : conversion, pays, canaux</li>
           </ul>
           <a class="btn btn-primary" href="app-pipeline.html">Choisir Pipeline</a>
         </article>
         <article class="plan" aria-labelledby="p3">
           <h3 id="p3">Licence pays</h3>
-          <p class="for">Pour une entreprise qui installe Nyini sur ses serveurs.</p>
-          <p class="price"><span class="from">dès</span><span class="amt num">1&nbsp;500&nbsp;€</span><span class="per">par an</span></p>
-          <p class="fcfa">environ 984&nbsp;000&nbsp;FCFA par an et par pays</p>
+          <p class="for">Pour une entreprise qui installe Scoutra sur ses propres serveurs.</p>
+          <p class="price"><span class="amt num">1&nbsp;990&nbsp;$</span><span class="per">par an et par pays</span></p>
+          <p class="fcfa">jusqu'à 10 utilisateurs</p>
           <ul>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Toutes les fonctions de Pipeline</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Hébergé chez vous, avec vos clés IA et API</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Hébergé chez vous, données chez vous</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Recherches illimitées</li>
             <li><svg aria-hidden="true"><use href="#i-check"/></svg>Clé de licence vérifiée hors ligne</li>
-            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Installation en une commande</li>
+            <li class="note">Clés IA et frais d'API à votre charge</li>
           </ul>
           <a class="btn btn-ghost" href="#contact">Demander un devis</a>
         </article>
       </div>
-      <p class="plans-note">Prix indicatifs, hors taxes. Conversion au taux fixe de 655,957 FCFA pour 1 €, arrondie. Paiement par carte, et mobile money prévu au lancement.</p>
+      <p class="plans-note">Prix indicatifs en dollars américains, hors taxes. Paiement par carte ; règlement en euros ou en francs CFA possible au taux du jour.</p>
     </div>
   </section>
 </main>
@@ -378,14 +400,14 @@
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-about">
-        <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>nyini</a>
-        <p>Nyini veut dire « chercher » en bambara. Conçu à Bamako pour les commerciaux et les closers, au Mali et partout ailleurs.</p>
+        <a class="brand" href="index.html"><svg class="brand-mark" aria-hidden="true"><use href="#brand"/></svg>scoutra</a>
+        <p>Scoutra trouve, vérifie et rédige pour les commerciaux et les closers, dans le pays de votre choix ou partout dans le monde.</p>
       </div>
       <div><h4>Produit</h4><ul><li><a href="#fonctionnement">Fonctionnement</a></li><li><a href="#tarifs">Tarifs</a></li><li><a href="app-recherche.html">Recherche</a></li><li><a href="app-pipeline.html">Pipeline</a></li></ul></div>
       <div><h4>Confiance</h4><ul><li><a href="#conformite">Conformité par pays</a></li><li><a href="#contact">Accord de traitement</a></li><li><a href="#contact">Politique d'usage</a></li></ul></div>
       <div><h4>Langue</h4><ul><li><a href="#" aria-current="true">Français</a></li><li><a href="#" lang="en">English</a></li></ul></div>
     </div>
-    <div class="foot-legal"><span>© 2026 Nyini</span><span>Maquette de validation. Les personnes, entreprises et chiffres affichés sont fictifs.</span></div>
+    <div class="foot-legal"><span>© 2026 Scoutra</span><span>scoutra.ai</span><span>Maquette de validation. Les personnes, entreprises et chiffres affichés sont fictifs.</span></div>
   </div>
 </footer>
 

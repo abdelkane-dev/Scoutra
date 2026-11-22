@@ -1,40 +1,51 @@
-/* Nyini — maquettes statiques de validation (pas l'app réelle).
-   Une seule famille (Instrument Sans), une seule couleur d'accent pilotée par
-   [data-accent] sur <html>. Tout le contenu est visible sans JavaScript. */
+/* Scoutra — maquettes statiques de validation (pas l'app réelle).
+   Une seule famille (Instrument Sans), une couleur d'accent pilotée par
+   [data-accent] sur <html> : « orange » (défaut) ou « bleu ».
+   --hl = surbrillance de données (fond derrière du texte encre, jamais du texte coloré).
+   Tout le contenu est visible sans JavaScript. */
 
 :root {
-  --bg: #f7f7f4;          /* blanc cassé froid, pas crème */
-  --surface: #ffffff;
-  --surface-2: #f1f1ed;   /* fonds de zones calmes */
-  --ink: #15181c;         /* encre */
-  --ink-2: #474c54;       /* texte secondaire (≈ 8:1) */
-  --ink-3: #686d75;       /* texte discret (≈ 5:1) */
-  --line: #e2e2dc;
-  --line-2: #cdcdc5;
-  --focus: #15181c;
-
-  /* Accent par défaut : vert profond */
-  --accent: #1e6a4e;
-  --accent-hover: #175540;
-  --accent-ink: #144a36;  /* texte d'accent sur fond doux */
-  --accent-soft: #e4efe9;
-  --accent-line: #b9d4c7;
-
+  --ink: #0e1116;         /* encre */
+  --ink-2: #434852;       /* texte secondaire (≈ 9:1) */
+  --ink-3: #656a73;       /* texte discret (≈ 5:1) */
+  --focus: #0e1116;
   --radius-s: 6px;
   --radius-m: 10px;
   --radius-l: 14px;
-  --shadow-float: 0 1px 2px rgba(21, 24, 28, .06), 0 8px 24px rgba(21, 24, 28, .10);
-
+  --shadow-float: 0 1px 2px rgba(14, 17, 22, .06), 0 10px 28px rgba(14, 17, 22, .12);
   --font: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
+
+  /* A — Orange énergie (fond blanc chaud) */
+  --bg: #fbf9f6;
+  --surface: #ffffff;
+  --surface-2: #f4f1ec;
+  --line: #e7e2da;
+  --line-2: #d3ccc1;
+  --accent: #ff5b1f;        /* 3,1:1 sur blanc : marques et grands aplats seulement */
+  --accent-hover: #f04c10;
+  --on-accent: #0e1116;     /* texte sur l'accent : encre (6,1:1), le blanc échoue (3,1:1) */
+  --accent-ink: #b23a0b;    /* accent utilisable en texte (6:1 sur blanc) */
+  --accent-soft: #ffe8dd;
+  --accent-line: #ffc4ab;
+  --hl: #ffd9c7;            /* surbrillance de données */
+  --hl-ink: #0e1116;
 }
 
-:root[data-accent="indigo"] {
-  --accent: #3b4597;
-  --accent-hover: #2f377f;
-  --accent-ink: #2a3170;
-  --accent-soft: #ebecf6;
-  --accent-line: #c5c8e6;
+:root[data-accent="bleu"] {
+  /* B — Bleu électrique + touche lime */
+  --bg: #f7f8fb;
+  --surface-2: #eff1f6;
+  --line: #e1e4ec;
+  --line-2: #c9cedb;
+  --accent: #2b59ff;        /* 5,3:1 sur blanc */
+  --accent-hover: #1f47e6;
+  --on-accent: #ffffff;     /* blanc sur bleu : 5,3:1 (AA) */
+  --accent-ink: #2148e0;    /* texte d'accent, 5,8:1 sur fond doux */
+  --accent-soft: #e6ecff;
+  --accent-line: #bccbff;
+  --hl: #c6f432;            /* lime : uniquement en fond, sous du texte encre (15:1) */
+  --hl-ink: #0e1116;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -83,7 +94,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   cursor: pointer; white-space: nowrap;
   transition: background-color .15s ease, border-color .15s ease;
 }
-.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-ghost { background: transparent; border-color: var(--line-2); color: var(--ink); }
 .btn-ghost:hover { background: var(--surface); border-color: var(--ink-3); }
@@ -102,8 +113,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 .accent-switch button[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); font-weight: 600; }
 .accent-switch .sw { width: 12px; height: 12px; border-radius: 50%; }
-.sw-vert { background: #1e6a4e; }
-.sw-indigo { background: #3b4597; }
+.sw-orange { background: #ff5b1f; }
+.sw-bleu { background: linear-gradient(90deg, #2b59ff 0 62%, #c6f432 62% 100%); }
 
 /* ---------- Mention démo ---------- */
 .demo-flag {

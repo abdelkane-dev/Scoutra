@@ -9,3 +9,4 @@
 - 22/11/2026 — Tous les cerveaux (B2B, B2C, mixte) dès la v1.
 - 22/11/2026 — Particuliers : découverte via moteurs de recherche (contenu public indexé), même principe que le CRM Aken ; pas de connexion aux plateformes.
 - 22/11/2026 — Structure juridique repoussée après la bêta.
+- 22/11/2026 — VALIDÉ par le porteur : nom Scoutra (scoutra.ai) et stack (§5 du plan). Démarrage de l'étape 1 (socle). Exigence : couvrir tous les modèles de prospection (B2B, B2C, C2C, C2B, B2B2C, B2G…).

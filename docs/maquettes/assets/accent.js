@@ -1,15 +1,15 @@
-/* Choix de l'accent (vert profond / indigo sobre).
-   Ordre de priorité : ?accent=indigo dans l'URL, puis choix mémorisé, puis vert.
+/* Choix de l'accent (orange énergie / bleu électrique).
+   Ordre de priorité : ?accent=bleu dans l'URL, puis choix mémorisé, puis orange.
    Script classique chargé dans <head> pour éviter un flash de couleur. */
 (function () {
   var root = document.documentElement;
-  var KEY = "nyini-accent";
-  var allowed = { vert: 1, indigo: 1 };
+  var KEY = "scoutra-accent";
+  var allowed = { orange: 1, bleu: 1 };
   var fromUrl = null;
   try { fromUrl = new URLSearchParams(location.search).get("accent"); } catch (e) {}
   var stored = null;
   try { stored = localStorage.getItem(KEY); } catch (e) {}
-  var current = allowed[fromUrl] ? fromUrl : (allowed[stored] ? stored : "vert");
+  var current = allowed[fromUrl] ? fromUrl : (allowed[stored] ? stored : "orange");
   root.setAttribute("data-accent", current);
   root.classList.add("js");
 
