@@ -81,7 +81,10 @@ export function SearchView({
   const timers = React.useRef<number[]>([]);
   React.useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
+  // Solde réel (GET /api/credits) si disponible, sinon démonstration.
+  const realCredits = useCredits();
   const left =
+    realCredits?.balance ??
     DEMO_CREDITS.granted + DEMO_CREDITS.rollover + DEMO_CREDITS.packs - DEMO_CREDITS.used;
   const perProspect = 1 + WRITING_SURCHARGE[writing];
   const estimate = max * perProspect;
