@@ -305,3 +305,30 @@ describe('normalisation de domaine (propriété)', () => {
     );
   });
 });
+
+describe('revue étape 2, constat 2 : analyse HTML linéaire', async () => {
+  const { parseHtml, MAX_HTML_BYTES } = await import('../src');
+  it('pages piégées de 3 Mo analysées en temps borné', () => {
+    const traps = [
+      '<script>' + 'a'.repeat(3_000_000),
+      '<' + 'meta name="description" content="'.repeat(80_000),
+      'x@'.repeat(1_500_000),
+      '<a href="' + 'tel:1'.repeat(600_000),
+      '<!--' + '-'.repeat(3_000_000),
+      '©' + ' 2020-'.repeat(500_000),
+    ];
+    for (const html of traps) {
+      const t0 = performance.now();
+      const p = parseHtml(html);
+      expect(performance.now() - t0).toBeLessThan(1500);
+      expect(p.text.length).toBeLessThanOrEqual(MAX_HTML_BYTES);
+    }
+  });
+  it('titre, description, texte sans script, liens tel/mailto', () => {
+    const p = parseHtml(
+      '<title>A &amp; B</title><meta name="description" content="Desc"><script>x=1</script><p>Bonjour <b>monde</b></p><a href="tel:+221 33">t</a><a href="mailto:a@b.sn">m</a>',
+    );
+    expect(p).toMatchObject({ title: 'A & B', description: 'Desc', text: 'Bonjour monde t m' });
+    expect(p.hrefs).toEqual(['tel:+221 33', 'mailto:a@b.sn']);
+  });
+});

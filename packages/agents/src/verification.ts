@@ -55,7 +55,7 @@ export interface VerifyDeps {
 /** Vérification d'email : syntaxe → jetable/webmail → MX → SMTP (Reacher, optionnel). */
 export async function verifyEmail(raw: string, deps: VerifyDeps): Promise<EmailCheck> {
   const normalized = raw.trim().toLowerCase();
-  const syntax = EMAIL_RE.test(normalized);
+  const syntax = normalized.length <= 254 && EMAIL_RE.test(normalized);
   const [local = '', domain = ''] = normalized.split('@');
   const base = { normalized, isRoleAddress: ROLE_LOCALS.test(local) };
   const checks: EmailCheck['checks'] = {

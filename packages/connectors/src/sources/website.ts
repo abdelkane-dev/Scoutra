@@ -1,3 +1,4 @@
+import { Parser } from 'htmlparser2';
 import type { CandidateSignal, ConnectorCtx, ConnectorManifest } from '../types';
 import { clip, isCompanyDomain, normalizeDomain } from '../util';
 
@@ -54,45 +55,133 @@ export function robotsAllows(robots: string, path: string): boolean {
   return !disallow.some((d) => path.startsWith(d));
 }
 
-export function htmlToText(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#64;|&commat;/g, '@')
-    .replace(/\s+/g, ' ')
-    .trim();
+/** Taille maximale de HTML analysée par page (revue étape 2, constat 2). */
+export const MAX_HTML_BYTES = 300 * 1024;
+
+export interface ParsedHtml {
+  text: string;
+  title?: string;
+  description?: string;
+  hrefs: string[];
+  /** Contenu des scripts JSON-LD (données structurées), borné. */
+  ldJson: string;
 }
 
-const EMAIL_RE = /[a-z0-9._%+-]{1,64}@[a-z0-9.-]{1,253}\.[a-z]{2,24}/gi;
+/**
+ * Analyse HTML LINÉAIRE (htmlparser2, automate à états) : aucune expression régulière sur le
+ * balisage, entrée tronquée à 300 Ko, sorties bornées. Une page piégée ne peut plus geler le
+ * worker (revue étape 2, constat 2).
+ */
+export function parseHtml(rawHtml: string): ParsedHtml {
+  const html = rawHtml.length > MAX_HTML_BYTES ? rawHtml.slice(0, MAX_HTML_BYTES) : rawHtml;
+  const text: string[] = [];
+  let textLen = 0;
+  const hrefs: string[] = [];
+  let title = '';
+  let description: string | undefined;
+  let ld = '';
+  const stack: string[] = [];
+  let ldDepth = false;
+  const parser = new Parser(
+    {
+      onopentag(name, attrs) {
+        stack.push(name);
+        if (name === 'a' && attrs.href && hrefs.length < 500) hrefs.push(attrs.href.slice(0, 300));
+        if (name === 'meta' && attrs.name?.toLowerCase() === 'description' && attrs.content)
+          description ??= attrs.content.slice(0, 1000);
+        if (name === 'script') ldDepth = (attrs.type ?? '').toLowerCase() === 'application/ld+json';
+      },
+      onclosetag(name) {
+        const k = stack.lastIndexOf(name);
+        if (k >= 0) stack.length = k;
+        if (name === 'script') ldDepth = false;
+      },
+      ontext(data) {
+        const top = stack[stack.length - 1];
+        if (top === 'script') {
+          if (ldDepth && ld.length < 20_000) ld += data.slice(0, 20_000 - ld.length);
+          return;
+        }
+        if (top === 'style' || top === 'noscript' || top === 'template') return;
+        if (stack.includes('title')) {
+          if (title.length < 300) title += data;
+          return;
+        }
+        if (textLen < MAX_TEXT * 4) {
+          text.push(data);
+          textLen += data.length;
+        }
+      },
+    },
+    { decodeEntities: true },
+  );
+  parser.write(html);
+  parser.end();
+  return {
+    text: text.join(' ').replace(/\s+/g, ' ').trim(),
+    title: clip(title, 200),
+    description: clip(description, 300),
+    hrefs,
+    ldJson: ld,
+  };
+}
+
+export function htmlToText(html: string): string {
+  return parseHtml(html).text;
+}
+
+const EMAIL_RE = /[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,5}\.[a-z]{2,24}/gi;
 const BAD_EMAIL = /\.(png|jpe?g|gif|webp|svg)$|@example\.(com|org)$|sentry|wixpress|@2x/i;
 
-export function extractEmails(html: string, domain: string): string[] {
+/** Adresses du domaine de l'entité, depuis le TEXTE extrait et les liens mailto:. */
+export function extractEmails(parsed: ParsedHtml, domain: string): string[] {
   const found = new Set<string>();
-  for (const m of html.match(EMAIL_RE) ?? []) {
-    const e = m.toLowerCase();
-    if (BAD_EMAIL.test(e)) continue;
-    // On ne garde que les adresses du domaine de l'entité (publiées par elle-même).
-    if (e.endsWith(`@${domain}`) || e.endsWith(`.${domain}`)) found.add(e);
-  }
+  const sources = [
+    parsed.text.slice(0, 100_000),
+    ...parsed.hrefs.filter((h) => /^mailto:/i.test(h)).map((h) => h.slice(7).split('?')[0]!),
+  ];
+  for (const src of sources)
+    for (const m of src.match(EMAIL_RE) ?? []) {
+      const e = m.toLowerCase();
+      if (BAD_EMAIL.test(e)) continue;
+      // On ne garde que les adresses du domaine de l'entité (publiées par elle-même).
+      if (e.endsWith(`@${domain}`) || e.endsWith(`.${domain}`)) found.add(e);
+    }
   return [...found].slice(0, 10);
 }
 
-export function extractPhones(html: string): string[] {
+export function extractPhones(parsed: ParsedHtml): string[] {
   const out = new Set<string>();
-  for (const m of html.matchAll(/href=["']tel:([+0-9 ().-]{6,25})["']/gi)) out.add(m[1]!.trim());
+  for (const h of parsed.hrefs) {
+    if (!/^tel:/i.test(h)) continue;
+    const v = h.slice(4).trim();
+    if (v.length >= 6 && v.length <= 25 && /^[+0-9 ().-]+$/.test(v)) out.add(v);
+  }
   return [...out].slice(0, 5);
 }
 
-export function extractSocialLinks(html: string): string[] {
+const SOCIAL_HOSTS = [
+  'facebook.com',
+  'instagram.com',
+  'linkedin.com',
+  'tiktok.com',
+  'x.com',
+  'twitter.com',
+  'youtube.com',
+];
+export function extractSocialLinks(parsed: ParsedHtml): string[] {
   const out = new Set<string>();
-  for (const m of html.matchAll(
-    /href=["'](https?:\/\/(?:www\.)?(?:facebook|instagram|linkedin|tiktok|x|twitter|youtube)\.com\/[^"'\s]{1,200})["']/gi,
-  ))
-    out.add(m[1]!);
+  for (const h of parsed.hrefs) {
+    let u: URL;
+    try {
+      u = new URL(h);
+    } catch {
+      continue;
+    }
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') continue;
+    const host = u.hostname.replace(/^www\./, '');
+    if (SOCIAL_HOSTS.includes(host) && u.pathname.length > 1) out.add(u.toString().slice(0, 200));
+  }
   return [...out].slice(0, 8);
 }
 
@@ -157,14 +246,14 @@ export async function readWebsite(
       if (!html) continue;
     }
     facts.reachable = true;
+    const parsed = parseHtml(html);
     if (path === '/') {
-      facts.title = clip(/<title[^>]*>([^<]*)<\/title>/i.exec(html)?.[1], 200);
-      facts.description = clip(
-        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)/i.exec(html)?.[1],
-        300,
-      );
+      facts.title = parsed.title;
+      facts.description = parsed.description;
       const years = [
-        ...html.matchAll(/(?:©|&copy;|copyright)\s*(?:\d{4}\s*[-–]\s*)?(20\d{2})/gi),
+        ...parsed.text
+          .slice(-20_000)
+          .matchAll(/(?:©|copyright)\s{0,3}(?:\d{4}\s{0,3}[-–]\s{0,3})?(20\d{2})/gi),
       ].map((m) => Number(m[1]));
       const year = years.length ? Math.max(...years) : undefined;
       if (year && ctx.now().getUTCFullYear() - year >= 3)
@@ -174,18 +263,16 @@ export async function readWebsite(
           url: `https://${domain}/`,
         });
       if (
-        /"@type"\s*:\s*"JobPosting"/.test(html) ||
-        /recrut|careers|jobs|emploi/i.test(html.slice(0, 200_000))
+        /"@type"\s{0,5}:\s{0,5}"JobPosting"/.test(parsed.ldJson) ||
+        /recrut|careers|jobs|emploi/i.test(parsed.text.slice(0, 50_000)) ||
+        parsed.hrefs.some((h) => /recrut|careers|jobs|emploi/i.test(h))
       )
         facts.signals.push({ key: 'hiring', url: `https://${domain}/` });
     }
-    for (const e of extractEmails(html, domain)) emails.add(e);
-    for (const p of extractPhones(html)) phones.add(p);
-    for (const s of extractSocialLinks(html)) social.add(s);
-    facts.pages.push({
-      url: `https://${domain}${path}`,
-      text: htmlToText(html).slice(0, MAX_TEXT),
-    });
+    for (const e of extractEmails(parsed, domain)) emails.add(e);
+    for (const p of extractPhones(parsed)) phones.add(p);
+    for (const s of extractSocialLinks(parsed)) social.add(s);
+    facts.pages.push({ url: `https://${domain}${path}`, text: parsed.text.slice(0, MAX_TEXT) });
   }
   if (!facts.https) facts.signals.push({ key: 'outdated_website', snippet: 'HTTP sans TLS' });
   facts.emails = [...emails];

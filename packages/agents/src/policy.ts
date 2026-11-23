@@ -29,15 +29,16 @@ export function redactSecrets(text: string): string {
 /** Encapsule une donnée externe : balise neutralisée dans le contenu, longueur bornée. */
 export function externalData(source: string, text: string, maxChars = 8000): string {
   const safeSource = source.replace(/[^\w.:/-]/g, '').slice(0, 80);
-  const body = redactSecrets(text)
-    .replace(/<\/?\s*(external_data|user_request)[^>]*>/gi, '[balise retirée]')
+  // Troncature AVANT toute expression régulière (coût linéaire borné, revue étape 2, constat 2).
+  const body = redactSecrets(text.slice(0, maxChars))
+    .replace(/<\/?\s{0,5}(external_data|user_request)[^>]{0,200}>/gi, '[balise retirée]')
     .slice(0, maxChars);
   return `<external_data source="${safeSource}">\n${body}\n</external_data>`;
 }
 
 export function userRequest(text: string, maxChars = 2000): string {
-  const body = redactSecrets(text)
-    .replace(/<\/?\s*(external_data|user_request)[^>]*>/gi, '[balise retirée]')
+  const body = redactSecrets(text.slice(0, maxChars))
+    .replace(/<\/?\s{0,5}(external_data|user_request)[^>]{0,200}>/gi, '[balise retirée]')
     .slice(0, maxChars);
   return `<user_request>\n${body}\n</user_request>`;
 }
