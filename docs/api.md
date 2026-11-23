@@ -425,3 +425,23 @@ Actions internes uniquement ; une action d'automatisation ne redéclenche pas d'
 
 `{ unread, items: [{ id, title, body, link, read, at }] }` (les miennes). `read` sans `ids` :
 tout marquer comme lu.
+
+## Signaux et recherches enregistrées
+
+### `GET /api/signals?types=funding,hiring&days=30&limit=100` (action `signal:read`)
+
+Signaux **réellement collectés** (preuves `signals.*`) sur les prospects visibles :
+`{ items: [{ id, type, prospectId, prospectName, countryCode, score, text, source, url, at }] }`.
+`types` parmi les clés de signaux (`new_company`, `new_domain`, `hiring`, `funding`,
+`public_request`, `new_location`, `no_website`, `outdated_website`, `recent_reviews`,
+`public_tender`, `insolvency`, `leadership_change`, `product_launch`, `event_participation`,
+`active_listing`).
+
+### Recherches enregistrées et alertes : `GET/POST /api/saved-searches`, `PATCH/DELETE /api/saved-searches/:id`
+
+Les miennes. `POST { name, filters: { q?, countries?, kind?, minScore?, signals?, campaignId? },
+alert }`. `GET` → `{ items: [{ id, name, filters, alert, results, fresh, lastSeenAt, createdAt }] }`
+où `results` compte les prospects livrés correspondants et `fresh` ceux livrés depuis ma dernière
+consultation. `PATCH { name?, filters?, alert?, markSeen?: true }` (`markSeen` remet `fresh` à 0).
+Les alertes sont calculées sur les prospects déjà trouvés : relancer une recherche (et dépenser des
+crédits) reste une action explicite (`POST /api/campaigns`).

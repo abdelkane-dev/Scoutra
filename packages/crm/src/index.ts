@@ -5,3 +5,4 @@ export * from './prospects';
 export * from './sequences';
 export * from './messages';
 export * from './tasks';
+export * from './searches';

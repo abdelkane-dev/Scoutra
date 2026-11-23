@@ -379,3 +379,66 @@ describe.skipIf(!info.available)('CRM : tâches et agenda', () => {
     }
   });
 });
+
+describe.skipIf(!info.available)('CRM : signaux et recherches enregistrées', () => {
+  it('signaux issus des preuves, filtrés par type ; correspondances et nouveautés', async () => {
+    const h = handles(info);
+    const { listSignals, countMatches } = await import('../src');
+    try {
+      const O = await seedOrgAndOwner(h.auth, 'sig');
+      const T = <R>(fn: Parameters<typeof withTenant<R>>[2]) => withTenant(h.app.db, O, fn);
+      const actor: Actor = { orgId: O.orgId, userId: O.userId, ownerOnly: null, canAssign: true };
+      await T(async (tx) => {
+        const [p] = await tx
+          .insert(schema.prospects)
+          .values({
+            organizationId: O.orgId,
+            kind: 'company',
+            prospectingModel: 'b2b',
+            displayName: 'Kitepay',
+            countryCode: 'DE',
+            dedupeKey: `sig-${O.orgId}`,
+            deliveredAt: new Date(),
+            score: 80,
+          })
+          .returning();
+        const base = {
+          organizationId: O.orgId,
+          prospectId: p!.id,
+          sourceCode: 'web',
+          collectedAt: new Date(),
+          legalBasis: 'legitimate_interest' as const,
+          countryCode: 'DE',
+        };
+        await tx.insert(schema.evidence).values([
+          {
+            ...base,
+            fieldPath: 'signals.funding',
+            snippet: 'Levée de 12 M€',
+            sourceUrl: 'https://kitepay.example/press',
+          },
+          { ...base, fieldPath: 'display_name' },
+        ]);
+      });
+      const all = await T((tx) => listSignals(tx, actor, { days: 30, limit: 10 }));
+      expect(all).toHaveLength(1);
+      expect(all[0]).toMatchObject({
+        type: 'funding',
+        prospectName: 'Kitepay',
+        text: 'Levée de 12 M€',
+      });
+      expect(
+        await T((tx) => listSignals(tx, actor, { types: ['hiring'], days: 30, limit: 10 })),
+      ).toHaveLength(0);
+      expect(
+        await T((tx) => countMatches(tx, actor, { signals: ['funding'], countries: ['DE'] })),
+      ).toBe(1);
+      expect(await T((tx) => countMatches(tx, actor, { signals: ['hiring'] }))).toBe(0);
+      expect(
+        await T((tx) => countMatches(tx, actor, { minScore: 50 }, new Date(Date.now() + 1000))),
+      ).toBe(0);
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});
