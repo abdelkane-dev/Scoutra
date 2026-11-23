@@ -209,6 +209,7 @@ export function PipelineBoard() {
         {live}
       </p>
       <DndContext
+        id="pipeline-dnd"
         sensors={sensors}
         onDragStart={(e) => setDragId(String(e.active.id))}
         onDragEnd={onDragEnd}

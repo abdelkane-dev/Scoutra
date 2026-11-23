@@ -115,7 +115,7 @@ export function ProspectSheet({
                   {p.reasons.map((r) => (
                     <li
                       key={r.label.fr}
-                      className="grid grid-cols-[minmax(0,1fr)_96px_34px] items-center gap-3 text-[13px]"
+                      className="grid grid-cols-[minmax(0,1fr)_72px_40px] sm:grid-cols-[minmax(0,1fr)_96px_40px] items-center gap-3 text-[13px]"
                       title={`+${r.pts}`}
                     >
                       <span className="text-ink-2">{r.label[locale]}</span>

@@ -419,7 +419,7 @@ export function RealProspectSheet({ id, onClose }: { id: string | null; onClose:
                   {d.score.reasons.map((r, i) => (
                     <li
                       key={i}
-                      className="grid grid-cols-[minmax(0,1fr)_96px_34px] items-center gap-3 text-[13px]"
+                      className="grid grid-cols-[minmax(0,1fr)_72px_40px] sm:grid-cols-[minmax(0,1fr)_96px_40px] items-center gap-3 text-[13px]"
                     >
                       <span className="text-ink-2">
                         {r.finding.replace(/_/g, ' ')}

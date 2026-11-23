@@ -34,6 +34,7 @@ import { CountryPicker } from './country-picker';
 import { ProspectSheet } from './prospect-sheet';
 import { LiveRun } from './live-search';
 import { apiFetch } from '@/lib/api';
+import { useCredits } from '@/lib/use-credits';
 
 type Kind = 'companies' | 'people' | 'both';
 type Zone = 'one' | 'many' | 'world';
