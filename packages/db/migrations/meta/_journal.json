@@ -85,6 +85,13 @@
       "when": 1795445721674,
       "tag": "0011_crm",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795445722674,
+      "tag": "0012_erasure_cascade",
+      "breakpoints": true
     }
   ]
 }

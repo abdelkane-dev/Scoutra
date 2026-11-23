@@ -470,3 +470,34 @@ viewer) voient l'équipe et la ventilation par membre ; un `member` ne voit que 
 - `channels` : taux de réponse sur les messages saisis comme envoyés (`sent_manually` /
   `replied`).
 - `credits` : consommation cumulée par jour (crédits). `members` absent pour un `member`.
+
+## Conformité
+
+### Oppositions : `GET /api/compliance/suppressions` (`compliance:read`), `POST` (`prospect:write`), `DELETE /api/compliance/suppressions/:id` (`compliance:manage`)
+
+`POST { kind: "email|phone|domain", value, reason?: "opt_out|erasure|bounce|complaint", note? }` :
+seule une **empreinte** est conservée (indice masqué `j•••@domaine` ; un domaine reste lisible).
+Effets immédiats : coordonnées correspondantes supprimées ; pour un domaine, prospects de ce
+domaine passés en `suppressed` ; jamais recollectés. Réponse `{ id, duplicate, contactsDeleted,
+prospectsSuppressed }`. `GET` → `{ items: [{ id, kind, hint, reason, note, by, at }] }`. Le
+retrait (admin, 2FA) est journalisé.
+
+### Demandes des personnes : `GET/POST /api/compliance/requests`, `POST /api/compliance/requests/:id/process`
+
+`POST { type: "erasure|opposition|access|rectification", kind: "email|phone", value, receivedAt? }`
+(tout commercial peut enregistrer une demande reçue) → délai légal de 30 jours. `GET` →
+`{ items: [{ id, type, requester (masqué), status, receivedAt, dueAt, daysLeft, completedAt,
+result }] }`. `process` (`compliance:manage`, 2FA) : effacement → coordonnées supprimées, prospect
+**personne** supprimé entièrement (preuves, messages, historique, tâches), valeur ajoutée aux
+oppositions ; opposition → coordonnées supprimées + opposition ; accès → inventaire (comptes, sans
+valeurs). `409` si déjà traitée. Journalisé.
+
+### `GET /api/compliance/audit?action=&before=&limit=` (`audit:read`, 2FA)
+
+`{ items: [{ id, at, actorType, actor, action, targetType, targetId, metadata }], nextBefore }`.
+
+### `GET /api/compliance/rules?country=FR` (`compliance:read`)
+
+`{ country, senderCountry, covered, jurisdictions: [{ jurisdiction, version, sources, retentionDays,
+maxFollowUps }], business: [{ channel, outcome, conditions, ruleIds, reasons }], individual: [...],
+disclaimer }` — décision du garde-fou par canal, pour un professionnel et un particulier.

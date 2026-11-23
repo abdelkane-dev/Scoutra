@@ -524,3 +524,105 @@ describe.skipIf(!info.available)('CRM : rapports réels', () => {
     }
   });
 });
+
+describe.skipIf(!info.available)('CRM : oppositions et effacement en cascade', () => {
+  it('opposition supprime les coordonnées ; effacement supprime la personne entière ; audit', async () => {
+    const h = handles(info);
+    const { addSuppression, createRequest, processRequest, subjectHash } = await import('../src');
+    const { randomBytes } = await import('node:crypto');
+    const hashKey = randomBytes(32);
+    try {
+      const O = await seedOrgAndOwner(h.auth, 'dsr');
+      const T = <R>(fn: Parameters<typeof withTenant<R>>[2]) => withTenant(h.app.db, O, fn);
+      const { person, company } = await T(async (tx) => {
+        const rows = await tx
+          .insert(schema.prospects)
+          .values([
+            {
+              organizationId: O.orgId,
+              kind: 'person',
+              prospectingModel: 'b2c',
+              displayName: 'Post public',
+              countryCode: 'FR',
+              dedupeKey: `dsr-p-${O.orgId}`,
+            },
+            {
+              organizationId: O.orgId,
+              kind: 'company',
+              prospectingModel: 'b2b',
+              displayName: 'Acme',
+              countryCode: 'FR',
+              dedupeKey: `dsr-c-${O.orgId}`,
+              websiteDomain: 'acme.example',
+            },
+          ])
+          .returning();
+        const h1 = subjectHash('email', 'Jean@Mail.example', hashKey).hash;
+        for (const p of rows)
+          await tx.insert(schema.contacts).values({
+            organizationId: O.orgId,
+            prospectId: p.id,
+            channel: 'email',
+            valueEncrypted: {},
+            valueHash: h1,
+          });
+        await tx
+          .insert(schema.prospectActivities)
+          .values({ organizationId: O.orgId, prospectId: rows[0]!.id, type: 'note', payload: {} });
+        return { person: rows[0]!, company: rows[1]! };
+      });
+      const req = await T((tx) =>
+        createRequest(
+          tx,
+          { orgId: O.orgId, hashKey },
+          { type: 'erasure', kind: 'email', value: 'jean@mail.example' },
+        ),
+      );
+      expect(req.subjectHint).toBe('j•••@mail.example');
+      const done = await T((tx) =>
+        processRequest(tx, { orgId: O.orgId, userId: O.userId }, req.id),
+      );
+      expect(done.result).toMatchObject({
+        contactsDeleted: 2,
+        prospectsDeleted: 1,
+        suppressed: true,
+      });
+      await T(async (tx) => {
+        const left = await tx.select().from(schema.prospects);
+        expect(left.map((p) => p.id)).toEqual([company.id]);
+        expect(await tx.select().from(schema.contacts)).toHaveLength(0);
+        expect((await tx.select().from(schema.suppressionList)).length).toBe(1);
+        expect(
+          (await tx.select().from(schema.auditLog)).some(
+            (a) => a.action === 'compliance.request_erasure',
+          ),
+        ).toBe(true);
+      });
+      void person;
+      await expect(
+        T((tx) => processRequest(tx, { orgId: O.orgId, userId: O.userId }, req.id)),
+      ).rejects.toMatchObject({ code: 'conflict' });
+      const r = await T((tx) =>
+        addSuppression(
+          tx,
+          { orgId: O.orgId, userId: O.userId, hashKey },
+          { kind: 'domain', value: 'https://www.acme.example/x', reason: 'opt_out' },
+        ),
+      );
+      expect(r).toMatchObject({ duplicate: false, prospectsSuppressed: 1 });
+      const [c] = await T((tx) => tx.select().from(schema.prospects));
+      expect(c!.status).toBe('suppressed');
+      await expect(
+        T((tx) =>
+          addSuppression(
+            tx,
+            { orgId: O.orgId, userId: O.userId, hashKey },
+            { kind: 'email', value: 'pas-un-email', reason: 'opt_out' },
+          ),
+        ),
+      ).rejects.toMatchObject({ code: 'invalid_input' });
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});

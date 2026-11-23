@@ -223,6 +223,22 @@ export async function handleSearch(
       : new Set<string>();
     let duplicates = 0;
     for (const g of groups) {
+      // Domaine en opposition (liste de suppression) : jamais recollecté.
+      if (g.primary.websiteDomain) {
+        const [blocked] = await tx
+          .select({ id: schema.suppressionList.id })
+          .from(schema.suppressionList)
+          .where(
+            eq(
+              schema.suppressionList.valueHash,
+              keyedHash(g.primary.websiteDomain, deps.hashKey, 'domain'),
+            ),
+          );
+        if (blocked) {
+          duplicates++;
+          continue;
+        }
+      }
       if (existing.has(g.key)) {
         duplicates++;
         continue;
