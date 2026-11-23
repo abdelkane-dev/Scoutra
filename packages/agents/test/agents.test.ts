@@ -428,3 +428,42 @@ describe('revue étape 2, constat 1 : public juridique déterminé par le type d
     expect(s.kinds).toEqual(['company']);
   });
 });
+
+describe('constats 6 et 17 (étape 2) : divulgation des coordonnées', async () => {
+  const { discloseContact, allowedChannelsOf, canDisclose } = await import('../src');
+  it('en clair seulement si livré ET canal autorisé ; sinon aucune partie de la valeur', () => {
+    const allowed = allowedChannelsOf([
+      { channel: 'email', outcome: 'allow_with_conditions' },
+      { channel: 'phone', outcome: 'deny' },
+    ]);
+    expect(allowed).toEqual(['email']);
+    expect(
+      discloseContact({
+        channel: 'email',
+        value: 'a@b.sn',
+        delivered: true,
+        allowedChannels: allowed,
+      }),
+    ).toEqual({ value: 'a@b.sn', revealed: true, found: true });
+    expect(
+      discloseContact({
+        channel: 'phone',
+        value: '+221',
+        delivered: true,
+        allowedChannels: allowed,
+      }),
+    ).toEqual({ value: null, revealed: false, found: true });
+    expect(
+      discloseContact({
+        channel: 'email',
+        value: 'a@b.sn',
+        delivered: false,
+        allowedChannels: allowed,
+      }).value,
+    ).toBeNull();
+    expect(canDisclose({ channel: 'phone', delivered: true, allowedChannels: allowed })).toBe(
+      false,
+    );
+    expect(allowedChannelsOf('x')).toEqual([]);
+  });
+});

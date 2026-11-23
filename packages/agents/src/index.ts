@@ -10,3 +10,4 @@ export * from './enrichment';
 export * from './drafting';
 export * from './playbooks';
 export * from './campaign-plan';
+export * from './disclosure';

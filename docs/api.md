@@ -222,14 +222,15 @@ Aucune coordonnée en clair dans la liste.
                  "ruleIds": ["eu-business-email"], "rulesetVersions": ["EU@2026-11-22"], "reasons": [], "warnings": [] }],
   "evidence": { "display_name": [{ "id", "source": "osm_overpass", "url": "…", "collectedAt": "…", "legalBasis": "legitimate_interest", "license": "ODbL", "snippet": null }],
                 "contact.email": [ … ] },
-  "contacts": [{ "id", "channel": "email", "value": "contact@lebaobab.sn", "revealed": true,
+  "contacts": [{ "id", "channel": "email", "value": "contact@lebaobab.sn", "revealed": true, "found": true,
                  "verificationStatus": "valid|unknown|risky|accept_all|webmail|invalid|disposable", "isRoleAddress": true, "evidence": ["uuid"] }],
   "messages": [{ "id", "channel": "email", "language": "fr", "subject": "…", "body": "…", "footer": "mention légale + STOP", "quality": "standard", "generatedBy": "ai|template", "status": "draft" }]
 }
 ```
 
-- Coordonnées en clair **uniquement pour un prospect livré** (sinon masquées `c•••@domaine`) ;
-  chaque consultation est journalisée (`prospect.contacts_viewed`).
+- Coordonnées en clair **uniquement pour un prospect livré ET un canal autorisé par le garde-fou**
+  (`revealed: true`) ; sinon `value: null` et `found: true` (la coordonnée existe, rien n'en est
+  montré). Chaque consultation est journalisée (`prospect.contacts_viewed`).
 - `outcome` du garde-fou : `allow`, `allow_with_conditions`, `manual_only` (page publique ou
   formulaire : l'utilisateur ouvre le lien lui-même) ; les canaux refusés n'apparaissent pas.
 - Le message est toujours un **brouillon** : aucun envoi automatique (copier puis envoyer à la

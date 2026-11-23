@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { dataScope } from '@scoutra/auth';
+import { allowedChannelsOf, canDisclose, discloseContact } from '@scoutra/agents';
 import { AppError } from '@scoutra/core';
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import { and, desc, eq, schema, withTenant, writeAudit } from '@scoutra/db';
@@ -8,14 +9,6 @@ import { appDb } from '@/server/db';
 import { apiRoute, json } from '@/server/http';
 
 export const dynamic = 'force-dynamic';
-
-function mask(channel: string, v: string): string {
-  if (channel === 'email') {
-    const [l = '', d = ''] = v.split('@');
-    return `${l.slice(0, 1)}•••@${d}`;
-  }
-  return `${v.slice(0, 4)}•••${v.slice(-2)}`;
-}
 
 /**
  * Fiche prospect : preuves PAR CHAMP (source, URL, date, base légale, licence), score expliqué,
@@ -48,30 +41,39 @@ export const GET = apiRoute(
         .from(schema.messages)
         .where(eq(schema.messages.prospectId, pr.id))
         .orderBy(desc(schema.messages.createdAt));
-      const reveal = !!pr.deliveredAt;
+      const allowed = allowedChannelsOf(pr.channelDecisions);
       const contactViews = contacts.map((c) => {
-        let value: string | null;
-        try {
-          value = decryptSecret(
-            c.valueEncrypted as EncryptedSecret,
-            { orgId: ctx.orgId, purpose: `contact:${c.channel}` },
-            keyring,
-          );
-        } catch {
-          value = null;
-        }
+        // Déchiffrement seulement si la coordonnée peut être montrée (minimisation).
+        let value: string | null = null;
+        if (
+          canDisclose({ channel: c.channel, delivered: !!pr.deliveredAt, allowedChannels: allowed })
+        )
+          try {
+            value = decryptSecret(
+              c.valueEncrypted as EncryptedSecret,
+              { orgId: ctx.orgId, purpose: `contact:${c.channel}` },
+              keyring,
+            );
+          } catch {
+            value = null;
+          }
+        const d = discloseContact({
+          channel: c.channel,
+          value,
+          delivered: !!pr.deliveredAt,
+          allowedChannels: allowed,
+        });
         return {
           id: c.id,
           channel: c.channel,
-          value: value && (reveal ? value : mask(c.channel, value)),
-          revealed: reveal && !!value,
+          ...d,
           verificationStatus: c.verificationStatus,
           verifiedAt: c.verifiedAt,
           isRoleAddress: c.isRoleAddress,
           evidence: evidence.filter((e) => e.contactId === c.id).map((e) => e.id),
         };
       });
-      if (reveal && contacts.length)
+      if (contactViews.some((v) => v.revealed))
         await writeAudit(tx, {
           orgId: ctx.orgId,
           actorType: 'user',
