@@ -186,6 +186,21 @@ describe.skipIf(!info.available)(
       expect(ready.estimate).toMatchObject({ credits: { low: 3, high: 5 } });
       expect(ready.degraded).toBe(true); // aucune clé : sources gratuites seulement
 
+      // Constat 5 : le quota de la formule est revérifié au lancement.
+      await withTenant(h.app.db, A, (tx) =>
+        tx.update(schema.campaigns).set({ maxProspects: 9999 }).where(eq(schema.campaigns.id, id)),
+      );
+      await expect(
+        launchCampaign(boss, h.app.db, {
+          ...A,
+          campaignId: id,
+          mode: 'saas',
+          plan: PLANS.research,
+        }),
+      ).rejects.toMatchObject({ code: 'quota_exceeded' });
+      await withTenant(h.app.db, A, (tx) =>
+        tx.update(schema.campaigns).set({ maxProspects: 5 }).where(eq(schema.campaigns.id, id)),
+      );
       const { reservedMc } = await launchCampaign(boss, h.app.db, {
         ...A,
         campaignId: id,

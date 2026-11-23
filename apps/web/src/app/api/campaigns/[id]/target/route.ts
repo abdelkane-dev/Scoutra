@@ -3,7 +3,7 @@ import { dataScope } from '@scoutra/auth';
 import { kindsAllowed } from '@scoutra/agents';
 import { AppError, targetSpecSchema } from '@scoutra/core';
 import { eq, schema, sql, withTenant } from '@scoutra/db';
-import { currentCostMode } from '@scoutra/queue';
+import { currentCostMode, planFor } from '@scoutra/queue';
 import {
   availableKeys,
   campaignView,
@@ -50,6 +50,12 @@ export const PUT = apiRoute(
         ]);
       const prev = await latestTarget(tx, c.id);
       const maxProspects = body.maxProspects ?? c.maxProspects;
+      // Même plafond qu'à la création (constat 5) : la formule borne le volume par campagne.
+      if (getEnv().SCOUTRA_MODE === 'saas') {
+        const { plan: offer } = await planFor(tx, new Date());
+        if (maxProspects > offer.maxProspectsPerCampaign)
+          throw new AppError('quota_exceeded', 'prospects par campagne');
+      }
       const quality = body.quality ?? (c.quality as 'standard');
       const plan = planCampaign(body.spec, await availableKeys(tx), {
         maxProspects,

@@ -140,6 +140,9 @@ export async function launchCampaign(
       .for('update');
     if (!c) throw new AppError('not_found');
     if (c.status !== 'awaiting_confirmation') throw new AppError('conflict', 'statut');
+    // Quota re-contrôlé AU LANCEMENT (la fiche a pu être modifiée après la création, constat 5).
+    if (o.mode === 'saas' && c.maxProspects > o.plan.maxProspectsPerCampaign)
+      throw new AppError('quota_exceeded', 'prospects par campagne');
     if (o.mode === 'saas') {
       const [running] = await tx
         .select({ n: count() })
