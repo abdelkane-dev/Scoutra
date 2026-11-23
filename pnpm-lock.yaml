@@ -74,12 +74,24 @@ importers:
       '@scoutra/agents':
         specifier: workspace:*
         version: link:../../packages/agents
+      '@scoutra/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@scoutra/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@scoutra/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
+      '@scoutra/compliance':
+        specifier: workspace:*
+        version: link:../../packages/compliance
       '@scoutra/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@scoutra/connectors':
+        specifier: workspace:*
+        version: link:../../packages/connectors
       '@scoutra/core':
         specifier: workspace:*
         version: link:../../packages/core

@@ -22,6 +22,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     'home',
     'search',
     'work',
+    'insight',
+    'prefs',
   ]);
   return (
     <I18nProvider locale={locale} messages={messages}>

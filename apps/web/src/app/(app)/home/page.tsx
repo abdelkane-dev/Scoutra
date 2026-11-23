@@ -23,7 +23,8 @@ import {
   DEMO_SIGNALS,
 } from '@/lib/demo/workspace';
 import { DEMO_PROSPECTS } from '@/lib/demo/prospects';
-import { suggestModels } from '@/lib/playbook-suggest';
+import { suggestPlaybooks } from '@scoutra/agents';
+import type { AccountType, Sector } from '@scoutra/core';
 import { formatNumber, formatUsd } from '@/lib/format';
 import { PLANS } from '@/lib/pricing';
 
@@ -158,7 +159,12 @@ export default async function HomePage() {
     (a, p) => a + p.valueUsd,
     0,
   );
-  const models = suggestModels(ctx.org.accountType, ctx.org.sectors);
+  const models = suggestPlaybooks(
+    ctx.org.accountType as AccountType | null,
+    ctx.org.sectors as Sector[],
+  )
+    .slice(0, 4)
+    .map((r) => r.model);
 
   return (
     <>
