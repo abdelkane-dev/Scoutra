@@ -69,3 +69,42 @@ describe.skipIf(!info.available)('playbooks (données initiales)', () => {
     }
   });
 });
+
+describe.skipIf(!info.available)(
+  'LISTEN/NOTIFY des événements de campagne (constat 3)',
+  async () => {
+    const { createCampaignEventListener, appendCampaignEvent } = await import('../src');
+    it('un insert réveille uniquement les abonnés de la campagne', async () => {
+      const h = handles(info);
+      const l = createCampaignEventListener(info.appUrl);
+      try {
+        const O = await seedOrgAndOwner(h.auth, 'listen');
+        const [c] = await withTenant(h.app.db, O, (tx) =>
+          tx
+            .insert(schema.campaigns)
+            .values({
+              organizationId: O.orgId,
+              name: 'n',
+              promptText: 'p',
+              prospectingModel: 'b2b',
+            })
+            .returning(),
+        );
+        let woken = 0;
+        let other = 0;
+        l.subscribe(c!.id, () => woken++);
+        l.subscribe('00000000-0000-4000-8000-000000000000', () => other++);
+        await new Promise((r) => setTimeout(r, 500)); // connexion LISTEN établie
+        await withTenant(h.app.db, O, (tx) =>
+          appendCampaignEvent(tx, { orgId: O.orgId, campaignId: c!.id, type: 'campaign.progress' }),
+        );
+        for (let i = 0; i < 40 && woken === 0; i++) await new Promise((r) => setTimeout(r, 50));
+        expect(woken).toBe(1);
+        expect(other).toBe(0);
+      } finally {
+        await l.close();
+        await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+      }
+    });
+  },
+);

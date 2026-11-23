@@ -27,3 +27,20 @@ describe('SlidingWindowLimiter', () => {
     expect(l.take('k0', 200)).toBe(true); // expulsée, donc libre
   });
 });
+
+describe('ConcurrencySlots (revue étape 2, constat 3)', async () => {
+  const { ConcurrencySlots } = await import('../src');
+  it('plafond par utilisateur et par organisation ; libération idempotente', () => {
+    const s = new ConcurrencySlots();
+    const lim = (u: string) => ({ [`u:${u}`]: 2, 'o:A': 3 });
+    const r1 = s.acquire(lim('1'))!;
+    s.acquire(lim('1'));
+    expect(s.acquire(lim('1'))).toBeNull();
+    s.acquire(lim('2'));
+    expect(s.acquire(lim('3'))).toBeNull(); // organisation pleine
+    r1();
+    r1();
+    expect(s.count('o:A')).toBe(2);
+    expect(s.acquire(lim('3'))).not.toBeNull();
+  });
+});

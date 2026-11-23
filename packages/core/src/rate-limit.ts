@@ -33,3 +33,28 @@ export class SlidingWindowLimiter {
     return true;
   }
 }
+
+/**
+ * Emplacements simultanés bornés par clé (ex. flux SSE par utilisateur et par organisation,
+ * revue étape 2, constat 3). `acquire` renvoie une libération idempotente, ou null si plein.
+ */
+export class ConcurrencySlots {
+  private readonly used = new Map<string, number>();
+  acquire(limits: Record<string, number>): (() => void) | null {
+    for (const [k, max] of Object.entries(limits)) if ((this.used.get(k) ?? 0) >= max) return null;
+    for (const k of Object.keys(limits)) this.used.set(k, (this.used.get(k) ?? 0) + 1);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      for (const k of Object.keys(limits)) {
+        const v = (this.used.get(k) ?? 1) - 1;
+        if (v <= 0) this.used.delete(k);
+        else this.used.set(k, v);
+      }
+    };
+  }
+  count(key: string): number {
+    return this.used.get(key) ?? 0;
+  }
+}
