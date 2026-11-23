@@ -8,3 +8,4 @@ export { safeFetch, type SafeFetchOptions, type SafeResponse, type Resolver } fr
 export { ConcurrencySlots, SlidingWindowLimiter } from './rate-limit';
 export * from './profile';
 export * from './target';
+export * from './named-person';

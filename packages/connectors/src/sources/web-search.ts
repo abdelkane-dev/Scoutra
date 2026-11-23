@@ -1,5 +1,5 @@
 import type { ProspectKind, TargetSpec } from '@scoutra/core';
-import { PROSPECTING_MODELS } from '@scoutra/core';
+import { PROSPECTING_MODELS, looksLikePersonName } from '@scoutra/core';
 import type {
   ConnectorCtx,
   ConnectorManifest,
@@ -109,7 +109,7 @@ export function buildSearchQueries(spec: TargetSpec): ConnectorQuery[] {
     model?.involvesIndividuals || spec.signals.some((s) => s.key === 'public_request');
   if (wantsPublic) {
     const sites = SOCIAL_SITES.map((s) => `site:${s}`).join(' OR ');
-    for (const kw of spec.keywords.slice(0, 2)) {
+    for (const kw of spec.keywords.filter((k) => !looksLikePersonName(k)).slice(0, 2)) {
       for (const p of places(spec, 3)) {
         const where = p.city ?? countryName(p.country, lang);
         qs.push({

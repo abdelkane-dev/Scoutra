@@ -1,5 +1,6 @@
 import { usageOfError } from '@scoutra/ai';
 import { buildCampaignPlan, interpret } from '@scoutra/agents';
+import { targetsNamedPerson } from '@scoutra/core';
 import { and, eq, schema, sql, withTenant } from '@scoutra/db';
 import type { JobPayload, campaignInterpretJob } from '@scoutra/queue';
 import { currentCostMode, emit, loadOrg, recordLlm } from './context';
@@ -28,6 +29,19 @@ export async function handleInterpret(
     return { c, org, prof, costMode: await currentCostMode(tx, deps.mode, deps.now()) };
   });
   if (!ctx) return { skipped: true };
+  if (targetsNamedPerson(ctx.c.promptText)) {
+    await withTenant(deps.db, { orgId }, async (tx) => {
+      await tx
+        .update(schema.campaigns)
+        .set({ status: 'failed', errorCode: 'named_person_forbidden', updatedAt: sql`now()` })
+        .where(eq(schema.campaigns.id, p.campaignId));
+      await emit(tx, orgId, p.campaignId, 'campaign.status', {
+        status: 'failed',
+        code: 'named_person_forbidden',
+      });
+    });
+    return { refused: 'named_person' };
+  }
   const locale = p.locale;
   // Garde-fou de coût : à 100 % du plafond, pas d'IA (mode heuristique explicite).
   const llm = ctx.costMode === 'free_only' ? { ...deps.llm, available: false } : deps.llm;

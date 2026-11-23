@@ -1,4 +1,4 @@
-import type { IsoCountry } from '@scoutra/core';
+import { looksLikePersonName, type IsoCountry } from '@scoutra/core';
 import type { RawCandidate, SourceConnector } from '../types';
 import { escapeRegex, normalizeDomain, parseJson, places } from '../util';
 
@@ -34,6 +34,7 @@ export const crtshConnector: SourceConnector = {
   buildQueries(spec) {
     const countries = [...new Set(places(spec, 6).map((p) => p.country))];
     return spec.keywords
+      .filter((k) => !looksLikePersonName(k))
       .slice(0, 2)
       .flatMap((kw) =>
         countries.map((country) => ({

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dataScope } from '@scoutra/auth';
-import { AppError, prospectingModelSchema } from '@scoutra/core';
+import { AppError, prospectingModelSchema, targetsNamedPerson } from '@scoutra/core';
 import { and, count, desc, eq, gte, schema, withTenant } from '@scoutra/db';
 import { LOCALE_COOKIE, negotiateLocale } from '@scoutra/i18n';
 import { planFor, startInterpretation } from '@scoutra/queue';
@@ -77,6 +77,10 @@ export const POST = apiRoute(
       req.headers.get('accept-language'),
       req.cookies.get(LOCALE_COOKIE)?.value,
     );
+    // Refus déterministe d'une recherche visant une personne nommée (constat 8).
+    const named = targetsNamedPerson(body.prompt);
+    if (named)
+      throw new AppError('invalid_input', 'personne nommée', [{ path: 'prompt', code: named }]);
     const id = await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, async (tx) => {
       if (env.SCOUTRA_MODE === 'saas') {
         const { plan } = await planFor(tx, new Date());

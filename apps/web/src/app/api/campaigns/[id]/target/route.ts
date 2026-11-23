@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { dataScope } from '@scoutra/auth';
 import { kindsAllowed } from '@scoutra/agents';
-import { AppError, targetSpecSchema } from '@scoutra/core';
+import { AppError, looksLikePersonName, targetSpecSchema, targetsNamedPerson } from '@scoutra/core';
 import { eq, schema, sql, withTenant } from '@scoutra/db';
 import { currentCostMode, planFor } from '@scoutra/queue';
 import {
@@ -43,6 +43,13 @@ export const PUT = apiRoute(
     const out = await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, async (tx) => {
       const c = await loadCampaign(tx, params.id, owner);
       if (c.status !== 'awaiting_confirmation') throw new AppError('conflict', 'statut');
+      // Fiche visant une personne nommée : refusée (constat 8).
+      const text = [body.spec.summary, ...body.spec.keywords, ...body.spec.roles].join(' ');
+      const named =
+        targetsNamedPerson(text) ??
+        (body.spec.keywords.some((k) => looksLikePersonName(k)) ? 'named_person_keyword' : null);
+      if (named)
+        throw new AppError('invalid_input', 'personne nommée', [{ path: 'spec', code: named }]);
       // Types d'entité limités au playbook du modèle (constat 1).
       if (!kindsAllowed(body.spec))
         throw new AppError('invalid_input', 'kinds', [

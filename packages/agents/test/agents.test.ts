@@ -512,3 +512,28 @@ describe('constat 7 (étape 2) : liens du brouillon et offre encapsulée', async
     expect(llm.calls[0]!.input).toContain('<user_request>');
   });
 });
+
+describe('constat 8 (étape 2) : refus des recherches visant une personne nommée', async () => {
+  const { targetsNamedPerson, looksLikePersonName } = await import('@scoutra/core');
+  it('refuse une personne nommée avec données personnelles, un pseudo, une cible relationnelle', () => {
+    expect(targetsNamedPerson('Trouve le numéro de téléphone de Moussa Diallo à Dakar')).toBe(
+      'named_person_personal_data',
+    );
+    expect(targetsNamedPerson('Find the email address of John Smith in London')).toBe(
+      'named_person_personal_data',
+    );
+    expect(targetsNamedPerson('Les comptes de @jean.dupont sur Instagram')).toBe('social_handle');
+    expect(targetsNamedPerson('Où habite mon ex ?')).toBe('relational_target');
+  });
+  it('n’empêche pas les recherches de cibles légitimes', () => {
+    for (const ok of [
+      'Restaurants et hôtels à Dakar au Sénégal',
+      'PME du BTP en Côte d’Ivoire avec un site web obsolète',
+      'Cliniques privées à New York qui recrutent',
+      'Des particuliers qui cherchent un plombier à Abidjan',
+    ])
+      expect(targetsNamedPerson(ok), ok).toBeNull();
+    expect(looksLikePersonName('Moussa Diallo')).toBe(true);
+    expect(looksLikePersonName('restaurant')).toBe(false);
+  });
+});

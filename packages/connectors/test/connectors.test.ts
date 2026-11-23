@@ -332,3 +332,22 @@ describe('revue étape 2, constat 2 : analyse HTML linéaire', async () => {
     expect(p.hrefs).toEqual(['tel:+221 33', 'mailto:a@b.sn']);
   });
 });
+
+describe('constat 8 (étape 2) : aucune requête sur un nom de personne', () => {
+  it('mots-clés ressemblant à un nom de personne ou à un pseudo écartés de toutes les sources', () => {
+    const s = {
+      ...spec,
+      model: 'b2c' as const,
+      kinds: ['person' as const],
+      keywords: ['Moussa Diallo', '@pseudo', 'plombier'],
+    };
+    for (const c of [webSearchConnector('searxng'), osmConnector, crtshConnector]) {
+      const texts = c
+        .buildQueries(s)
+        .map((q) => q.text)
+        .join(' | ');
+      expect(texts).not.toContain('Moussa');
+      expect(texts).not.toContain('@pseudo');
+    }
+  });
+});

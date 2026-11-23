@@ -1,4 +1,4 @@
-import type { IsoCountry, TargetSpec } from '@scoutra/core';
+import { looksLikePersonName, type IsoCountry, type TargetSpec } from '@scoutra/core';
 import { ConnectorError, type ConnectorQuery, type HttpResponse } from './types';
 
 /** Domaines jamais retenus comme « site de l'entreprise » (réseaux, annuaires, places de marché). */
@@ -90,7 +90,9 @@ export function entityQueries(
   const pl = places(spec, opts.maxPlaces ?? 6).filter(
     (p) => allowed === 'WORLD' || allowed.includes(p.country),
   );
-  for (const kw of spec.keywords.slice(0, opts.maxKeywords ?? 4)) {
+  // Jamais de requête sur un nom de personne ou un pseudo (constat 8).
+  const keywords = spec.keywords.filter((k) => !looksLikePersonName(k));
+  for (const kw of keywords.slice(0, opts.maxKeywords ?? 4)) {
     for (const p of pl) {
       qs.push({
         text: kw,
