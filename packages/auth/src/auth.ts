@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { APIError, createAuthMiddleware, getSessionFromCtx } from 'better-auth/api';
 import { organization, twoFactor } from 'better-auth/plugins';
-import { adminAc, memberAc, ownerAc } from 'better-auth/plugins/organization/access';
+import { BETTER_AUTH_ROLES } from './roles';
 import { isoCountrySchema, type OrgRole } from '@scoutra/core';
 import { sha256Hex } from '@scoutra/crypto';
 import type { WebEnv } from '@scoutra/config';
@@ -29,20 +29,6 @@ export interface CreateAuthOptions {
 const HOUR = 3600;
 /** Limite par compte (en plus de la limite par IP) : tentatives de connexion par email. */
 export const SIGN_IN_PER_EMAIL = { max: 10, windowMs: 15 * 60 * 1000 } as const;
-
-/**
- * Rôles connus de Better Auth (il refuse sinon une invitation « manager »). Seuls owner et admin
- * reçoivent des droits de gestion côté Better Auth ; la décision FINE reste la matrice access.ts,
- * appliquée par les hooks `before` ci-dessous (refus par défaut).
- */
-export const BETTER_AUTH_ROLES = {
-  owner: ownerAc,
-  admin: adminAc,
-  manager: memberAc,
-  member: memberAc,
-  viewer: memberAc,
-  billing: memberAc,
-} satisfies Record<OrgRole, unknown>;
 
 function deny(message: 'forbidden' | 'two_factor_required' | 'country_change_forbidden'): never {
   throw new APIError('FORBIDDEN', { message });

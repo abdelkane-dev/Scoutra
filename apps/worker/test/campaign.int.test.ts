@@ -196,7 +196,8 @@ describe.skipIf(!info.available)(
       expect(done.consumedMc).toBe(done.deliveredCount * 1000);
 
       await withTenant(h.app.db, A, async (tx) => {
-        expect(await getCreditBalance(tx, A.orgId)).toBe(50_000 - done.consumedMc);
+        // 50 crédits octroyés + essai de 100 crédits (une seule fois, sans abonnement)
+        expect(await getCreditBalance(tx, A.orgId)).toBe(150_000 - done.consumedMc);
         const ledger = await tx.select().from(schema.creditLedger);
         expect(ledger.map((l) => l.reason).sort()).toEqual(
           expect.arrayContaining(['reserve', 'adjustment']),
@@ -241,6 +242,17 @@ describe.skipIf(!info.available)(
       const idB = await newCampaign(B);
       await startInterpretation(boss, h.app.db, { ...B, campaignId: idB, locale: 'fr' });
       await waitFor(async () => (await campaign(B, idB)).status === 'awaiting_confirmation');
+      // B a un abonnement (donc pas d'essai) mais aucun crédit.
+      await withTenant(h.app.db, B, (tx) =>
+        tx.insert(schema.subscriptions).values({
+          organizationId: B.orgId,
+          plan: 'research',
+          status: 'active',
+          periodStart: new Date(),
+          periodEnd: new Date(Date.now() + 30 * 864e5),
+          provider: 'test',
+        }),
+      );
       await expect(
         launchCampaign(boss, h.app.db, {
           ...B,

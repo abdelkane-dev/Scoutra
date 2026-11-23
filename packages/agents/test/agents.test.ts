@@ -96,6 +96,13 @@ describe('Interprète', () => {
     expect(r.method).toBe('heuristic');
     expect(r.spec.countries).toEqual(['SN']);
     expect(r.spec.keywords).toEqual(expect.arrayContaining(['restaurants', 'hotels']));
+    const city = heuristicInterpret({
+      promptText: 'Restaurants et hôtels à Dakar au Sénégal',
+      locale: 'fr',
+      orgCountry: 'ML',
+    });
+    expect(city.spec.regions).toEqual(['Dakar']);
+    expect(city.spec.keywords).not.toContain('dakar');
     expect(r.confidence).toBeLessThan(0.5);
     const b2c = heuristicInterpret({
       promptText: 'Des particuliers qui cherchent un plombier à Abidjan',

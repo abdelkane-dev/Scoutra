@@ -1,10 +1,8 @@
 import type { Usage } from '@scoutra/ai';
-import { PLANS, TRIAL, costModeFor, type PlanConfig } from '@scoutra/billing';
-import type { CostMode } from '@scoutra/connectors';
 import { targetSpecSchema, type TargetSpec } from '@scoutra/core';
+export { planFor, currentCostMode } from '@scoutra/queue';
 import {
   appendCampaignEvent,
-  costSince,
   desc,
   eq,
   recordUsage,
@@ -29,31 +27,6 @@ export async function loadOrg(tx: Transaction): Promise<OrgInfo> {
     .from(schema.organizations);
   if (!o) throw new Error('organisation introuvable');
   return o;
-}
-
-/** Formule de l'organisation (abonnement actif, sinon essai) et début de période. */
-export async function planFor(
-  tx: Transaction,
-  now: Date,
-): Promise<{ plan: PlanConfig; periodStart: Date; costCapUsd: number }> {
-  const [s] = await tx.select().from(schema.subscriptions);
-  if (s && (s.status === 'active' || s.status === 'trialing' || s.status === 'past_due')) {
-    const plan = PLANS[s.plan as keyof typeof PLANS] ?? PLANS.research;
-    return { plan, periodStart: s.periodStart, costCapUsd: plan.costGuardUsd };
-  }
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  return { plan: PLANS[TRIAL.plan], periodStart: start, costCapUsd: TRIAL.costGuardUsd };
-}
-
-/** Garde-fou de coût réel : licence = toujours normal (le client paie ses clés). */
-export async function currentCostMode(
-  tx: Transaction,
-  mode: 'saas' | 'license',
-  now: Date,
-): Promise<CostMode> {
-  if (mode === 'license') return 'normal';
-  const { periodStart, costCapUsd } = await planFor(tx, now);
-  return costModeFor(await costSince(tx, periodStart), costCapUsd);
 }
 
 export async function latestSpec(

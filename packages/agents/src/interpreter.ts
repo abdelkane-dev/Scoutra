@@ -133,7 +133,17 @@ export function heuristicInterpret(input: InterpretInput): InterpretResult {
   const countryWords = new Set(
     countries.flatMap((c) => [regionNames.of(c), regionNamesEn.of(c)].map((n) => fold(n ?? ''))),
   );
-  const keywords = uniq(words.filter((w) => !countryWords.has(w))).slice(0, 5);
+  // Mots à majuscule hors début de phrase (et hors pays) : villes ou régions probables.
+  const regions = uniq(
+    [...input.promptText.matchAll(/(?<![.!?]\s)(?<!^)\b([A-ZÀ-Ý][\p{L}-]{2,})/gu)]
+      .map((m) => m[1]!)
+      .filter((w) => !countryWords.has(fold(w))),
+  ).slice(0, 10);
+  const regionWords = new Set(regions.map((r) => fold(r)));
+  const keywords = uniq(words.filter((w) => !countryWords.has(w) && !regionWords.has(w))).slice(
+    0,
+    5,
+  );
   const individuals = INDIVIDUAL_HINTS.test(input.promptText);
   const spec = normalizeSpec(
     {
@@ -142,7 +152,7 @@ export function heuristicInterpret(input: InterpretInput): InterpretResult {
       summary: input.promptText.slice(0, 300),
       language: input.locale,
       countries,
-      regions: [],
+      regions,
       keywords,
       sectors: [],
       roles: [],

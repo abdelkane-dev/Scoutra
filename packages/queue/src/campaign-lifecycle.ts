@@ -1,5 +1,13 @@
 import { AppError } from '@scoutra/core';
-import { DELIVERY_CREDITS, MILLICREDITS_PER_CREDIT, type PlanConfig } from '@scoutra/billing';
+import {
+  DELIVERY_CREDITS,
+  MILLICREDITS_PER_CREDIT,
+  PLANS,
+  TRIAL,
+  costModeFor,
+  type CostMode,
+  type PlanConfig,
+} from '@scoutra/billing';
 import {
   and,
   count,
@@ -15,6 +23,48 @@ import {
 import type { PgBoss } from 'pg-boss';
 import { campaignFinalizeJob, campaignInterpretJob, campaignPlanJob } from './jobs';
 import { cancelTenantJobs, publishTenantJob } from './tenant-jobs';
+import { costSince, grantCredits, type Transaction } from '@scoutra/db';
+
+/** Formule de l'organisation (abonnement actif, sinon essai) et début de période. */
+export async function planFor(
+  tx: Transaction,
+  now: Date,
+): Promise<{ plan: PlanConfig; periodStart: Date; costCapUsd: number }> {
+  const [s] = await tx.select().from(schema.subscriptions);
+  if (s && (s.status === 'active' || s.status === 'trialing' || s.status === 'past_due')) {
+    const plan = PLANS[s.plan as keyof typeof PLANS] ?? PLANS.research;
+    return { plan, periodStart: s.periodStart, costCapUsd: plan.costGuardUsd };
+  }
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  return { plan: PLANS[TRIAL.plan], periodStart: start, costCapUsd: TRIAL.costGuardUsd };
+}
+
+/** Garde-fou de coût réel : licence = toujours normal (le client paie ses clés). */
+export async function currentCostMode(
+  tx: Transaction,
+  mode: 'saas' | 'license',
+  now: Date,
+): Promise<CostMode> {
+  if (mode === 'license') return 'normal';
+  const { periodStart, costCapUsd } = await planFor(tx, now);
+  return costModeFor(await costSince(tx, periodStart), costCapUsd);
+}
+
+/**
+ * Essai sans carte (barème : 100 crédits, coût réel plafonné à 1 $) : octroyé une seule fois
+ * (clé d'idempotence `trial`) à une organisation sans abonnement.
+ */
+export async function ensureTrialCredits(tx: Transaction, orgId: string): Promise<void> {
+  const [s] = await tx.select({ id: schema.subscriptions.id }).from(schema.subscriptions);
+  if (s) return;
+  await grantCredits(tx, {
+    orgId,
+    origin: 'trial',
+    amountMc: TRIAL.credits * MILLICREDITS_PER_CREDIT,
+    expiresAt: new Date(Date.now() + 30 * 86_400_000),
+    ref: 'trial',
+  });
+}
 
 /** Démarre l'interprétation d'une campagne (statut interpreting). */
 export async function startInterpretation(
@@ -68,6 +118,7 @@ export async function launchCampaign(
         throw new AppError('quota_exceeded', 'campagnes simultanées');
     }
     let reserved = 0;
+    if (o.mode === 'saas') await ensureTrialCredits(tx, o.orgId);
     if (o.mode === 'saas') {
       const per =
         DELIVERY_CREDITS[c.quality as keyof typeof DELIVERY_CREDITS] * MILLICREDITS_PER_CREDIT;

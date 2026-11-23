@@ -1,4 +1,15 @@
-import { and, count, eq, inArray, ne, schema, settleCampaign, sql, withTenant } from '@scoutra/db';
+import {
+  and,
+  count,
+  eq,
+  inArray,
+  lt,
+  ne,
+  schema,
+  settleCampaign,
+  sql,
+  withTenant,
+} from '@scoutra/db';
 import { campaignFinalizeJob, publishTenantJob, type JobPayload } from '@scoutra/queue';
 import { emit } from './context';
 import type { CampaignDeps } from './deps';
@@ -18,6 +29,19 @@ export async function handleFinalize(
       .from(schema.campaigns)
       .where(eq(schema.campaigns.id, p.campaignId));
     if (!c || (c.status !== 'running' && c.status !== 'cancelling')) return null;
+    // Suivi resté ouvert sans mise à jour depuis 20 min (worker arrêté, base indisponible au
+    // moment de l'échec) : considéré comme mort, pour que la campagne se clôture quand même.
+    await tx
+      .update(schema.tenantJobs)
+      .set({ status: 'failed', errorCode: 'stale', finishedAt: sql`now()`, updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(schema.tenantJobs.refType, 'campaign'),
+          eq(schema.tenantJobs.refId, p.campaignId),
+          inArray(schema.tenantJobs.status, ['active', 'retrying']),
+          lt(schema.tenantJobs.updatedAt, sql`now() - interval '20 minutes'`),
+        ),
+      );
     const [open] = await tx
       .select({ n: count() })
       .from(schema.tenantJobs)

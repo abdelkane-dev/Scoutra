@@ -117,6 +117,34 @@ tools/license-cli  Génération de clés et signature de licences
 - **Next.js 16** : `proxy.ts` remplace `middleware.ts` ; CSP stricte à nonce (les pages sont donc
   rendues dynamiquement).
 
+## Cerveau de recherche (étape 2)
+
+```
+packages/connectors  Sources (manifeste légal, disjoncteur, sélection, mode dégradé)
+packages/agents      Interprète, Recherche, Enrichissement, Vérification, Notation, Rédaction, playbooks
+packages/ai          Niveaux de modèle fast / balanced / strong (Anthropic ou modèles du client)
+packages/compliance  Règles pays en YAML versionné → évaluateur déterministe
+packages/billing     Barème unique, estimation, garde-fou de coût, interface de paiement abstraite
+```
+
+- **Sans aucune clé**, tout fonctionne en **mode dégradé explicite** : OpenStreetMap, registres
+  publics (France, Royaume-Uni avec clé gratuite), crt.sh, SearXNG si configuré ; interprétation
+  heuristique et messages modèles sans IA. L'interface l'affiche (`degraded`, raisons
+  d'exclusion des sources). Rien n'est inventé : sans source, 0 prospect, 0 débit.
+- **Claude** via le SDK officiel `@anthropic-ai/sdk` (sorties structurées `output_config.format`,
+  effort explicite, cache du préfixe) ; **modèles du client** (licence) via l'AI SDK
+  (`@ai-sdk/openai-compatible`). Rédaction par défaut sur `fast` + effort `low`.
+- **Garde-fou juridique** : `packages/compliance/rules/*.yaml` (à faire valider par un juriste),
+  compilé par `pnpm --filter @scoutra/compliance rules` ; un test vérifie la synchronisation.
+- **Crédits** : millicrédits entiers, portefeuilles FIFO par expiration, réservation au lancement,
+  débit par prospect livré (idempotent), remboursement du reste ; coût réel journalisé
+  (`usage_events`) et garde-fou par organisation (70 % : sources et modèles les moins chers).
+- **Suivi en direct** : SSE par relecture de `campaign_events` sous RLS (reprise `Last-Event-ID`) ;
+  un `pg_notify` est déjà émis pour passer plus tard à `LISTEN`.
+- Limites connues (v1) : limites de débit par fournisseur en mémoire du worker ; Crawl4AI non
+  branché tant que le proxy de sortie filtrant (E5) n'existe pas (lecture de site par safeFetch) ;
+  safeFetch ne passe pas par un proxy HTTP sortant.
+
 ## Mise en production (à lire)
 
 1. **Premier compte = propriétaire de l'installation.** L'inscription est fermée : seul le

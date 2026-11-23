@@ -83,3 +83,179 @@ Onboarding et paramètres. Corps strict :
 public_sector | agency`.
 - `sectors` : 1 à 10 codes de `GET /api/reference` (doublons retirés).
 - Réponse 200 : le profil enregistré. Le pays d'établissement n'est pas modifiable.
+
+## Recherche (campagnes)
+
+Cycle : `interpreting` → `awaiting_confirmation` (fiche + estimation à relire) → `running` →
+`completed` ; annulation : `cancelling` → `cancelled` (avant lancement : `cancelled` direct).
+Portée : un `member` ne voit que ses campagnes (`dataScope: own`) ; manager, admin, owner et
+viewer voient toute l'organisation ; `billing` n'y a pas accès.
+
+### `POST /api/campaigns` (action `campaign:write`, 20/min)
+
+```json
+{ "prompt": "Restaurants et hôtels à Dakar", "name": "Dakar CHR", "model": "b2b", "maxProspects": 50, "quality": "standard" }
+```
+
+- `prompt` 10–2000 caractères (obligatoire). `model` facultatif (un des 23 codes de
+  `GET /api/reference`) : sinon l'Interprète le choisit. `maxProspects` 5–1500 (plafond de la
+  formule). `quality` : `standard` (1 crédit / prospect livré), `careful` (+1), `premium` (+3).
+- Réponse **202** `{ "id": "uuid", "status": "interpreting" }`. Suivre ensuite le flux SSE ou
+  `GET /api/campaigns/:id`. Erreurs : `quota_exceeded` (prospects par campagne, interprétations
+  par jour).
+
+### `GET /api/campaigns?status=&limit=25&offset=0` (action `campaign:read`)
+
+`{ "items": [Campaign], "nextOffset": 25 | null }`.
+
+### `GET /api/campaigns/:id` (action `campaign:read`)
+
+```json
+{
+  "id": "uuid", "name": "…", "prompt": "…", "model": "b2b", "modelForced": false,
+  "status": "awaiting_confirmation", "quality": "standard", "maxProspects": 50,
+  "credits": { "reserved": 50, "consumed": 12 },
+  "counts": { "candidates": 80, "duplicates": 4, "delivered": 12, "rejected": 30 },
+  "degraded": true, "costMode": "normal",
+  "estimate": {
+    "prospects": { "requested": 50, "low": 30 },
+    "credits": { "low": 30, "high": 50, "perProspect": 1 },
+    "costUsd": { "low": 0.2, "high": 1.02 },
+    "plannedQueries": 9, "degraded": true, "assumptions": ["delivery_ratio_default", "free_sources_only"]
+  },
+  "sources": {
+    "selected": ["osm_overpass", "crtsh"],
+    "excluded": [{ "code": "google_places", "reason": "missing_key" }],
+    "degraded": true, "costMode": "normal"
+  },
+  "target": {
+    "version": 1, "confirmed": false,
+    "spec": { "model": "b2b", "kinds": ["company"], "summary": "…", "language": "fr", "countries": ["SN"],
+              "regions": ["Dakar"], "keywords": ["restaurant"], "sectors": ["i_hospitality"], "roles": [],
+              "signals": [{ "key": "new_company", "required": false }], "exclusions": [], "channels": ["email", "phone"] },
+    "interpretation": { "method": "ai" | "heuristic", "confidence": 0.9, "clarifyingQuestions": ["…"] }
+  },
+  "createdBy": "uuid", "createdAt": "…", "startedAt": null, "finishedAt": null
+}
+```
+
+- `credits` vaut `null` dans `estimate` en mode licence (pas de crédits ; `costUsd` = coût des
+  clés du client).
+- **Mode dégradé** (`degraded: true`) : seules des sources gratuites sont utilisées (aucune clé,
+  ou garde-fou de coût). Afficher l'explication avec `sources.excluded[].reason` :
+  `missing_key`, `missing_service` (SearXNG non configuré), `cost_guard`, `circuit_open`
+  (source en panne, écartée temporairement), `country`, `kind`, `model`, `not_in_playbook`,
+  `search_provider_already_chosen`. `interpretation.method = "heuristic"` : aucune IA configurée,
+  fiche approximative à relire. Rien n'est jamais inventé : sans source, 0 prospect et 0 débit.
+- `costMode` : `normal`, `economy` (≥ 70 % du plafond de coût réel : sources et modèles les moins
+  chers), `free_only` (≥ 100 %).
+
+### `PUT /api/campaigns/:id/target` (action `campaign:write`, statut `awaiting_confirmation`)
+
+Corps : `{ "spec": TargetSpec, "maxProspects"?: number, "quality"?: "standard" | "careful" | "premium" }`
+(schéma strict, mêmes champs que `target.spec`). Crée une nouvelle version confirmée, recalcule
+estimation et sources ; renvoie la campagne complète. `409 conflict` si la campagne est lancée.
+
+### `POST /api/campaigns/:id/launch` (action `campaign:write`)
+
+Corps : `{ "budgetCredits"?: number }` (plafond « ne pas dépasser N crédits »). Réserve
+`min(maxProspects × crédits par prospect, budget, solde)` puis lance la recherche.
+Réponse **202** `{ "id", "status": "running", "reservedCredits": 50 }`. Erreurs :
+`insufficient_credits` (402), `quota_exceeded` (campagnes simultanées de la formule),
+`conflict` (pas en `awaiting_confirmation`). En SaaS, une organisation sans abonnement reçoit
+une seule fois l'essai de 100 crédits. **Pas de résultat = pas de débit** : seuls les prospects
+livrés (score ≥ seuil du playbook ET au moins un canal autorisé par le garde-fou juridique)
+consomment ; le reste de la réservation est remboursé à la clôture.
+
+### `POST /api/campaigns/:id/cancel` (action `campaign:write`)
+
+**202** `{ "id", "status": "cancelling" }`. Les tâches en file sont annulées, les prospects déjà
+livrés conservés, la réservation non consommée remboursée.
+
+### `GET /api/campaigns/:id/stream` — suivi en direct (SSE)
+
+`EventSource('/api/campaigns/:id/stream')` (cookies de session). Reprise automatique : le
+navigateur renvoie `Last-Event-ID` (ou `?lastEventId=` à la main). Battement `: ping` toutes les
+20 s ; fermeture à la fin de la campagne ou après 10 min (reconnexion automatique, `retry: 3000`).
+Événements (`event:` / `data:` JSON, toujours avec `at`) :
+
+| event                   | data                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `campaign.target_ready` | `{ method, confidence }`                                                          |
+| `campaign.status`       | `{ status, reservedMc? , delivered?, consumedMc?, refundedMc? }` (1 crédit = 1000 mc) |
+| `campaign.progress`     | `{ phase: "searching", queries, sources }`                                        |
+| `campaign.warning`      | `{ code: "degraded_free_sources_only" \| "no_source_available" \| "source_failed", connector?, reason?, excluded? }` |
+| `prospect.created`      | `{ prospectId, source }`                                                          |
+| `prospect.updated`      | `{ prospectId, status: "drafted" \| "rejected", score, reason }`                  |
+| `message.drafted`       | `{ prospectId, messageId }`                                                       |
+
+Raisons de rejet (`reason`) : `low_score`, `no_allowed_channel`, `excluded`,
+`budget_exhausted`, `quota_reached` (plafond journalier ou nombre demandé atteint).
+
+## Prospects (« Leads »)
+
+### `GET /api/prospects` (action `prospect:read`)
+
+Paramètres : `campaignId`, `status` (`found|drafted|rejected|…`), `delivered=true|false`,
+`minScore`, `country` (ISO), `kind`, `q` (nom, ≥ 2 caractères), `sort=score|recent|name`,
+`limit` (≤ 100), `offset`. Un `member` ne voit que ses prospects.
+
+```json
+{ "items": [{ "id": "uuid", "campaignId": "uuid", "kind": "company", "model": "b2b",
+  "displayName": "Restaurant Le Baobab", "countryCode": "SN", "city": "Dakar",
+  "websiteDomain": "lebaobab.sn", "status": "drafted", "rejectionReason": null, "score": 82,
+  "sourceCodes": ["osm_overpass"], "category": "restaurant", "signals": ["no_website"],
+  "channels": [{ "channel": "email", "outcome": "allow_with_conditions" }],
+  "ownerUserId": "uuid", "deliveredAt": "…", "createdAt": "…" }], "nextOffset": null }
+```
+
+Aucune coordonnée en clair dans la liste.
+
+### `GET /api/prospects/:id` (action `prospect:read`)
+
+```json
+{
+  "prospect": { "id", "displayName", "kind", "countryCode", "city", "websiteDomain", "status", "attributes": {}, "deliveredAt": "…" },
+  "score": { "value": 82, "reasons": [{ "criterion": "fit|signals|reachability|quality|ai_adjustment|exclusion",
+             "points": 25, "max": 35, "finding": "keywords_matched", "params": { "matched": "restaurant" } }] },
+  "channels": [{ "channel": "email", "outcome": "allow_with_conditions", "conditions": { "requireOptOut": true, "footer": "eu_notice", "retentionDays": 1095, "maxFollowUps": 2 },
+                 "ruleIds": ["eu-business-email"], "rulesetVersions": ["EU@2026-11-22"], "reasons": [], "warnings": [] }],
+  "evidence": { "display_name": [{ "id", "source": "osm_overpass", "url": "…", "collectedAt": "…", "legalBasis": "legitimate_interest", "license": "ODbL", "snippet": null }],
+                "contact.email": [ … ] },
+  "contacts": [{ "id", "channel": "email", "value": "contact@lebaobab.sn", "revealed": true,
+                 "verificationStatus": "valid|unknown|risky|accept_all|webmail|invalid|disposable", "isRoleAddress": true, "evidence": ["uuid"] }],
+  "messages": [{ "id", "channel": "email", "language": "fr", "subject": "…", "body": "…", "footer": "mention légale + STOP", "quality": "standard", "generatedBy": "ai|template", "status": "draft" }]
+}
+```
+
+- Coordonnées en clair **uniquement pour un prospect livré** (sinon masquées `c•••@domaine`) ;
+  chaque consultation est journalisée (`prospect.contacts_viewed`).
+- `outcome` du garde-fou : `allow`, `allow_with_conditions`, `manual_only` (page publique ou
+  formulaire : l'utilisateur ouvre le lien lui-même) ; les canaux refusés n'apparaissent pas.
+- Le message est toujours un **brouillon** : aucun envoi automatique (copier puis envoyer à la
+  main). Le pied de page légal (`footer`) est ajouté par le code, à afficher sous le corps.
+
+## Crédits et playbooks
+
+### `GET /api/credits` (action `credits:read`)
+
+SaaS : `{ "mode": "saas", "balance": 90, "buckets": [{ "origin": "trial|plan|rollover|pack|adjustment", "remaining": 90, "expiresAt": "…" }],
+"plan": { "code": "research", "monthlyCredits": 1000, "concurrentCampaigns": 2, "maxProspectsPerCampaign": 500, "dailyProspectCap": 150, "pipeline": false },
+"periodStart": "…", "costMode": "normal", "deliveryCredits": { "standard": 1, "careful": 2, "premium": 4 },
+"packs": [{ "code": "pack_500", "credits": 500, "priceUsd": 14.99, "validityMonths": 12 }] }`.
+Licence : `{ "mode": "license", "credits": null }`. Le barème vient d'une configuration unique
+(`packages/billing/src/plans.ts`).
+
+### `GET /api/playbooks` (action `campaign:read`)
+
+`{ "items": [{ "model": "real_estate", "version": 1, "relevance": 4.5, "kinds": [], "connectors": [],
+"signals": [], "channels": [], "audience": "business|individual|per_prospect",
+"rules": { "publicSignalsOnly": false, "minScore": 45, "defaultMaxProspects": 100 },
+"messageAngle": { "fr": "…", "en": "…" } }] }`, triés par pertinence pour le profil de
+l'organisation (type de compte + secteurs).
+
+## Client Better Auth (interface)
+
+Déclarer les rôles côté client pour que les invitations `manager`, `viewer`, `billing` soient
+typées : `import { BETTER_AUTH_ROLES } from '@scoutra/auth/roles'` puis
+`organizationClient({ roles: BETTER_AUTH_ROLES, schema: … })`.

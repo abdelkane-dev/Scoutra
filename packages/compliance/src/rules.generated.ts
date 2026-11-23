@@ -309,7 +309,14 @@ export const RULESETS: readonly Ruleset[] = [
     maxFollowUps: 3,
     rules: [
       {
+        id: 'us-individual-email',
+        audience: 'individual',
+        channels: ['email'],
+        outcome: 'deny_unless_consent',
+      },
+      {
         id: 'us-email',
+        audience: 'business',
         channels: ['email'],
         outcome: 'allow_with_conditions',
         conditions: {

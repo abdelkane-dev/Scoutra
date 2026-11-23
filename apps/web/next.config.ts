@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
     '@scoutra/i18n',
     '@scoutra/license',
     '@scoutra/crypto',
+    '@scoutra/agents',
+    '@scoutra/ai',
+    '@scoutra/billing',
+    '@scoutra/compliance',
+    '@scoutra/connectors',
   ],
   // Modules natifs / serveur : jamais empaquetés côté client.
   serverExternalPackages: ['@node-rs/argon2', 'pg', 'pg-boss'],

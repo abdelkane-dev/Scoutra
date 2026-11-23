@@ -5,7 +5,13 @@ sources: ['CAN-SPAM Act 15 U.S.C. 7704', 'TCPA 47 U.S.C. 227']
 retentionDays: 1095
 maxFollowUps: 3
 rules:
+  # Politique Scoutra plus stricte que CAN-SPAM : pas d'email à froid vers un particulier.
+  - id: us-individual-email
+    audience: individual
+    channels: [email]
+    outcome: deny_unless_consent
   - id: us-email
+    audience: business
     channels: [email]
     outcome: allow_with_conditions
     conditions:

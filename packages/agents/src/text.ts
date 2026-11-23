@@ -8,12 +8,15 @@ const LEGAL_SUFFIXES =
 
 /** Nom normalisé pour le dédoublonnage (sans forme juridique, ponctuation ni accents). */
 export function normalizeName(name: string): string {
-  return fold(name)
+  const tokens = fold(name)
     .replace(/&/g, ' et ')
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(LEGAL_SUFFIXES, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+  const kept = tokens.filter((t) => !new RegExp(`^${LEGAL_SUFFIXES.source}$`).test(t));
+  // Nom composé uniquement de formes juridiques (ex. « Inc ») : on garde le premier mot.
+  return (kept.length ? kept : tokens.slice(0, 1)).join(' ');
 }
 
 export function containsTerm(haystack: string, term: string): boolean {
