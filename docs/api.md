@@ -532,3 +532,15 @@ Chaque export est journalisé (`GET` → `{ items: [{ id, name, format, rows, by
 
 `{ category: "question|bug|billing|privacy|other", subject, message }` → 201 `{ id, status,
 createdAt }`.
+
+## Facturation (lecture)
+
+### `GET /api/billing/overview` (action `billing:read` : owner, admin, billing)
+
+SaaS : `{ mode: "saas", provider: null | "<code>", subscription: { plan, status, seats,
+periodStart, periodEnd, renewsOn } | null, plan: { code, priceUsdMonthly, monthlyCredits,
+seatsIncluded, extraSeatPriceUsd }, credits: { balance, plan, rollover, packs, trial, nextExpiry },
+paymentMethod: { brand, last4, expMonth, expYear } | null, invoices: [{ id, date, amountUsd,
+status, url? }], catalog: { plans, packs } }`. Tant qu'aucun prestataire de paiement n'est branché,
+`provider`, `paymentMethod` valent `null` et `invoices` est vide : l'interface affiche « paiement
+bientôt disponible » (aucune donnée inventée). Licence : `{ mode: "license", license }`.

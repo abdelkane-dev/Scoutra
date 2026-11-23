@@ -59,6 +59,19 @@ export interface PaymentProvider {
   createCheckout(req: CheckoutRequest): Promise<{ url: string }>;
   /** Vérifie la signature et traduit l'événement du prestataire ; null si ignoré. */
   parseWebhook(rawBody: string, headers: Headers): Promise<BillingEvent | null>;
+  /** Moyen de paiement (masqué) et factures de l'organisation, lus chez le prestataire. */
+  getCustomerOverview?(organizationId: string): Promise<CustomerOverview>;
+}
+
+export interface CustomerOverview {
+  paymentMethod: { brand: string; last4: string; expMonth: number; expYear: number } | null;
+  invoices: {
+    id: string;
+    date: string;
+    amountUsd: number;
+    status: 'paid' | 'open' | 'void';
+    url?: string;
+  }[];
 }
 
 /**
