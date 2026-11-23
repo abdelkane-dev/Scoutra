@@ -350,3 +350,36 @@ historique : `GET /api/prospects/:id/activities`.
 `running` → `paused` → `running` (sinon `409 conflict`). En pause, les tâches de recherche et de
 traitement se reportent d'une minute : rien n'est perdu ni débité. Événement SSE
 `campaign.status`. Une campagne en pause compte dans les campagnes simultanées.
+
+## Messages et boîte unifiée (aucun envoi automatique)
+
+Scoutra n'envoie **jamais** de message (ni email, ni DM sur une plateforme). L'utilisateur copie
+le brouillon, l'envoie lui-même, puis saisit le statut.
+
+### `PATCH /api/messages/:id` (action `message:write`)
+
+```json
+{ "status": "sent_manually" }
+{ "status": "replied", "replyText": "Intéressé, rappelez-moi jeudi" }
+{ "subject": "…", "body": "texte corrigé" }
+```
+
+`status` : `draft`, `to_send`, `copied`, `sent_manually`, `replied`, `discarded`. Effets :
+`sent_manually` → `sentAt`, prospect `new` → `contacted` ; `replied` → `repliedAt`, réponse
+historisée (`reply_logged`), séquences du prospect arrêtées, automatisations « a répondu ».
+Le corps n'est plus modifiable après envoi (`409`). Le pied de page légal n'est jamais modifiable.
+Réponse : `{ id, status, subject, body, footer, sentAt, repliedAt }`.
+
+### `POST /api/messages/:id/regenerate` (action `message:write`, 20/min)
+
+Corps `{ language?: "fr"|"en", tone?: string }`. Nouveau brouillon (même canal, même décision du
+garde-fou), l'ancien passe à `discarded`. **3 régénérations par prospect** (`429 quota_exceeded`
+au-delà). Au-delà du plafond de coût, ou sans IA : message modèle (`generatedBy: "template"`).
+Réponse 201 `{ id, replaces, channel, subject, body, footer, generatedBy, status }`.
+
+### `GET /api/inbox/threads?status=&limit=50` (action `message:read`)
+
+`{ items: [{ prospectId, prospectName, countryCode, channel, lastAt, subject, preview,
+awaitingAction, items: [{ from: "me"|"them", kind: "draft"|"sent"|"reply", body, subject, channel,
+status?, messageId?, at }] }] }` — un fil par prospect visible ; `status` filtre `replied`,
+`to_send` ou `sent_manually`.

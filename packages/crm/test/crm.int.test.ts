@@ -253,3 +253,93 @@ describe.skipIf(!info.available)('CRM : prospects, pipeline, automatisations, s�
     expect(notes[0]).toMatchObject({ userId: O.userId });
   });
 });
+
+describe.skipIf(!info.available)(
+  'CRM : messages et boîte unifiée (aucun envoi automatique)',
+  () => {
+    it('envoyé à la main → contacté ; réponse saisie → automatisation, fil à deux voix ; portée', async () => {
+      const h = handles(info);
+      const { patchMessage, listThreads } = await import('../src');
+      try {
+        const O = await seedOrgAndOwner(h.auth, 'msg');
+        const other = randomUUID();
+        await h.auth.db
+          .insert(schema.users)
+          .values({ id: other, name: 'Autre', email: `o-${other}@test.invalid` });
+        await h.auth.db
+          .insert(schema.members)
+          .values({ organizationId: O.orgId, userId: other, role: 'member' });
+        const T = <R>(fn: Parameters<typeof withTenant<R>>[2]) => withTenant(h.app.db, O, fn);
+        const actor: Actor = { orgId: O.orgId, userId: O.userId, ownerOnly: null, canAssign: true };
+        const { p, m } = await T(async (tx) => {
+          const [p] = await tx
+            .insert(schema.prospects)
+            .values({
+              organizationId: O.orgId,
+              kind: 'company',
+              prospectingModel: 'b2b',
+              displayName: 'Baobab',
+              countryCode: 'SN',
+              dedupeKey: `msg-${O.orgId}`,
+              ownerUserId: O.userId,
+            })
+            .returning();
+          const [m] = await tx
+            .insert(schema.messages)
+            .values({
+              organizationId: O.orgId,
+              prospectId: p!.id,
+              channel: 'email',
+              language: 'fr',
+              subject: 'Bonjour',
+              body: 'Premier message',
+              generatedBy: 'ai',
+              complianceDecision: {},
+            })
+            .returning();
+          await tx.insert(schema.automations).values({
+            organizationId: O.orgId,
+            name: 'Réponse',
+            trigger: 'replied',
+            action: 'move_stage',
+            actionArg: 'replied',
+          });
+          return { p: p!, m: m! };
+        });
+        await T((tx) => patchMessage(tx, actor, m.id, { status: 'sent_manually' }));
+        let [pp] = await T((tx) =>
+          tx.select().from(schema.prospects).where(eq(schema.prospects.id, p.id)),
+        );
+        expect(pp!.stageKey).toBe('contacted');
+        await expect(
+          T((tx) => patchMessage(tx, actor, m.id, { body: 'modifié' })),
+        ).rejects.toMatchObject({ code: 'conflict' });
+        await T((tx) =>
+          patchMessage(tx, actor, m.id, {
+            status: 'replied',
+            replyText: 'Intéressé, rappelez-moi',
+          }),
+        );
+        [pp] = await T((tx) =>
+          tx.select().from(schema.prospects).where(eq(schema.prospects.id, p.id)),
+        );
+        expect(pp!.stageKey).toBe('replied');
+        const threads = await T((tx) => listThreads(tx, actor, { limit: 10 }));
+        expect(threads[0]!.items.map((i) => i.from)).toEqual(['me', 'them']);
+        expect(threads[0]!.awaitingAction).toBe(true);
+        const outsider: Actor = {
+          orgId: O.orgId,
+          userId: other,
+          ownerOnly: other,
+          canAssign: false,
+        };
+        await expect(
+          T((tx) => patchMessage(tx, outsider, m.id, { status: 'discarded' })),
+        ).rejects.toMatchObject({ code: 'not_found' });
+        expect(await T((tx) => listThreads(tx, outsider, { limit: 10 }))).toHaveLength(0);
+      } finally {
+        await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+      }
+    });
+  },
+);
