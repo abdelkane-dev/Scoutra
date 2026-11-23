@@ -20,9 +20,9 @@ import {
 import {
   campaignCostMode,
   prospectProcessJob,
+  searchRunJob,
   publishTenantJob,
   type JobPayload,
-  type searchRunJob,
 } from '@scoutra/queue';
 import { emit, latestSpec } from './context';
 import { connectorCtx, resolveKeys, type CampaignDeps } from './deps';
@@ -135,9 +135,26 @@ export async function handleSearch(
       .select()
       .from(schema.campaigns)
       .where(eq(schema.campaigns.id, p.campaignId));
+    if (c?.status === 'paused') return { paused: true as const };
     if (!c || c.status !== 'running') return null;
     return { c, spec: await latestSpec(tx, p.campaignId) };
   });
+  if (ctx && 'paused' in ctx) {
+    // Campagne en pause : la requête est reportée d'une minute (rien n'est perdu).
+    await publishTenantJob(
+      deps.boss,
+      deps.db,
+      searchRunJob,
+      {
+        organizationId: orgId,
+        campaignId: p.campaignId,
+        connector: p.connector,
+        queryIndex: p.queryIndex,
+      },
+      { refType: 'campaign', refId: p.campaignId, startAfter: 60 },
+    );
+    return { deferred: 'paused' };
+  }
   if (!ctx?.spec) return { skipped: true };
   // Assez de candidats : on n'interroge plus (coût maîtrisé).
   if (ctx.c.candidatesCount >= ctx.c.maxProspects * 4) return { skipped: 'enough_candidates' };

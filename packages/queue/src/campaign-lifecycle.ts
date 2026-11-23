@@ -148,7 +148,9 @@ export async function launchCampaign(
       const [running] = await tx
         .select({ n: count() })
         .from(schema.campaigns)
-        .where(inArray(schema.campaigns.status, ['interpreting', 'running', 'cancelling']));
+        .where(
+          inArray(schema.campaigns.status, ['interpreting', 'running', 'paused', 'cancelling']),
+        );
       if ((running?.n ?? 0) >= o.plan.concurrentCampaigns)
         throw new AppError('quota_exceeded', 'campagnes simultanées');
     }
@@ -249,4 +251,48 @@ export async function cancelCampaign(
       { organizationId: o.orgId, campaignId: o.campaignId },
       { refType: 'campaign', refId: o.campaignId },
     );
+}
+
+/** Pause : les tâches en cours se reportent d'une minute tant que la campagne est en pause. */
+export async function pauseCampaign(
+  db: Database,
+  o: { orgId: string; userId: string; campaignId: string },
+): Promise<void> {
+  await setPaused(db, o, 'running', 'paused');
+}
+
+/** Reprise d'une campagne en pause. */
+export async function resumeCampaign(
+  db: Database,
+  o: { orgId: string; userId: string; campaignId: string },
+): Promise<void> {
+  await setPaused(db, o, 'paused', 'running');
+}
+
+async function setPaused(
+  db: Database,
+  o: { orgId: string; userId: string; campaignId: string },
+  from: 'running' | 'paused',
+  to: 'running' | 'paused',
+) {
+  await withTenant(db, { orgId: o.orgId, userId: o.userId }, async (tx) => {
+    const [c] = await tx
+      .update(schema.campaigns)
+      .set({ status: to, updatedAt: sql`now()` })
+      .where(and(eq(schema.campaigns.id, o.campaignId), eq(schema.campaigns.status, from)))
+      .returning({ id: schema.campaigns.id });
+    if (!c) {
+      const [exists] = await tx
+        .select({ id: schema.campaigns.id })
+        .from(schema.campaigns)
+        .where(eq(schema.campaigns.id, o.campaignId));
+      throw new AppError(exists ? 'conflict' : 'not_found');
+    }
+    await appendCampaignEvent(tx, {
+      orgId: o.orgId,
+      campaignId: o.campaignId,
+      type: 'campaign.status',
+      payload: { status: to },
+    });
+  });
 }

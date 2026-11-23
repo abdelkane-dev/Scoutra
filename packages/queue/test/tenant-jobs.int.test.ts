@@ -296,3 +296,38 @@ describe.skipIf(!info.available)('constat 14 (étape 2) : quotas atomiques', asy
     }
   });
 });
+
+describe.skipIf(!info.available)('campagnes : pause et reprise', async () => {
+  const { pauseCampaign, resumeCampaign } = await import('../src');
+  it('running → paused → running ; refus hors état', async () => {
+    const h5 = handles(info);
+    try {
+      const O = await seedOrgAndOwner(h5.auth, 'pause');
+      const [c] = await withTenant(h5.app.db, O, (tx) =>
+        tx
+          .insert(schema.campaigns)
+          .values({
+            organizationId: O.orgId,
+            name: 'n',
+            promptText: 'p',
+            prospectingModel: 'b2b',
+            status: 'running',
+          })
+          .returning(),
+      );
+      const o = { orgId: O.orgId, userId: O.userId, campaignId: c!.id };
+      await pauseCampaign(h5.app.db, o);
+      await expect(pauseCampaign(h5.app.db, o)).rejects.toMatchObject({ code: 'conflict' });
+      await resumeCampaign(h5.app.db, o);
+      const [after] = await withTenant(h5.app.db, O, (tx) => tx.select().from(schema.campaigns));
+      expect(after!.status).toBe('running');
+      const ev = await withTenant(h5.app.db, O, (tx) => tx.select().from(schema.campaignEvents));
+      expect(ev.map((e) => (e.payload as { status: string }).status)).toEqual([
+        'paused',
+        'running',
+      ]);
+    } finally {
+      await Promise.all([h5.app.close(), h5.auth.close(), h5.migrator.close()]);
+    }
+  });
+});

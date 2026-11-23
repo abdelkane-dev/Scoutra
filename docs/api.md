@@ -328,3 +328,25 @@ restent. Ajout/retrait de prospects : `POST /api/prospects/bulk`.
 `POST { name, filters, shared }` où `filters` reprend les paramètres de `GET /api/prospects`
 (+ `columns: string[]`). `GET` renvoie mes vues et les vues partagées (`mine: boolean`).
 Seul l'auteur supprime une vue.
+
+## Pipeline et campagnes (pause)
+
+### `GET /api/pipeline/stages` (action `pipeline:read`) · `PUT /api/pipeline/stages` (`pipeline:manage`)
+
+`GET` → `{ items: [{ key, label: { fr, en }, kind: "open|won|lost", position }] }` (étapes par
+défaut : `new`, `contacted`, `replied`, `meeting`, `won`, `lost`). `PUT { stages: [{ key, label,
+kind }] }` remplace la configuration (ordre = position, `new` obligatoire, 2 à 15 étapes) ; les
+prospects d'une étape supprimée reviennent à `new`.
+
+### `GET /api/pipeline?ownerUserId=&perStage=100` (action `pipeline:read`)
+
+`{ stages: [{ key, label, kind, count, value, items: [{ id, displayName, countryCode, city, score,
+ownerUserId, ownerName, valueAmount, qualification, stageChangedAt }] }] }` : prospects **livrés**,
+portée par rôle. Déplacer une carte : `PATCH /api/prospects/:id { "stage": "meeting" }` ;
+historique : `GET /api/prospects/:id/activities`.
+
+### `POST /api/campaigns/:id/pause` · `POST /api/campaigns/:id/resume` (action `campaign:write`)
+
+`running` → `paused` → `running` (sinon `409 conflict`). En pause, les tâches de recherche et de
+traitement se reportent d'une minute : rien n'est perdu ni débité. Événement SSE
+`campaign.status`. Une campagne en pause compte dans les campagnes simultanées.

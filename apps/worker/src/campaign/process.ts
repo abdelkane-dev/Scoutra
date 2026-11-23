@@ -31,9 +31,9 @@ import {
   sql,
   withTenant,
 } from '@scoutra/db';
-import type { JobPayload, prospectProcessJob } from '@scoutra/queue';
+import type { JobPayload } from '@scoutra/queue';
 import { usageOfError, type Usage } from '@scoutra/ai';
-import { campaignCostMode } from '@scoutra/queue';
+import { campaignCostMode, prospectProcessJob, publishTenantJob } from '@scoutra/queue';
 import { emit, latestSpec, loadOrg, planFor, recordLlm } from './context';
 import { connectorCtx, resolveKeys, type CampaignDeps } from './deps';
 import { insertContact } from './search';
@@ -66,6 +66,7 @@ export async function handleProcess(
       .select()
       .from(schema.prospects)
       .where(eq(schema.prospects.id, p.prospectId));
+    if (c?.status === 'paused') return { paused: true as const };
     if (!c || !pr || c.status !== 'running' || pr.campaignId !== c.id) return null;
     // Déjà traité ou déjà livré (reprise après une panne en fin de traitement, constat 15).
     if (pr.status !== 'found' || pr.deliveredAt) return null;
@@ -77,6 +78,16 @@ export async function handleProcess(
       plan: await planFor(tx, deps.now()),
     };
   });
+  if (loaded && 'paused' in loaded) {
+    await publishTenantJob(
+      deps.boss,
+      deps.db,
+      prospectProcessJob,
+      { organizationId: orgId, campaignId: p.campaignId, prospectId: p.prospectId },
+      { refType: 'campaign', refId: p.campaignId, startAfter: 60 },
+    );
+    return { deferred: 'paused' };
+  }
   if (!loaded?.spec) return { skipped: true };
   const { c, pr, org } = loaded;
   const spec = loaded.spec.spec;

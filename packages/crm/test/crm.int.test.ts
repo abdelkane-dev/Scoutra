@@ -205,6 +205,29 @@ describe.skipIf(!info.available)('CRM : prospects, pipeline, automatisations, s�
     });
   });
 
+  it('configuration des étapes : renommage, suppression → prospects ramenés à new', async () => {
+    const { replaceStages } = await import('../src');
+    await T((tx) =>
+      tx.update(schema.prospects).set({ stageKey: 'lost' }).where(eq(schema.prospects.id, p2)),
+    );
+    const st = await T((tx) =>
+      replaceStages(tx, O.orgId, [
+        { key: 'new', labelFr: 'À traiter', labelEn: 'To do', kind: 'open' },
+        { key: 'won', labelFr: 'Gagné', labelEn: 'Won', kind: 'won' },
+      ]),
+    );
+    expect(st.map((s) => s.key)).toEqual(['new', 'won']);
+    const [b] = await T((tx) =>
+      tx.select().from(schema.prospects).where(eq(schema.prospects.id, p2)),
+    );
+    expect(b!.stageKey).toBe('new');
+    await expect(
+      T((tx) =>
+        replaceStages(tx, O.orgId, [{ key: 'won', labelFr: 'G', labelEn: 'W', kind: 'won' }]),
+      ),
+    ).rejects.toMatchObject({ code: 'invalid_input' });
+  });
+
   it('automatisation sur prospect livré : score et signal', async () => {
     await T((tx) =>
       tx.insert(schema.automations).values({
