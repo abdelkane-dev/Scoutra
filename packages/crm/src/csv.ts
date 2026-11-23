@@ -18,5 +18,5 @@ export function csvCell(v: unknown): string {
 }
 
 export function toCsv(header: string[], rows: unknown[][]): string {
-  return `﻿${[header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n')}\r\n`;
+  return `\uFEFF${[header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n')}\r\n`;
 }
