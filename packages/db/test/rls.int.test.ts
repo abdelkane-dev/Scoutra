@@ -428,3 +428,44 @@ describe.skipIf(!info.available)('constat 13 (étape 2) : aucun débit après cl
     }
   });
 });
+
+describe.skipIf(!info.available)(
+  'constat 18 (étape 2) : portefeuilles figés sauf le solde',
+  async () => {
+    const { grantCredits } = await import('../src');
+    it('expiration, montant octroyé et origine non modifiables par l’application', async () => {
+      const h = handles(info);
+      try {
+        const O = await seedOrgAndOwner(h.auth, 'wguard');
+        await withTenant(h.app.db, O, (tx) =>
+          grantCredits(tx, {
+            orgId: O.orgId,
+            origin: 'pack',
+            amountMc: 1000,
+            expiresAt: new Date(Date.now() + 864e5),
+            ref: 'pack-guard',
+          }),
+        );
+        for (const set of [
+          { expiresAt: new Date(Date.now() + 1e12) },
+          { grantedMc: 999_999 },
+          { origin: 'plan' },
+        ]) {
+          await expectPgError(
+            withTenant(h.app.db, O, (tx) => tx.update(schema.creditBuckets).set(set)),
+            ['42501'],
+          );
+        }
+        await withTenant(h.app.db, O, (tx) =>
+          tx.update(schema.creditBuckets).set({ remainingMc: 500 }),
+        );
+        await expectPgError(
+          withTenant(h.app.db, O, (tx) => tx.delete(schema.creditBuckets)),
+          ['42501'],
+        );
+      } finally {
+        await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+      }
+    });
+  },
+);

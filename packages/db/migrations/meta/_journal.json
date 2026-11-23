@@ -64,6 +64,13 @@
       "when": 1795443678147,
       "tag": "0008_sweeper",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795443679147,
+      "tag": "0009_wallet_guard",
+      "breakpoints": true
     }
   ]
 }
