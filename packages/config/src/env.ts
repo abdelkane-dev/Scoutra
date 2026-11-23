@@ -93,8 +93,18 @@ export const webEnvSchema = baseSchema
       ),
     GOOGLE_CLIENT_ID: z.string().min(10).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(10).optional(),
+    /** Envoi d'emails (Resend). Obligatoire en production pour vérifier les adresses. */
+    RESEND_API_KEY: z.string().min(10).optional(),
+    SCOUTRA_EMAIL_FROM: z.string().min(3).max(320).optional(),
   })
   .superRefine((env, ctx) => {
+    if (!!env.RESEND_API_KEY !== !!env.SCOUTRA_EMAIL_FROM) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SCOUTRA_EMAIL_FROM'],
+        message: 'RESEND_API_KEY et SCOUTRA_EMAIL_FROM vont ensemble',
+      });
+    }
     if (!!env.GOOGLE_CLIENT_ID !== !!env.GOOGLE_CLIENT_SECRET) {
       ctx.addIssue({
         code: 'custom',
