@@ -26,3 +26,8 @@
 - 22/11/2026 — Couverture : toutes les zones internationales (pas seulement l'Afrique) ; Asie possible mais moins prioritaire au lancement.
 - 22/11/2026 — Paiement : uniquement par carte (Visa, Mastercard, cartes prépayées), via un prestataire international ; pas de mobile money. Prestataire à choisir (contrainte : marchand basé au Mali sans société → options : société à l'étranger type Stripe Atlas, ou prestataire acceptant le Mali) ; code derrière une interface de paiement unique.
 - 22/11/2026 — Navigation enrichie demandée : Automatisations, Campagnes, Base de prospects, Leads, Contacts, Messages, Analytique, Documentation, Centre d'aide (en plus des espaces déjà prévus). Mise en page à rendre plus forte (retour du porteur sur les captures).
+- 23/11/2026 — Claude appelé via le SDK officiel Anthropic (sorties structurées, effort explicite, cache) ; l'AI SDK sert aux autres fournisseurs (modèles du client en licence). Niveaux : haiku-5-5 / sonnet-5-5 / opus-5-5.
+- 23/11/2026 — File de tâches : table de suivi `tenant_jobs` sous RLS ; le worker refuse toute tâche sans suivi dans l'organisation.
+- 23/11/2026 — Politique plus stricte que la loi : pas d'email à froid vers un particulier sans consentement, y compris aux États-Unis.
+- 23/11/2026 — Rédaction au niveau rapide (Haiku, effort low) par défaut ; essai gratuit de 100 crédits.
+- 23/11/2026 — Crawl4AI non branché tant que le proxy de sortie filtrant n'existe pas (protection SSRF).

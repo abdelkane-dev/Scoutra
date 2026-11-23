@@ -25,3 +25,13 @@
 - [ ] Licence : mémoriser en base la plus grande date vue ; ajouter la vraie clé publique après keygen
 - [ ] Étape 2 : proxy de sortie filtrant pour Crawl4AI et Reacher
 - [ ] Reverse proxy : réécrire `x-forwarded-for`
+
+## Étape 2 — Cerveau de recherche (23/11/2026)
+- [x] 6 rôles + permissions effectives, type de compte + 21 secteurs ISIC
+- [x] 10 connecteurs (moteurs de recherche, OSM, Google Places, registres UK/FR, crt.sh, sites web), disjoncteur, mode dégradé
+- [x] 6 agents + garde-fou juridique YAML + 23 playbooks
+- [x] Orchestration : crédits en millicrédits, garde-fou de coût, quotas, SSE ; API documentée (docs/api.md) ; 269 tests
+- [ ] Assignation, clés API client, actions sur messages, prestataire de paiement, expiration planifiée des crédits
+- [ ] Crawl4AI derrière un proxy de sortie filtrant
+- [ ] Revue sécurité de l'étape 2
+- [ ] Interface branchée sur l'API (en cours, frontend-dev)
