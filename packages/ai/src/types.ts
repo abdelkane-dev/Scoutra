@@ -42,6 +42,8 @@ export interface LlmClient {
 }
 
 export class AiError extends Error {
+  /** Coût des appels déjà facturés avant l'échec (refus, sortie invalide…) : à journaliser. */
+  usage?: Usage;
   constructor(
     readonly code: 'unavailable' | 'refusal' | 'invalid_output' | 'rate_limited' | 'provider_error',
     readonly retryable: boolean,
@@ -50,4 +52,9 @@ export class AiError extends Error {
     super(message ?? code);
     this.name = 'AiError';
   }
+}
+
+/** Coût journalisable d'une erreur IA (revue étape 2, constat 11), sinon undefined. */
+export function usageOfError(err: unknown): Usage | undefined {
+  return err instanceof AiError ? err.usage : undefined;
 }

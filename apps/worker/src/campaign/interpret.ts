@@ -1,3 +1,4 @@
+import { usageOfError } from '@scoutra/ai';
 import { buildCampaignPlan, interpret } from '@scoutra/agents';
 import { and, eq, schema, sql, withTenant } from '@scoutra/db';
 import type { JobPayload, campaignInterpretJob } from '@scoutra/queue';
@@ -40,7 +41,15 @@ export async function handleInterpret(
     },
     llm,
     signal,
-  );
+  ).catch(async (e: unknown) => {
+    // Coût d'un échec IA journalisé avant la reprise de la tâche (constat 11).
+    const u = usageOfError(e);
+    if (u)
+      await withTenant(deps.db, { orgId }, (tx) =>
+        recordLlm(tx, orgId, p.campaignId, 'interpreter:failed', u, deps.llm.provider),
+      );
+    throw e;
+  });
   const spec = ctx.c.modelForced
     ? { ...r.spec, model: ctx.c.prospectingModel as typeof r.spec.model }
     : r.spec;

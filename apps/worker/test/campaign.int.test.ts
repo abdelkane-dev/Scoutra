@@ -18,6 +18,7 @@ import { registerCampaignWorkers, type CampaignDeps } from '../src/campaign';
 import { handles, seedOrgAndOwner } from '../../../packages/db/test/helpers';
 
 const info = inject('db');
+let draftCalls = 0;
 const fx = (name: string) =>
   readFileSync(
     fileURLToPath(new URL(`../../../packages/connectors/test/fixtures/${name}`, import.meta.url)),
@@ -98,6 +99,8 @@ describe.skipIf(!info.available)(
             audience: 'consumers',
           };
         if (req.agent === 'scoring') return { adjustment: 5, reason: 'activité correspondante' };
+        // Constat 11 : la première rédaction renvoie une sortie invalide (appel facturé).
+        if (req.agent === 'drafting' && draftCalls++ === 0) return { body: '' };
         return {
           subject: 'Proposition pour votre restaurant',
           body: 'Bonjour, nous accompagnons les restaurants de Dakar pour leurs fournitures.',
@@ -235,6 +238,11 @@ describe.skipIf(!info.available)(
         const contacts = await tx.select().from(schema.contacts);
         expect(JSON.stringify(contacts)).not.toContain('@lebaobab');
         expect((await tx.select().from(schema.evidence)).length).toBeGreaterThan(0);
+        expect(
+          (await tx.select().from(schema.usageEvents)).some((u) =>
+            u.source.startsWith('drafting:failed'),
+          ),
+        ).toBe(true);
         expect((await tx.select().from(schema.usageEvents)).some((u) => u.kind === 'llm')).toBe(
           true,
         );

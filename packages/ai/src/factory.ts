@@ -32,18 +32,23 @@ export function mockLlmClient(
     calls,
     async generate<S extends z.ZodType>(req: GenerateRequest<S>) {
       calls.push(req as unknown as GenerateRequest<z.ZodType>);
+      const usage = {
+        model: opts.model ?? `mock-${req.tier}`,
+        inputTokens: 100,
+        outputTokens: 50,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+        costMicroUsd: opts.costMicroUsd ?? 10,
+      };
       const parsed = req.schema.safeParse(respond(req as unknown as GenerateRequest<z.ZodType>));
-      if (!parsed.success) throw new AiError('invalid_output', false);
+      if (!parsed.success) {
+        const e = new AiError('invalid_output', false);
+        e.usage = usage; // comme le vrai fournisseur : l'appel a été facturé
+        throw e;
+      }
       return {
         output: parsed.data as z.infer<S>,
-        usage: {
-          model: opts.model ?? `mock-${req.tier}`,
-          inputTokens: 100,
-          outputTokens: 50,
-          cacheReadTokens: 0,
-          cacheWriteTokens: 0,
-          costMicroUsd: opts.costMicroUsd ?? 10,
-        },
+        usage,
       };
     },
   };

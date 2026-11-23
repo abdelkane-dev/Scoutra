@@ -50,3 +50,25 @@ describe('configuration IA', () => {
     ).toBe(0);
   });
 });
+
+describe('constat 11 (étape 2) : coût d’un appel échoué', async () => {
+  const { mockLlmClient, usageOfError, AiError } = await import('../src');
+  const { z } = await import('zod');
+  it('l’erreur emporte le coût facturé', async () => {
+    const llm = mockLlmClient(() => ({ x: 'pas un nombre' }), { costMicroUsd: 42 });
+    const err = await llm
+      .generate({
+        agent: 'a',
+        tier: 'fast',
+        effort: 'low',
+        system: 's',
+        input: 'i',
+        schema: z.object({ x: z.number() }),
+        maxOutputTokens: 10,
+      })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(AiError);
+    expect(usageOfError(err)?.costMicroUsd).toBe(42);
+    expect(usageOfError(new Error('x'))).toBeUndefined();
+  });
+});

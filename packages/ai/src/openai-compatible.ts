@@ -29,7 +29,18 @@ export function openAiCompatibleClient(
           maxRetries: 2,
         });
         const checked = req.schema.safeParse(r.output);
-        if (!checked.success) throw new AiError('invalid_output', false);
+        if (!checked.success) {
+          const e = new AiError('invalid_output', false);
+          e.usage = {
+            model,
+            inputTokens: r.usage.inputTokens ?? 0,
+            outputTokens: r.usage.outputTokens ?? 0,
+            cacheReadTokens: 0,
+            cacheWriteTokens: 0,
+            costMicroUsd: 0,
+          };
+          throw e;
+        }
         return {
           output: checked.data as z.infer<S>,
           usage: {

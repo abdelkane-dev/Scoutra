@@ -21,6 +21,7 @@ import {
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import { consumeCredits, count, eq, gte, recordUsage, schema, sql, withTenant } from '@scoutra/db';
 import type { JobPayload, prospectProcessJob } from '@scoutra/queue';
+import { usageOfError, type Usage } from '@scoutra/ai';
 import { campaignCostMode } from '@scoutra/queue';
 import { emit, latestSpec, loadOrg, planFor, recordLlm } from './context';
 import { connectorCtx, resolveKeys, type CampaignDeps } from './deps';
@@ -93,6 +94,13 @@ export async function handleProcess(
     withTenant(deps.db, { orgId }, (tx) => campaignCostMode(tx, deps.mode, c, deps.now()));
   const key = await resolveKeys(deps, orgId);
 
+  // Coûts IA des appels ÉCHOUÉS (refus, sortie invalide) : journalisés aussi (constat 11).
+  const failedAi: { agent: string; usage: Usage }[] = [];
+  const keepCost = (agent: string) => (err: unknown) => {
+    const u = usageOfError(err);
+    if (u) failedAi.push({ agent, usage: u });
+  };
+
   // 1. Enrichissement (site public)
   const attrs = (pr.attributes ?? {}) as Record<string, unknown>;
   // Personne physique : pas de lecture de site ni de collecte de coordonnées (constat 1).
@@ -103,7 +111,10 @@ export async function handleProcess(
       : null;
   const ai =
     site && (await costMode()) === 'normal'
-      ? await extractSiteFacts(site, deps.llm, signal).catch(() => null)
+      ? await extractSiteFacts(site, deps.llm, signal).catch((e: unknown) => {
+          keepCost('enrichment')(e);
+          return null;
+        })
       : null;
 
   // 2. Contacts du site + vérification
@@ -230,7 +241,10 @@ export async function handleProcess(
   };
   const scoringAi = (await costMode()) === 'normal';
   const scored = await scoreProspect(scoringInput, deps.llm, { allowAi: scoringAi, signal }).catch(
-    async () => scoreProspect(scoringInput, deps.llm, { allowAi: false }),
+    async (e: unknown) => {
+      keepCost('scoring')(e);
+      return scoreProspect(scoringInput, deps.llm, { allowAi: false });
+    },
   );
 
   // 5. Livraison (débit) puis rédaction
@@ -308,9 +322,10 @@ export async function handleProcess(
     // Au-delà de la borne de coût : message modèle (aucun appel IA), le prospect reste livré.
     const draftLlm =
       (await costMode()) === 'free_only' ? { ...deps.llm, available: false } : deps.llm;
-    draft = await draftMessage(input, draftLlm, signal).catch(() =>
-      draftMessage(input, { ...deps.llm, available: false }),
-    );
+    draft = await draftMessage(input, draftLlm, signal).catch((e: unknown) => {
+      keepCost('drafting')(e);
+      return draftMessage(input, { ...deps.llm, available: false });
+    });
   }
 
   await withTenant(deps.db, { orgId }, async (tx) => {
@@ -320,6 +335,8 @@ export async function handleProcess(
         .set({ verificationStatus: ct.status, verifiedAt: deps.now(), isRoleAddress: ct.isRole })
         .where(eq(schema.contacts.id, ct.id));
     await recordLlm(tx, orgId, c.id, 'scoring', scored.usage, deps.llm.provider);
+    for (const f of failedAi)
+      await recordLlm(tx, orgId, c.id, `${f.agent}:failed`, f.usage, deps.llm.provider);
     const delivered = outcome === 'delivered';
     await tx
       .update(schema.prospects)
