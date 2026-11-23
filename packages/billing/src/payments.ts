@@ -10,6 +10,8 @@ export const billingEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('subscription.activated'),
     eventId: z.string().min(4).max(200),
+    /** Date de l'événement chez le prestataire : sert à l'ordre (constat 9). */
+    occurredAt: z.iso.datetime(),
     organizationId: z.uuid(),
     plan: z.enum(['research', 'pipeline']),
     seats: z.int().min(1).max(500),
@@ -20,6 +22,8 @@ export const billingEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('subscription.renewed'),
     eventId: z.string().min(4).max(200),
+    /** Date de l'événement chez le prestataire : sert à l'ordre (constat 9). */
+    occurredAt: z.iso.datetime(),
     organizationId: z.uuid(),
     periodStart: z.iso.datetime(),
     periodEnd: z.iso.datetime(),
@@ -27,11 +31,15 @@ export const billingEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('subscription.canceled'),
     eventId: z.string().min(4).max(200),
+    /** Date de l'événement chez le prestataire : sert à l'ordre (constat 9). */
+    occurredAt: z.iso.datetime(),
     organizationId: z.uuid(),
   }),
   z.object({
     type: z.literal('pack.purchased'),
     eventId: z.string().min(4).max(200),
+    /** Date de l'événement chez le prestataire : sert à l'ordre (constat 9). */
+    occurredAt: z.iso.datetime(),
     organizationId: z.uuid(),
     pack: z.enum(['pack_500', 'pack_2500', 'pack_10000']),
   }),

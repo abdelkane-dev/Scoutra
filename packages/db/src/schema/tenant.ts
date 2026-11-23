@@ -598,6 +598,8 @@ export const subscriptions = pgTable(
     periodEnd: ts('period_end').notNull(),
     provider: varchar('provider', { length: 30 }).notNull(),
     providerRef: varchar('provider_ref', { length: 200 }),
+    /** Date du dernier événement appliqué : un événement plus ancien est ignoré (ordre). */
+    lastEventAt: ts('last_event_at'),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
@@ -609,4 +611,19 @@ export const subscriptions = pgTable(
       sql`${t.status} in ('trialing', 'active', 'past_due', 'canceled')`,
     ),
   ],
+);
+
+/** Événements de paiement reçus (idempotence et ordre, revue étape 2, constat 9). Ajout seul. */
+export const billingEvents = pgTable(
+  'billing_events',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    organizationId: orgId(),
+    eventId: varchar('event_id', { length: 200 }).notNull(),
+    type: varchar('type', { length: 50 }).notNull(),
+    occurredAt: ts('occurred_at').notNull(),
+    outcome: varchar('outcome', { length: 20 }).notNull(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [unique('billing_events_org_event_unique').on(t.organizationId, t.eventId)],
 );

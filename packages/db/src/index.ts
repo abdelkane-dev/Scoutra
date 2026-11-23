@@ -43,6 +43,7 @@ export const TENANT_TABLES = [
   'credit_reservations',
   'credit_consumptions',
   'subscriptions',
+  'billing_events',
 ] as const;
 export * from './playbooks';
 export * from './wallet';

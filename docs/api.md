@@ -266,7 +266,9 @@ typées : `import { BETTER_AUTH_ROLES } from '@scoutra/auth/roles'` puis
 `POST /api/billing/webhook` : réservé au prestataire de paiement (carte, international, **non
 encore choisi**) ; répond `404` tant qu'aucun adaptateur n'est branché
 (`apps/web/src/server/payments.ts`). Événements normalisés (`packages/billing/src/payments.ts`) :
-`subscription.activated|renewed|canceled`, `pack.purchased`, appliqués de façon idempotente
-(octroi du forfait par période, report de 50 % un mois, packs valables 12 mois).
+`subscription.activated|renewed|canceled`, `pack.purchased` (avec `eventId` et `occurredAt`),
+appliqués une seule fois par `eventId` (table `billing_events`) et dans l'ordre : un événement
+d'abonnement plus ancien que le dernier appliqué, ou une période déjà ouverte, est ignoré
+(`stale`). Octroi du forfait par période, report de 50 % un mois, packs valables 12 mois.
 L'interface n'appelle pas cette route ; le passage en caisse (`createCheckout`) sera exposé avec
 le prestataire.

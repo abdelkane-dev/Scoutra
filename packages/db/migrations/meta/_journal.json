@@ -50,6 +50,13 @@
       "when": 1795442375740,
       "tag": "0006_trial",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795443677147,
+      "tag": "0007_billing_events",
+      "breakpoints": true
     }
   ]
 }

@@ -74,6 +74,7 @@ describe('webhooks de paiement', () => {
       billingEventSchema.safeParse({
         type: 'pack.purchased',
         eventId: 'evt_1',
+        occurredAt: '2026-11-23T10:00:00Z',
         organizationId: '00000000-0000-4000-8000-000000000001',
         pack: 'pack_500',
       }).success,
@@ -82,6 +83,7 @@ describe('webhooks de paiement', () => {
       billingEventSchema.safeParse({
         type: 'pack.purchased',
         eventId: 'evt_1',
+        occurredAt: '2026-11-23T10:00:00Z',
         organizationId: 'x',
         pack: 'pack_1',
       }).success,

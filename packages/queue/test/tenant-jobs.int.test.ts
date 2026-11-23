@@ -108,62 +108,77 @@ describe.skipIf(!info.available)('tâches métier suivies sous RLS (tenant_jobs)
   });
 });
 
-describe.skipIf(!info.available)('événements de paiement (idempotents)', async () => {
-  const { applyBillingEvent } = await import('../src');
-  const { getCreditBalance, walletBalanceMc } = await import('@scoutra/db');
-  it('abonnement, renouvellement avec report 50 %, pack, rejeu sans double crédit', async () => {
-    const h2 = handles(info);
-    try {
-      const O = await seedOrgAndOwner(h2.auth, 'bill');
-      const base = { organizationId: O.orgId };
-      const start = new Date();
-      const end = new Date(Date.now() + 30 * 864e5);
-      const activated = {
-        ...base,
-        type: 'subscription.activated' as const,
-        eventId: 'evt_a',
-        plan: 'research' as const,
-        seats: 1,
-        periodStart: start.toISOString(),
-        periodEnd: end.toISOString(),
-        providerRef: 'sub_1',
-      };
-      expect(await applyBillingEvent(h2.app.db, activated)).toBe('applied');
-      expect(await applyBillingEvent(h2.app.db, activated)).toBe('duplicate');
-      expect(
-        await applyBillingEvent(h2.app.db, {
+describe.skipIf(!info.available)(
+  'événements de paiement (idempotents et ordonnés, constat 9)',
+  async () => {
+    const { applyBillingEvent } = await import('../src');
+    const { getCreditBalance, walletBalanceMc } = await import('@scoutra/db');
+    it('abonnement, renouvellement avec report 50 %, pack, rejeu et désordre sans effet', async () => {
+      const h2 = handles(info);
+      try {
+        const O = await seedOrgAndOwner(h2.auth, 'bill');
+        const base = { organizationId: O.orgId };
+        const t = (min: number) => new Date(Date.UTC(2026, 10, 1, 0, min)).toISOString();
+        const start = new Date();
+        const end = new Date(Date.now() + 30 * 864e5);
+        const end2 = new Date(end.getTime() + 30 * 864e5);
+        const activated = {
           ...base,
-          type: 'pack.purchased',
-          eventId: 'evt_p',
-          pack: 'pack_500',
-        }),
-      ).toBe('applied');
-      expect(
-        await applyBillingEvent(h2.app.db, {
+          type: 'subscription.activated' as const,
+          eventId: 'evt_a',
+          occurredAt: t(1),
+          plan: 'research' as const,
+          seats: 1,
+          periodStart: start.toISOString(),
+          periodEnd: end.toISOString(),
+          providerRef: 'sub_1',
+        };
+        expect(await applyBillingEvent(h2.app.db, activated)).toBe('applied');
+        expect(await applyBillingEvent(h2.app.db, activated)).toBe('duplicate');
+        const pack = {
           ...base,
-          type: 'pack.purchased',
+          type: 'pack.purchased' as const,
           eventId: 'evt_p',
-          pack: 'pack_500',
-        }),
-      ).toBe('duplicate');
-      const end2 = new Date(end.getTime() + 30 * 864e5);
-      await applyBillingEvent(h2.app.db, {
-        ...base,
-        type: 'subscription.renewed',
-        eventId: 'evt_r',
-        periodStart: end.toISOString(),
-        periodEnd: end2.toISOString(),
-      });
-      await withTenant(h2.app.db, O, async (tx) => {
-        // 1000 (forfait) + 500 (pack) + 500 (report 50 %) + 1000 (nouveau forfait)
-        expect(await getCreditBalance(tx, O.orgId)).toBe(3_000_000);
-        expect(await walletBalanceMc(tx, O.orgId)).toBe(3_000_000);
-      });
-    } finally {
-      await Promise.all([h2.app.close(), h2.auth.close(), h2.migrator.close()]);
-    }
-  });
-});
+          occurredAt: t(2),
+          pack: 'pack_500' as const,
+        };
+        expect(await applyBillingEvent(h2.app.db, pack)).toBe('applied');
+        expect(await applyBillingEvent(h2.app.db, pack)).toBe('duplicate');
+        const renewed = {
+          ...base,
+          type: 'subscription.renewed' as const,
+          eventId: 'evt_r',
+          occurredAt: t(10),
+          periodStart: end.toISOString(),
+          periodEnd: end2.toISOString(),
+        };
+        expect(await applyBillingEvent(h2.app.db, renewed)).toBe('applied');
+        // Désordre : une résiliation plus ANCIENNE arrive après le renouvellement → ignorée.
+        expect(
+          await applyBillingEvent(h2.app.db, {
+            ...base,
+            type: 'subscription.canceled',
+            eventId: 'evt_c_old',
+            occurredAt: t(5),
+          }),
+        ).toBe('stale');
+        // Même période renvoyée sous un autre identifiant → ignorée.
+        expect(
+          await applyBillingEvent(h2.app.db, { ...renewed, eventId: 'evt_r2', occurredAt: t(11) }),
+        ).toBe('stale');
+        await withTenant(h2.app.db, O, async (tx) => {
+          // 1000 (forfait) + 500 (pack) + 500 (report 50 %) + 1000 (nouveau forfait)
+          expect(await getCreditBalance(tx, O.orgId)).toBe(3_000_000);
+          expect(await walletBalanceMc(tx, O.orgId)).toBe(3_000_000);
+          const [sub] = await tx.select().from(schema.subscriptions);
+          expect(sub?.status).toBe('active');
+        });
+      } finally {
+        await Promise.all([h2.app.close(), h2.auth.close(), h2.migrator.close()]);
+      }
+    });
+  },
+);
 
 describe.skipIf(!info.available)('constat 4 (étape 2) : borne de coût par campagne', async () => {
   const { campaignCostMode } = await import('../src');
