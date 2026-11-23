@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { LlmClient, ModelTier, Usage } from '@scoutra/ai';
 import type { ContactChannel } from '@scoutra/core';
 import { legalFooter, type ComplianceDecision } from '@scoutra/compliance';
-import { DATA_POLICY_FR, externalData } from './policy';
+import { DATA_POLICY_FR, externalData, userRequest } from './policy';
 
 /** Qualité de rédaction (barème : standard inclus, soignée +1 crédit, premium +3). */
 export const DRAFT_QUALITIES = ['standard', 'careful', 'premium'] as const;
@@ -23,12 +23,48 @@ export const CHANNEL_LIMITS: Partial<Record<ContactChannel, number>> = {
   phone: 600,
 };
 
+const URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"'()\]]{1,300}/gi;
+
+/**
+ * Liens du brouillon (revue étape 2, constat 7) : seuls les domaines autorisés (ceux de
+ * l'expéditeur) sont conservés ; tout autre lien, même produit par une injection dans une page
+ * lue, est retiré. L'utilisateur relit toujours avant d'envoyer.
+ */
+export function sanitizeLinks(
+  text: string,
+  allowedDomains: readonly string[],
+): { text: string; removed: number } {
+  let removed = 0;
+  const out = text.replace(URL_RE, (raw) => {
+    let host = '';
+    try {
+      host = new URL(raw.startsWith('www.') ? `https://${raw}` : raw).hostname
+        .toLowerCase()
+        .replace(/^www\./, '');
+    } catch {
+      host = '';
+    }
+    const ok = host && allowedDomains.some((d) => host === d || host.endsWith(`.${d}`));
+    if (ok) return raw;
+    removed++;
+    return '[lien retiré]';
+  });
+  return { text: out, removed };
+}
+
 export interface DraftInput {
   channel: ContactChannel;
   language: 'fr' | 'en';
   quality: DraftQuality;
   decision: ComplianceDecision;
-  sender: { name: string; offer: string; tone?: string; address?: string };
+  sender: {
+    name: string;
+    offer: string;
+    tone?: string;
+    address?: string;
+    /** Domaines dont les liens sont autorisés dans le message (site de l'expéditeur). */
+    linkDomains?: readonly string[];
+  };
   prospect: {
     displayName: string;
     category?: string | null;
@@ -111,7 +147,8 @@ export async function draftMessage(
     input: [
       `Canal : ${i.channel} ; langue : ${i.language} ; ton : ${i.sender.tone ?? 'professionnel et chaleureux'}`,
       `Expéditeur : ${i.sender.name}`,
-      `Offre de l'expéditeur : ${i.sender.offer.slice(0, 600)}`,
+      // L'offre est saisie par l'utilisateur : encapsulée comme donnée (constat 7).
+      `Offre de l'expéditeur (donnée) :\n${userRequest(i.sender.offer, 600)}`,
       `Raisons du ciblage : ${i.reasons.slice(0, 5).join(' ; ')}`,
       externalData(
         'prospect',
@@ -131,9 +168,12 @@ export async function draftMessage(
     maxOutputTokens: 1500,
     signal,
   });
+  const allowed = i.sender.linkDomains ?? [];
+  const body = sanitizeLinks(r.output.body, allowed).text;
+  const subject = r.output.subject ? sanitizeLinks(r.output.subject, allowed).text : undefined;
   return {
-    subject: r.output.subject || undefined,
-    body: r.output.body,
+    subject: subject || undefined,
+    body,
     hooks: r.output.hooks,
     footer,
     generatedBy: 'ai',
