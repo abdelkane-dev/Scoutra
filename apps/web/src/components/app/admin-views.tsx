@@ -255,7 +255,7 @@ export function TeamView() {
                                     const { error } =
                                       await authClient.organization.updateMemberRole({
                                         memberId: m.id,
-                                        role: r as 'member',
+                                        role: r,
                                       });
                                     if (error) return onError(error);
                                     toast(t('insight.team.roleChanged'));
@@ -418,7 +418,7 @@ export function TeamView() {
               const email = String(new FormData(e.currentTarget).get('email') ?? '').trim();
               const { error } = await authClient.organization.inviteMember({
                 email,
-                role: role as 'member',
+                role,
               });
               if (error) return onError(error);
               setInviteOpen(false);
