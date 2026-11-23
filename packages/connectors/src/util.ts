@@ -119,3 +119,27 @@ export function escapeOverpass(s: string): string {
 export function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/** URL http(s) bien formée et bornée, sinon undefined (revue étape 2, constat 19). */
+export function safeHttpUrl(u: string | undefined | null): string | undefined {
+  if (!u || u.length > 2048) return undefined;
+  try {
+    const url = new URL(u);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined;
+    if (url.username || url.password) return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+/** Retire des candidats toute URL non http(s) (javascript:, data:…) avant stockage et affichage. */
+export function sanitizeCandidateUrls<
+  T extends { sourceUrl?: string; signals: { url?: string }[] },
+>(c: T): T {
+  return {
+    ...c,
+    sourceUrl: safeHttpUrl(c.sourceUrl),
+    signals: c.signals.map((s) => ({ ...s, url: safeHttpUrl(s.url) })),
+  };
+}

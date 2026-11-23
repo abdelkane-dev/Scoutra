@@ -381,3 +381,29 @@ describe('constat 10 (étape 2) : robots.txt conforme RFC 9309', async () => {
     expect(calls.filter((c) => !c.url.endsWith('/robots.txt'))).toHaveLength(0);
   });
 });
+
+describe('constat 12 (étape 2) : services internes limités aux URL configurées', async () => {
+  const { createHttpClient } = await import('../src');
+  it('une URL interne non configurée passe par la garde SSRF et est refusée', async () => {
+    const http = createHttpClient({ reacherUrl: 'http://reacher:8080' });
+    await expect(http.internal('http://postgres:5432/x')).rejects.toThrow(/refusée/);
+    await expect(http.internal('http://169.254.169.254/latest')).rejects.toThrow(/refusée/);
+  });
+});
+
+describe('constat 19 (étape 2) : URL des sources limitées à http(s)', async () => {
+  const { safeHttpUrl, sanitizeCandidateUrls } = await import('../src');
+  it('javascript:, data:, identifiants et URL trop longues retirés', () => {
+    expect(safeHttpUrl('javascript:alert(1)')).toBeUndefined();
+    expect(safeHttpUrl('data:text/html,<b>')).toBeUndefined();
+    expect(safeHttpUrl('https://u:p@x.sn/')).toBeUndefined();
+    expect(safeHttpUrl(`https://x.sn/${'a'.repeat(3000)}`)).toBeUndefined();
+    expect(safeHttpUrl('https://x.sn/a')).toBe('https://x.sn/a');
+    const c = sanitizeCandidateUrls({
+      sourceUrl: 'javascript:x',
+      signals: [{ url: 'vbscript:y' }, { url: 'https://ok.sn' }],
+    });
+    expect(c.sourceUrl).toBeUndefined();
+    expect(c.signals.map((s) => s.url)).toEqual([undefined, 'https://ok.sn/']);
+  });
+});

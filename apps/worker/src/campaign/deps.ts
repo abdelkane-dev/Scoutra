@@ -39,6 +39,7 @@ export function connectorConfigFrom(env: AgentsEnv): ConnectorConfig {
     searxngUrl: env.SCOUTRA_SEARXNG_URL,
     overpassUrl: env.SCOUTRA_OVERPASS_URL,
     crawl4aiUrl: env.SCOUTRA_CRAWL4AI_URL,
+    reacherUrl: env.SCOUTRA_REACHER_URL,
   };
 }
 

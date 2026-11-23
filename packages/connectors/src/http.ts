@@ -12,7 +12,12 @@ function wrap(status: number, body: string): HttpResponse {
  *   (SearXNG, Overpass dédié) ; toute autre URL est refusée.
  */
 export function createHttpClient(config: ConnectorConfig): HttpClient {
-  const internalBases = [config.searxngUrl, config.overpassUrl, config.crawl4aiUrl]
+  const internalBases = [
+    config.searxngUrl,
+    config.overpassUrl,
+    config.crawl4aiUrl,
+    config.reacherUrl,
+  ]
     .filter((u): u is string => !!u)
     .map((u) => new URL(u));
   return {

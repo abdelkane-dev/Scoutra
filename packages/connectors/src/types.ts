@@ -119,6 +119,8 @@ export interface ConnectorConfig {
   searxngUrl?: string;
   crawl4aiUrl?: string;
   overpassUrl?: string;
+  /** Reacher (vérification SMTP) : service interne appelé via `internal` (constat 12). */
+  reacherUrl?: string;
 }
 
 export interface ConnectorCtx {

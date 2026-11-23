@@ -1,5 +1,10 @@
 import { mergeCandidates, dedupeKey } from '@scoutra/agents';
-import { ConnectorError, connectorByCode, type RawCandidate } from '@scoutra/connectors';
+import {
+  ConnectorError,
+  connectorByCode,
+  sanitizeCandidateUrls,
+  type RawCandidate,
+} from '@scoutra/connectors';
 import { isIndividualKind } from '@scoutra/core';
 import { encryptSecret, keyedHash, normalizeContactValue } from '@scoutra/crypto';
 import {
@@ -174,7 +179,8 @@ export async function handleSearch(
     deps.breaker.failure(p.connector);
     throw err;
   }
-  const groups = mergeCandidates(result.candidates);
+  // Seules des URL http(s) sont conservées (constat 19).
+  const groups = mergeCandidates(result.candidates.map(sanitizeCandidateUrls));
   const created: string[] = [];
   await withTenant(deps.db, { orgId }, async (tx) => {
     if (result.billableRequests > 0)
