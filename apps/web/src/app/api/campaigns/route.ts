@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { dataScope } from '@scoutra/auth';
 import { AppError, prospectingModelSchema, targetsNamedPerson } from '@scoutra/core';
-import { and, count, desc, eq, gte, schema, withTenant } from '@scoutra/db';
+import { and, count, desc, eq, gte, lockOrgQuotas, schema, withTenant } from '@scoutra/db';
 import { LOCALE_COOKIE, negotiateLocale } from '@scoutra/i18n';
 import { planFor, startInterpretation } from '@scoutra/queue';
 import { campaignView, scopeOf } from '@/server/campaigns';
@@ -83,6 +83,7 @@ export const POST = apiRoute(
       throw new AppError('invalid_input', 'personne nommée', [{ path: 'prompt', code: named }]);
     const id = await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, async (tx) => {
       if (env.SCOUTRA_MODE === 'saas') {
+        await lockOrgQuotas(tx, ctx.orgId); // compter puis créer, sans course (constat 14)
         const { plan } = await planFor(tx, new Date());
         if (body.maxProspects > plan.maxProspectsPerCampaign)
           throw new AppError('quota_exceeded', 'prospects par campagne');

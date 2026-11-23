@@ -22,6 +22,7 @@ import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import {
   and,
   consumeCredits,
+  lockOrgQuotas,
   count,
   eq,
   gte,
@@ -289,6 +290,7 @@ export async function handleProcess(
         .where(eq(schema.campaigns.id, c.id));
       if ((fresh?.delivered ?? 0) >= c.maxProspects) return 'quota_reached' as const;
       if (deps.mode === 'saas') {
+        await lockOrgQuotas(tx, orgId); // plafond journalier atomique (constat 14)
         const dayStart = new Date(
           Date.UTC(deps.now().getUTCFullYear(), deps.now().getUTCMonth(), deps.now().getUTCDate()),
         );

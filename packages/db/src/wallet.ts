@@ -216,3 +216,11 @@ export async function settleCampaign(
   }
   return refund;
 }
+
+/**
+ * Verrou de quotas par organisation (revue étape 2, constat 14) : sérialise les contrôles
+ * « compter puis créer » (campagnes simultanées, interprétations du jour, plafond journalier).
+ */
+export async function lockOrgQuotas(tx: Transaction, orgId: string): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`quotas:${orgId}`}, 0))`);
+}

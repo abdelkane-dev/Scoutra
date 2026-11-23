@@ -24,7 +24,7 @@ import {
 import type { PgBoss } from 'pg-boss';
 import { campaignFinalizeJob, campaignInterpretJob, campaignPlanJob } from './jobs';
 import { cancelTenantJobs, publishTenantJob } from './tenant-jobs';
-import { costSince, grantCredits, type Transaction } from '@scoutra/db';
+import { costSince, grantCredits, lockOrgQuotas, type Transaction } from '@scoutra/db';
 
 /** Formule de l'organisation (abonnement actif, sinon essai) et début de période. */
 export async function planFor(
@@ -133,6 +133,7 @@ export async function launchCampaign(
   },
 ): Promise<{ reservedMc: number }> {
   const reservedMc = await withTenant(db, { orgId: o.orgId, userId: o.userId }, async (tx) => {
+    await lockOrgQuotas(tx, o.orgId); // contrôles de quotas atomiques (constat 14)
     const [c] = await tx
       .select()
       .from(schema.campaigns)

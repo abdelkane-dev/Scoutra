@@ -233,3 +233,66 @@ describe.skipIf(!info.available)('constat 4 (étape 2) : borne de coût par camp
     }
   });
 });
+
+describe.skipIf(!info.available)('constat 14 (étape 2) : quotas atomiques', async () => {
+  const { launchCampaign } = await import('../src');
+  const { grantCredits } = await import('@scoutra/db');
+  const { PLANS } = await import('@scoutra/billing');
+  it('lancements simultanés : jamais plus que les campagnes simultanées de la formule', async () => {
+    const h4 = handles(info);
+    const b = createBoss(info.appUrl);
+    b.on('error', () => undefined);
+    await b.start();
+    try {
+      const O = await seedOrgAndOwner(h4.auth, 'race');
+      const ids = await withTenant(h4.app.db, O, async (tx) => {
+        await tx.insert(schema.subscriptions).values({
+          organizationId: O.orgId,
+          plan: 'research',
+          status: 'active',
+          periodStart: new Date(Date.now() - 864e5),
+          periodEnd: new Date(Date.now() + 864e5),
+          provider: 't',
+        });
+        await grantCredits(tx, {
+          orgId: O.orgId,
+          origin: 'adjustment',
+          amountMc: 100_000,
+          expiresAt: new Date(Date.now() + 864e5),
+          ref: 'grant-race',
+        });
+        const rows = await tx
+          .insert(schema.campaigns)
+          .values(
+            [1, 2, 3, 4].map((i) => ({
+              organizationId: O.orgId,
+              name: `c${i}`,
+              promptText: 'p',
+              prospectingModel: 'b2b',
+              status: 'awaiting_confirmation' as const,
+              maxProspects: 5,
+            })),
+          )
+          .returning({ id: schema.campaigns.id });
+        return rows.map((r) => r.id);
+      });
+      const res = await Promise.allSettled(
+        ids.map((campaignId) =>
+          launchCampaign(b, h4.app.db, {
+            orgId: O.orgId,
+            userId: O.userId,
+            campaignId,
+            mode: 'saas',
+            plan: PLANS.research,
+          }),
+        ),
+      );
+      expect(res.filter((r) => r.status === 'fulfilled')).toHaveLength(
+        PLANS.research.concurrentCampaigns,
+      );
+    } finally {
+      await b.stop({ graceful: false });
+      await Promise.all([h4.app.close(), h4.auth.close(), h4.migrator.close()]);
+    }
+  });
+});
