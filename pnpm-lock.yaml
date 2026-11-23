@@ -95,6 +95,9 @@ importers:
       '@scoutra/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@scoutra/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
       '@scoutra/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto

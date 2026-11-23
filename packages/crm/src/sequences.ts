@@ -134,7 +134,8 @@ export async function runEnrollmentStep(
       prospectId: p.id,
       assigneeUserId: p.ownerUserId,
       title: step.title,
-      kind: step.channel === 'other' ? 'follow_up' : step.channel === 'phone' ? 'call' : step.channel,
+      kind:
+        step.channel === 'other' ? 'follow_up' : step.channel === 'phone' ? 'call' : step.channel,
       dueAt: now,
       source: 'sequence',
       enrollmentId: e.id,

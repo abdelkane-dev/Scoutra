@@ -93,16 +93,14 @@ describe.skipIf(!info.available)('CRM : prospects, pipeline, automatisations, s�
 
   it('changement d’étape historisé, automatisation déclenchée ; portée et attribution contrôlées', async () => {
     await T((tx) =>
-      tx
-        .insert(schema.automations)
-        .values({
-          organizationId: O.orgId,
-          name: 'RDV',
-          trigger: 'stage_changed',
-          triggerArg: 'meeting',
-          action: 'create_task',
-          actionArg: 'Préparer le rendez-vous',
-        }),
+      tx.insert(schema.automations).values({
+        organizationId: O.orgId,
+        name: 'RDV',
+        trigger: 'stage_changed',
+        triggerArg: 'meeting',
+        action: 'create_task',
+        actionArg: 'Préparer le rendez-vous',
+      }),
     );
     const after = await T((tx) =>
       patchProspect(tx, member(), p1, { stage: 'meeting', note: 'appel ok' }),
@@ -209,16 +207,14 @@ describe.skipIf(!info.available)('CRM : prospects, pipeline, automatisations, s�
 
   it('automatisation sur prospect livré : score et signal', async () => {
     await T((tx) =>
-      tx
-        .insert(schema.automations)
-        .values({
-          organizationId: O.orgId,
-          name: 'Top',
-          trigger: 'score_above',
-          triggerArg: '80',
-          action: 'notify',
-          actionArg: 'owner',
-        }),
+      tx.insert(schema.automations).values({
+        organizationId: O.orgId,
+        name: 'Top',
+        trigger: 'score_above',
+        triggerArg: '80',
+        action: 'notify',
+        actionArg: 'owner',
+      }),
     );
     expect(
       await T((tx) =>
