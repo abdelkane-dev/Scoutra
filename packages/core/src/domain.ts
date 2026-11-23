@@ -22,6 +22,22 @@ export const PROSPECT_KINDS = [
 export type ProspectKind = (typeof PROSPECT_KINDS)[number];
 export const prospectKindSchema = z.enum(PROSPECT_KINDS);
 
+/**
+ * Types d'entité qui désignent (ou peuvent désigner) une PERSONNE PHYSIQUE : le garde-fou
+ * juridique les traite toujours comme des particuliers (consentement), quel que soit le modèle
+ * de prospection ou le playbook (revue étape 2, constat 1). Une annonce ou un bien appartiennent
+ * le plus souvent à un particulier ; un créateur est souvent une personne.
+ */
+export const INDIVIDUAL_PROSPECT_KINDS: ReadonlySet<ProspectKind> = new Set<ProspectKind>([
+  'person',
+  'creator',
+  'listing',
+  'property',
+]);
+export function isIndividualKind(kind: string): boolean {
+  return INDIVIDUAL_PROSPECT_KINDS.has(kind as ProspectKind);
+}
+
 export interface ProspectingModelDef {
   code: string;
   /** Types d'entité habituellement visés par ce modèle. */

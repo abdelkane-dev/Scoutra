@@ -1,6 +1,7 @@
 import {
   draftMessage,
   extractSiteFacts,
+  legalAudience,
   playbookFor,
   scoreProspect,
   verifyEmail,
@@ -11,7 +12,12 @@ import {
 import { DELIVERY_CREDITS, MILLICREDITS_PER_CREDIT, type DeliveryQuality } from '@scoutra/billing';
 import { allowedChannels, type ComplianceDecision } from '@scoutra/compliance';
 import { readWebsite, websiteManifest } from '@scoutra/connectors';
-import type { ContactChannel, SignalKey, VerificationStatus } from '@scoutra/core';
+import {
+  isIndividualKind,
+  type ContactChannel,
+  type SignalKey,
+  type VerificationStatus,
+} from '@scoutra/core';
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import { consumeCredits, count, eq, gte, recordUsage, schema, sql, withTenant } from '@scoutra/db';
 import type { JobPayload, prospectProcessJob } from '@scoutra/queue';
@@ -26,7 +32,6 @@ const CHANNEL_PRIORITY: ContactChannel[] = [
   'website_form',
   'social_page',
 ];
-const INDIVIDUAL_KINDS = new Set(['person', 'listing', 'creator']);
 
 /**
  * Un prospect : enrichissement → vérification → garde-fou → notation → livraison (débit de la
@@ -67,9 +72,12 @@ export async function handleProcess(
 
   // 1. Enrichissement (site public)
   const attrs = (pr.attributes ?? {}) as Record<string, unknown>;
-  const site = pr.websiteDomain
-    ? await readWebsite(pr.websiteDomain, connectorCtx(deps, key, signal))
-    : null;
+  // Personne physique : pas de lecture de site ni de collecte de coordonnées (constat 1).
+  const individual = isIndividualKind(pr.kind);
+  const site =
+    pr.websiteDomain && !individual
+      ? await readWebsite(pr.websiteDomain, connectorCtx(deps, key, signal))
+      : null;
   const ai =
     site && !economy ? await extractSiteFacts(site, deps.llm, signal).catch(() => null) : null;
 
@@ -143,12 +151,7 @@ export async function handleProcess(
   }
 
   // 3. Garde-fou juridique (déterministe) AVANT toute proposition de canal
-  const audience =
-    playbook.audience === 'per_prospect'
-      ? INDIVIDUAL_KINDS.has(pr.kind)
-        ? 'individual'
-        : 'business'
-      : playbook.audience;
+  const audience = legalAudience(playbook, pr.kind);
   const candidates = new Set<ContactChannel>();
   for (const ct of contacts)
     if (ct.status !== 'invalid' && ct.status !== 'disposable') candidates.add(ct.channel);

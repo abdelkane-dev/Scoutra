@@ -12,6 +12,7 @@ import {
   type ProspectingModel,
   type Sector,
   type SignalKey,
+  isIndividualKind,
 } from '@scoutra/core';
 
 /**
@@ -438,4 +439,19 @@ export function suggestPlaybooks(
       PLAYBOOKS.findIndex((p) => p.model === a.model) -
         PLAYBOOKS.findIndex((p) => p.model === b.model),
   );
+}
+
+/** Les types visés par une fiche doivent appartenir au playbook de son modèle (constat 1). */
+export function kindsAllowed(spec: { model: ProspectingModel; kinds: readonly string[] }): boolean {
+  const allowed = playbookFor(spec.model).kinds as readonly string[];
+  return spec.kinds.every((k) => allowed.includes(k));
+}
+
+/**
+ * Public juridique d'un prospect : PARTICULIER dès que l'entité est (ou peut être) une personne,
+ * quel que soit le playbook ; sinon celui du playbook (un playbook « particuliers » le reste).
+ */
+export function legalAudience(playbook: Playbook, kind: string): 'individual' | 'business' {
+  if (isIndividualKind(kind) || playbook.audience === 'individual') return 'individual';
+  return 'business';
 }

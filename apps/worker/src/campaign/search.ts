@@ -1,5 +1,6 @@
 import { mergeCandidates, dedupeKey } from '@scoutra/agents';
 import { ConnectorError, connectorByCode, type RawCandidate } from '@scoutra/connectors';
+import { isIndividualKind } from '@scoutra/core';
 import { encryptSecret, keyedHash, normalizeContactValue } from '@scoutra/crypto';
 import {
   and,
@@ -235,22 +236,26 @@ export async function handleSearch(
         country: c.countryCode,
         license: c.dataLicense,
       };
-      for (const e of c.emails.slice(0, 3))
-        await insertContact(deps, tx, {
-          orgId,
-          prospectId: row.id,
-          channel: 'email',
-          value: e,
-          source: src,
-        });
-      for (const ph of c.phones.slice(0, 2))
-        await insertContact(deps, tx, {
-          orgId,
-          prospectId: row.id,
-          channel: 'phone',
-          value: ph,
-          source: src,
-        });
+      // Personne physique : aucune coordonnée collectée (minimisation, constat 1).
+      const individual = isIndividualKind(c.kind);
+      if (!individual)
+        for (const e of c.emails.slice(0, 3))
+          await insertContact(deps, tx, {
+            orgId,
+            prospectId: row.id,
+            channel: 'email',
+            value: e,
+            source: src,
+          });
+      if (!individual)
+        for (const ph of c.phones.slice(0, 2))
+          await insertContact(deps, tx, {
+            orgId,
+            prospectId: row.id,
+            channel: 'phone',
+            value: ph,
+            source: src,
+          });
       created.push(row.id);
       await emit(tx, orgId, p.campaignId, 'prospect.created', {
         prospectId: row.id,

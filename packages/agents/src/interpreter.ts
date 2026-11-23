@@ -11,6 +11,7 @@ import {
   targetSpecSchema,
   type TargetSpec,
 } from '@scoutra/core';
+import { playbookFor } from './playbooks';
 import { DATA_POLICY_FR, userRequest } from './policy';
 import { fold } from './text';
 
@@ -74,7 +75,10 @@ export function normalizeSpec(raw: z.infer<typeof llmSchema>, fallbackCountry: s
     raw.countries.map((c) => c.trim().toUpperCase()).filter(isIsoCountry),
   ).slice(0, 20);
   const model = PROSPECTING_MODELS.find((m) => m.code === raw.model)!;
-  const kinds = uniq(raw.kinds).slice(0, 4);
+  // Types limités à ceux du playbook du modèle (constat 1) ; sinon types par défaut du modèle.
+  const kinds = uniq(raw.kinds)
+    .filter((k) => (playbookFor(raw.model).kinds as readonly string[]).includes(k))
+    .slice(0, 4);
   const min =
     raw.companySizeMin && raw.companySizeMin > 0 ? Math.round(raw.companySizeMin) : undefined;
   const max =

@@ -384,3 +384,47 @@ describe('playbooks', async () => {
     expect(suggestPlaybooks('public_sector', [])[0]!.model).toBe('g2b');
   });
 });
+
+describe('revue étape 2, constat 1 : public juridique déterminé par le type de prospect', async () => {
+  const { legalAudience, kindsAllowed, playbookFor, normalizeSpec } = await import('../src');
+  const { evaluate } = await import('@scoutra/compliance');
+  it('une personne reste un particulier même sous un playbook B2B', () => {
+    expect(legalAudience(playbookFor('b2b'), 'person')).toBe('individual');
+    expect(legalAudience(playbookFor('b2b'), 'listing')).toBe('individual');
+    expect(legalAudience(playbookFor('b2b'), 'company')).toBe('business');
+    expect(legalAudience(playbookFor('b2c'), 'company')).toBe('individual');
+    const d = evaluate({
+      recipientCountry: 'FR',
+      senderCountry: 'SN',
+      audience: legalAudience(playbookFor('b2b'), 'person'),
+      channel: 'email',
+    });
+    expect(d.outcome).toBe('deny');
+  });
+  it('types limités au playbook : b2b + person refusé, filtré par l’Interprète', () => {
+    expect(kindsAllowed({ model: 'b2b', kinds: ['person'] })).toBe(false);
+    expect(kindsAllowed({ model: 'b2b', kinds: ['company'] })).toBe(true);
+    const s = normalizeSpec(
+      {
+        model: 'b2b',
+        kinds: ['person', 'company'],
+        summary: 's',
+        language: 'fr',
+        countries: ['FR'],
+        regions: [],
+        keywords: ['x'],
+        sectors: [],
+        roles: [],
+        companySizeMin: null,
+        companySizeMax: null,
+        signals: [],
+        exclusions: [],
+        channels: [],
+        clarifyingQuestions: [],
+        confidence: 1,
+      },
+      'FR',
+    );
+    expect(s.kinds).toEqual(['company']);
+  });
+});
