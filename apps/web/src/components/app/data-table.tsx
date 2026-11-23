@@ -1,9 +1,29 @@
 'use client';
 import * as React from 'react';
-import { ArrowDown, ArrowUp, ChevronDown, Columns3, ListFilter, Search, X, Bookmark } from 'lucide-react';
 import {
-  Button, Checkbox, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel,
-  DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, cn, toast,
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  Columns3,
+  ListFilter,
+  Search,
+  X,
+  Bookmark,
+} from 'lucide-react';
+import {
+  Button,
+  Checkbox,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Input,
+  cn,
+  toast,
 } from '@scoutra/ui';
 import { useT } from '@/lib/i18n/client';
 
@@ -69,7 +89,9 @@ export function DataTable<T>({
   const [view, setView] = React.useState(views[0]?.id ?? '');
   const [q, setQ] = React.useState('');
   const [filters, setFilters] = React.useState<Record<string, string[]>>({});
-  const [hidden, setHidden] = React.useState<string[]>(columns.filter((c) => c.hidden).map((c) => c.id));
+  const [hidden, setHidden] = React.useState<string[]>(
+    columns.filter((c) => c.hidden).map((c) => c.id),
+  );
   const [sort, setSort] = React.useState<{ id: string; dir: 1 | -1 } | null>(null);
   const [sel, setSel] = React.useState<string[]>([]);
 
@@ -92,7 +114,11 @@ export function DataTable<T>({
         out = [...out].sort((a, b) => {
           const x = sv(a);
           const y = sv(b);
-          return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))) * sort.dir;
+          return (
+            (typeof x === 'number' && typeof y === 'number'
+              ? x - y
+              : String(x).localeCompare(String(y))) * sort.dir
+          );
         });
       }
     }
@@ -123,12 +149,17 @@ export function DataTable<T>({
                 {views.map((v) => (
                   <DropdownMenuRadioItem key={v.id} value={v.id}>
                     {v.label}
-                    <span className="ml-auto pl-4 text-label-12 text-ink-3 tnum">{rows.filter(v.filter).length}</span>
+                    <span className="ml-auto pl-4 text-label-12 text-ink-3 tnum">
+                      {rows.filter(v.filter).length}
+                    </span>
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked={false} onCheckedChange={() => toast(t('app.common.viewSaved'))}>
+              <DropdownMenuCheckboxItem
+                checked={false}
+                onCheckedChange={() => toast(t('app.common.viewSaved'))}
+              >
                 {t('app.common.saveView')}
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
@@ -136,17 +167,33 @@ export function DataTable<T>({
         ) : null}
         {searchText ? (
           <div className="relative min-w-[180px] flex-1 sm:max-w-xs">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-3" strokeWidth={1.75} aria-hidden />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('app.common.search')} placeholder={t('app.common.search')} className="h-8 pl-8 max-sm:h-10" />
+            <Search
+              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-3"
+              strokeWidth={1.75}
+              aria-hidden
+            />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              aria-label={t('app.common.search')}
+              placeholder={t('app.common.search')}
+              className="h-8 pl-8 max-sm:h-10"
+            />
           </div>
         ) : null}
         {facets.map((f) => (
           <DropdownMenu key={f.id}>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant={filters[f.id]?.length ? 'secondary' : 'ghost'} className={cn(filters[f.id]?.length && 'border-accent-line bg-accent-soft')}>
+              <Button
+                size="sm"
+                variant={filters[f.id]?.length ? 'secondary' : 'ghost'}
+                className={cn(filters[f.id]?.length && 'border-accent-line bg-accent-soft')}
+              >
                 <ListFilter aria-hidden strokeWidth={1.75} />
                 {f.label}
-                {filters[f.id]?.length ? <span className="tnum">· {filters[f.id]!.length}</span> : null}
+                {filters[f.id]?.length ? (
+                  <span className="tnum">· {filters[f.id]!.length}</span>
+                ) : null}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="max-h-80 overflow-y-auto">
@@ -158,7 +205,10 @@ export function DataTable<T>({
                   onCheckedChange={(v) =>
                     setFilters((cur) => {
                       const list = cur[f.id] ?? [];
-                      return { ...cur, [f.id]: v ? [...list, o.value] : list.filter((x) => x !== o.value) };
+                      return {
+                        ...cur,
+                        [f.id]: v ? [...list, o.value] : list.filter((x) => x !== o.value),
+                      };
                     })
                   }
                 >
@@ -176,7 +226,9 @@ export function DataTable<T>({
         ) : null}
         <span className="flex-1" />
         {toolbarExtra}
-        <span className="text-label-12 text-ink-3 tnum">{t('app.common.results', { n: filtered.length })}</span>
+        <span className="text-label-12 text-ink-3 tnum">
+          {t('app.common.results', { n: filtered.length })}
+        </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="ghost" aria-label={t('app.common.columns')}>
@@ -193,7 +245,9 @@ export function DataTable<T>({
                   key={c.id}
                   checked={!hidden.includes(c.id)}
                   onSelect={(e) => e.preventDefault()}
-                  onCheckedChange={(v) => setHidden((h) => (v ? h.filter((x) => x !== c.id) : [...h, c.id]))}
+                  onCheckedChange={(v) =>
+                    setHidden((h) => (v ? h.filter((x) => x !== c.id) : [...h, c.id]))
+                  }
                 >
                   {c.header}
                 </DropdownMenuCheckboxItem>
@@ -204,12 +258,20 @@ export function DataTable<T>({
 
       {/* Barre d'actions groupées */}
       {sel.length && bulkActions ? (
-        <div className="flex flex-wrap items-center gap-2 border-b border-line bg-ink px-3 py-1.5 text-label-13 text-white" role="region" aria-label={t('app.common.selected', { n: sel.length })}>
+        <div
+          className="flex flex-wrap items-center gap-2 border-b border-line bg-ink px-3 py-1.5 text-label-13 text-white"
+          role="region"
+          aria-label={t('app.common.selected', { n: sel.length })}
+        >
           <span className="tnum">{t('app.common.selected', { n: sel.length })}</span>
           <span className="mx-1 h-4 w-px bg-white/20" aria-hidden />
           {bulkActions(sel, () => setSel([]))}
           <span className="flex-1" />
-          <button type="button" className="rounded-sm px-2 py-1 text-white/80 hover:bg-white/10 hover:text-white" onClick={() => setSel([])}>
+          <button
+            type="button"
+            className="rounded-sm px-2 py-1 text-white/80 hover:bg-white/10 hover:text-white"
+            onClick={() => setSel([])}
+          >
             {t('app.common.deselect')}
           </button>
         </div>
@@ -235,7 +297,9 @@ export function DataTable<T>({
                   <th
                     key={c.id}
                     scope="col"
-                    aria-sort={sorted === 1 ? 'ascending' : sorted === -1 ? 'descending' : undefined}
+                    aria-sort={
+                      sorted === 1 ? 'ascending' : sorted === -1 ? 'descending' : undefined
+                    }
                     className={cn(
                       'whitespace-nowrap px-3 text-label-13 font-medium text-ink-3',
                       i === 0 && !bulkActions && 'pl-4',
@@ -247,11 +311,26 @@ export function DataTable<T>({
                     {c.sortValue ? (
                       <button
                         type="button"
-                        className={cn('inline-flex items-center gap-1 hover:text-ink', sorted && 'text-ink')}
-                        onClick={() => setSort((s) => (s?.id === c.id ? (s.dir === 1 ? { id: c.id, dir: -1 } : null) : { id: c.id, dir: 1 }))}
+                        className={cn(
+                          'inline-flex items-center gap-1 hover:text-ink',
+                          sorted && 'text-ink',
+                        )}
+                        onClick={() =>
+                          setSort((s) =>
+                            s?.id === c.id
+                              ? s.dir === 1
+                                ? { id: c.id, dir: -1 }
+                                : null
+                              : { id: c.id, dir: 1 },
+                          )
+                        }
                       >
                         {c.header}
-                        {sorted === 1 ? <ArrowUp className="size-3.5" strokeWidth={2} aria-hidden /> : sorted === -1 ? <ArrowDown className="size-3.5" strokeWidth={2} aria-hidden /> : null}
+                        {sorted === 1 ? (
+                          <ArrowUp className="size-3.5" strokeWidth={2} aria-hidden />
+                        ) : sorted === -1 ? (
+                          <ArrowDown className="size-3.5" strokeWidth={2} aria-hidden />
+                        ) : null}
                       </button>
                     ) : (
                       c.header
@@ -278,7 +357,13 @@ export function DataTable<T>({
                 >
                   {bulkActions ? (
                     <td className="w-10 pl-4" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox aria-label={t('app.common.selectRow', { name: getLabel(r) })} checked={checked} onCheckedChange={(v) => setSel((s) => (v === true ? [...s, id] : s.filter((x) => x !== id)))} />
+                      <Checkbox
+                        aria-label={t('app.common.selectRow', { name: getLabel(r) })}
+                        checked={checked}
+                        onCheckedChange={(v) =>
+                          setSel((s) => (v === true ? [...s, id] : s.filter((x) => x !== id)))
+                        }
+                      />
                     </td>
                   ) : null}
                   {visibleCols.map((c, i) => (
@@ -302,7 +387,11 @@ export function DataTable<T>({
             })}
           </tbody>
         </table>
-        {filtered.length === 0 ? <p className="px-4 py-10 text-copy-14 text-ink-3">{emptyLabel ?? t('app.common.noMatch')}</p> : null}
+        {filtered.length === 0 ? (
+          <p className="px-4 py-10 text-copy-14 text-ink-3">
+            {emptyLabel ?? t('app.common.noMatch')}
+          </p>
+        ) : null}
       </div>
     </div>
   );

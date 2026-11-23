@@ -2,11 +2,37 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, Search, Plus, ListChecks, UserPlus, Languages, Keyboard, ShieldAlert, Eye } from 'lucide-react';
 import {
-  CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator,
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Kbd, Sheet, SheetContent, SheetTitle,
-  Toaster, TooltipProvider, Button,
+  Menu,
+  Search,
+  Plus,
+  ListChecks,
+  UserPlus,
+  Languages,
+  Keyboard,
+  ShieldAlert,
+  Eye,
+} from 'lucide-react';
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Kbd,
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  Toaster,
+  TooltipProvider,
+  Button,
 } from '@scoutra/ui';
 import { MotionConfig } from 'motion/react';
 import type { MessageKey } from '@scoutra/i18n';
@@ -96,10 +122,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Barre mobile */}
             <div className="sticky top-0 z-30 flex h-[52px] items-center gap-2 border-b border-line bg-surface px-3 lg:hidden">
               <Sheet open={mobileNav} onOpenChange={setMobileNav}>
-                <Button variant="ghost" size="icon" aria-label={t('app.nav.openMenu')} onClick={() => setMobileNav(true)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('app.nav.openMenu')}
+                  onClick={() => setMobileNav(true)}
+                >
                   <Menu strokeWidth={1.75} aria-hidden />
                 </Button>
-                <SheetContent side="left" closeLabel={t('app.common.close')} className="bg-canvas p-0" hideClose>
+                <SheetContent
+                  side="left"
+                  closeLabel={t('app.common.close')}
+                  className="bg-canvas p-0"
+                  hideClose
+                >
                   <SheetTitle className="sr-only">{t('app.nav.main')}</SheetTitle>
                   <Sidebar
                     onNavigate={() => setMobileNav(false)}
@@ -115,7 +151,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Logo className="h-[22px]" />
               </Link>
               <span className="flex-1" />
-              <Button variant="ghost" size="icon" aria-label={t('app.shell.openPalette')} onClick={() => setPalette(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('app.shell.openPalette')}
+                onClick={() => setPalette(true)}
+              >
                 <Search strokeWidth={1.75} aria-hidden />
               </Button>
             </div>
@@ -138,8 +179,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {blocked.length ? (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-warn/25 bg-warn-soft px-4 py-2 text-label-13 text-warn sm:px-6">
                 <ShieldAlert className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                <span className="min-w-0 flex-1">{t('app.shell.twoFactorBanner', { actions: blocked.join(', ') })}</span>
-                <Link href="/two-factor/setup?next=/home" className="font-semibold underline underline-offset-2">
+                <span className="min-w-0 flex-1">
+                  {t('app.shell.twoFactorBanner', { actions: blocked.join(', ') })}
+                </span>
+                <Link
+                  href="/two-factor/setup?next=/home"
+                  className="font-semibold underline underline-offset-2"
+                >
                   {t('app.shell.twoFactorCta')}
                 </Link>
               </div>
@@ -198,7 +244,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {items.map((i) => {
                 const Icon = i.icon;
                 return (
-                  <CommandItem key={i.id} value={`${t(i.label)} ${i.id}`} onSelect={() => go(i.href)}>
+                  <CommandItem
+                    key={i.id}
+                    value={`${t(i.label)} ${i.id}`}
+                    onSelect={() => go(i.href)}
+                  >
                     <Icon aria-hidden strokeWidth={1.75} />
                     {t(i.label)}
                     {i.key ? (
@@ -216,7 +266,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <CommandSeparator />
                 <CommandGroup heading={t('app.shell.recentProspects')}>
                   {DEMO_PROSPECTS.slice(0, 8).map((p) => (
-                    <CommandItem key={p.id} value={`${p.person} ${p.org}`} onSelect={() => go(`/prospects?open=${p.id}`)}>
+                    <CommandItem
+                      key={p.id}
+                      value={`${p.person} ${p.org}`}
+                      onSelect={() => go(`/prospects?open=${p.id}`)}
+                    >
                       <span className="font-medium text-ink">{p.person}</span>
                       <span className="truncate text-ink-3">{p.org}</span>
                       <span className="ml-auto text-label-12 text-ink-3 tnum">{p.score}</span>
@@ -238,14 +292,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {[
                 [t('app.shell.openPalette'), ['⌘', 'K']],
                 [t('app.shell.showShortcuts'), ['?']],
-                ...items.filter((i) => i.key).map((i) => [t(i.label), ['G', i.key!.toUpperCase()]] as const),
+                ...items
+                  .filter((i) => i.key)
+                  .map((i) => [t(i.label), ['G', i.key!.toUpperCase()]] as const),
               ].map(([label, keys]) => (
-                <div key={label as string} className="flex items-center justify-between bg-surface px-3 py-2">
+                <div
+                  key={label as string}
+                  className="flex items-center justify-between bg-surface px-3 py-2"
+                >
                   <dt>{label as string}</dt>
                   <dd className="flex items-center gap-1">
                     {(keys as readonly string[]).map((k, idx) => (
                       <React.Fragment key={k + idx}>
-                        {idx > 0 && keys[0] === 'G' ? <span className="text-label-12 text-ink-3">{t('app.shell.then')}</span> : null}
+                        {idx > 0 && keys[0] === 'G' ? (
+                          <span className="text-label-12 text-ink-3">{t('app.shell.then')}</span>
+                        ) : null}
                         <Kbd className="h-5 min-w-5 text-[12px]">{k}</Kbd>
                       </React.Fragment>
                     ))}

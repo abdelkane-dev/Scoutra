@@ -11,7 +11,9 @@ import { PageHeader, type Crumb } from './page-header';
 /** Contexte d'une page de l'application : permissions, traduction et en-tête prêt à l'emploi. */
 export async function pageKit() {
   const [ctx, { t, locale }] = await Promise.all([getAppContext(), getT()]);
-  const allowed = (perm?: Action[]) => !perm || perm.some((a) => ctx.org.permissions.includes(a) || ctx.org.needsTwoFactor.includes(a));
+  const allowed = (perm?: Action[]) =>
+    !perm ||
+    perm.some((a) => ctx.org.permissions.includes(a) || ctx.org.needsTwoFactor.includes(a));
   return { ctx, t, locale, allowed };
 }
 
@@ -36,7 +38,12 @@ export function AppHeader({
   demo?: boolean;
   extraCrumbs?: Crumb[];
 }) {
-  const crumbs: Crumb[] = [{ label: ctx.org.name, href: '/home' }, ...(section ? [section] : []), ...extraCrumbs, { label: title }];
+  const crumbs: Crumb[] = [
+    { label: ctx.org.name, href: '/home' },
+    ...(section ? [section] : []),
+    ...extraCrumbs,
+    { label: title },
+  ];
   return (
     <PageHeader
       crumbs={crumbs}
@@ -53,7 +60,15 @@ export function AppHeader({
 }
 
 /** Page interdite pour le rôle courant (l'élément de navigation est déjà masqué). */
-export function NotAllowed({ t, ctx, title }: { t: Translator; ctx: AppContext; title: MessageKey }) {
+export function NotAllowed({
+  t,
+  ctx,
+  title,
+}: {
+  t: Translator;
+  ctx: AppContext;
+  title: MessageKey;
+}) {
   return (
     <>
       <AppHeader t={t} ctx={ctx} title={t(title)} demo={false} />

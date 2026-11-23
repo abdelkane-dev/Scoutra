@@ -14,7 +14,9 @@ export function TodayTasks({ canWrite }: { canWrite: boolean }) {
   const [done, setDone] = React.useState<string[]>(tasks.filter((x) => x.done).map((x) => x.id));
   return (
     <>
-      <p className="px-4 pb-1 pt-3 text-label-12 text-ink-3">{t('home.todayCount', { done: done.length, total: tasks.length })}</p>
+      <p className="px-4 pb-1 pt-3 text-label-12 text-ink-3">
+        {t('home.todayCount', { done: done.length, total: tasks.length })}
+      </p>
       <ul className="divide-y divide-line">
         {tasks.map((task) => {
           const p = getDemoProspect(task.prospect);
@@ -32,12 +34,24 @@ export function TodayTasks({ canWrite }: { canWrite: boolean }) {
                 }}
               />
               <div className="min-w-0 flex-1">
-                <p className={cn('truncate text-label-14', isDone && 'text-ink-3 line-through')}>{task.title[locale]}</p>
-                <Link href={`/prospects?open=${task.prospect}`} className="block truncate text-label-12 font-normal text-ink-3 hover:text-ink">
+                <p className={cn('truncate text-label-14', isDone && 'text-ink-3 line-through')}>
+                  {task.title[locale]}
+                </p>
+                <Link
+                  href={`/prospects?open=${task.prospect}`}
+                  className="block truncate text-label-12 font-normal text-ink-3 hover:text-ink"
+                >
                   {p?.person}, {p?.org}
                 </Link>
               </div>
-              <time className={cn('shrink-0 text-label-12 tnum', task.due === 'overdue' ? 'text-bad' : 'text-ink-3')}>{task.time[locale]}</time>
+              <time
+                className={cn(
+                  'shrink-0 text-label-12 tnum',
+                  task.due === 'overdue' ? 'text-bad' : 'text-ink-3',
+                )}
+              >
+                {task.time[locale]}
+              </time>
             </li>
           );
         })}

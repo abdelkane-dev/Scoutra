@@ -22,7 +22,8 @@ export function usePerm() {
     () => ({
       can: (a: Action) => org.permissions.includes(a),
       needs2fa: (a: Action) => org.needsTwoFactor.includes(a),
-      visible: (a: Action[] | undefined) => !a || a.some((x) => org.permissions.includes(x) || org.needsTwoFactor.includes(x)),
+      visible: (a: Action[] | undefined) =>
+        !a || a.some((x) => org.permissions.includes(x) || org.needsTwoFactor.includes(x)),
     }),
     [org.permissions, org.needsTwoFactor],
   );

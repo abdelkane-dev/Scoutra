@@ -19,7 +19,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   return (
     <>
       <AuthHeading title={t('auth.setup2fa.title')} lede={t('auth.setup2fa.lede')} />
-      <TwoFactorSetup alreadyEnabled={!!s.user.twoFactorEnabled} next={safeNext(next, '/settings/security')} />
+      <TwoFactorSetup
+        alreadyEnabled={!!s.user.twoFactorEnabled}
+        next={safeNext(next, '/settings/security')}
+      />
     </>
   );
 }

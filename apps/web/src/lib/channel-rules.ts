@@ -2,7 +2,35 @@
  * Résumé indicatif des canaux autorisés par zone (démonstration de l'interface).
  * Besoin d'API : GET /api/compliance/rules?country= (règles maintenues côté serveur, @scoutra/compliance).
  */
-const EU = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
+const EU = [
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
+];
 
 export type Ch = 'email' | 'phone' | 'whatsapp' | 'linkedin_manual';
 

@@ -20,7 +20,9 @@ const BY_SECTOR: Record<string, string> = {
 };
 
 export function suggestModels(accountType: string | null, sectors: string[], n = 4): string[] {
-  const out = [...(BY_ACCOUNT[accountType ?? ''] ?? ['b2b', 'b2c', 'partners_distributors', 'local_business'])];
+  const out = [
+    ...(BY_ACCOUNT[accountType ?? ''] ?? ['b2b', 'b2c', 'partners_distributors', 'local_business']),
+  ];
   for (const s of sectors) {
     const m = BY_SECTOR[s];
     if (m && !out.includes(m)) out.unshift(m);

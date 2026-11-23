@@ -38,13 +38,22 @@ export function PageHeader({
           <ol className="flex min-w-0 items-center gap-1.5 text-label-13 text-ink-3">
             {crumbs.map((c, i) => (
               <li key={i} className="flex min-w-0 items-center gap-1.5">
-                {i > 0 ? <ChevronRight className="size-3.5 shrink-0 text-line-strong" strokeWidth={2} aria-hidden /> : null}
+                {i > 0 ? (
+                  <ChevronRight
+                    className="size-3.5 shrink-0 text-line-strong"
+                    strokeWidth={2}
+                    aria-hidden
+                  />
+                ) : null}
                 {c.href ? (
                   <Link href={c.href} className="truncate hover:text-ink">
                     {c.label}
                   </Link>
                 ) : (
-                  <span className="truncate" aria-current={i === crumbs.length - 1 ? 'page' : undefined}>
+                  <span
+                    className="truncate"
+                    aria-current={i === crumbs.length - 1 ? 'page' : undefined}
+                  >
                     {c.label}
                   </span>
                 )}
@@ -54,7 +63,10 @@ export function PageHeader({
         </nav>
         {demo ? (
           <Tooltip content={demoHint}>
-            <span tabIndex={0} className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-xs border border-dashed border-line-strong px-1.5 text-label-12 text-ink-3">
+            <span
+              tabIndex={0}
+              className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-xs border border-dashed border-line-strong px-1.5 text-label-12 text-ink-3"
+            >
               <FlaskConical className="size-3.5" strokeWidth={1.75} aria-hidden />
               <span className="max-sm:sr-only">{demoLabel}</span>
             </span>
@@ -74,6 +86,21 @@ export function PageHeader({
 }
 
 /** Zone de contenu sous l'en-tête. */
-export function PageBody({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn('grid min-w-0 content-start gap-4 px-3 py-4 sm:px-6 sm:py-5 [&>*]:min-w-0', className)}>{children}</div>;
+export function PageBody({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        'grid min-w-0 content-start gap-4 px-3 py-4 sm:px-6 sm:py-5 [&>*]:min-w-0',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

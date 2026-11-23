@@ -16,7 +16,9 @@ export default async function Page() {
   return (
     <>
       <AuthHeading title={t('auth.forgot.title')} lede={t('auth.forgot.lede')} />
-      <Suspense><ForgotPasswordForm /></Suspense>
+      <Suspense>
+        <ForgotPasswordForm />
+      </Suspense>
     </>
   );
 }

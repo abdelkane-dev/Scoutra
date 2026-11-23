@@ -16,7 +16,9 @@ export default async function Page() {
   return (
     <>
       <AuthHeading title={t('auth.twoFactor.title')} lede={t('auth.twoFactor.lede')} />
-      <Suspense><TwoFactorForm /></Suspense>
+      <Suspense>
+        <TwoFactorForm />
+      </Suspense>
     </>
   );
 }

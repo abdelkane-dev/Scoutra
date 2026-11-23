@@ -16,7 +16,9 @@ export default async function Page() {
   return (
     <>
       <AuthHeading title={t('auth.verify.title')} lede={undefined} />
-      <Suspense><VerifyEmailPanel dev={process.env.NODE_ENV === 'development'} /></Suspense>
+      <Suspense>
+        <VerifyEmailPanel dev={process.env.NODE_ENV === 'development'} />
+      </Suspense>
     </>
   );
 }

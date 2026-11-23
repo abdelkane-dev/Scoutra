@@ -10,10 +10,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
   const { ctx, t, allowed } = await pageKit();
-  if (!allowed(['contact:read'])) return <NotAllowed t={t} ctx={ctx} title="work.base.contactsTitle" />;
+  if (!allowed(['contact:read']))
+    return <NotAllowed t={t} ctx={ctx} title="work.base.contactsTitle" />;
   return (
     <>
-      <AppHeader t={t} ctx={ctx} section={{ label: t('app.nav.base') }} title={t('work.base.contactsTitle')} meta={t('work.base.contactsMeta')} />
+      <AppHeader
+        t={t}
+        ctx={ctx}
+        section={{ label: t('app.nav.base') }}
+        title={t('work.base.contactsTitle')}
+        meta={t('work.base.contactsMeta')}
+      />
       <PageBody>
         <ContactsView />
       </PageBody>

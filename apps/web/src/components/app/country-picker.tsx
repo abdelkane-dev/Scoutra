@@ -7,7 +7,15 @@ import { useLocale, useT } from '@/lib/i18n/client';
 import { countryOptions } from '@/lib/countries';
 
 /** Sélection d'un ou plusieurs pays (recherche au clavier, codes ISO affichés). */
-export function CountryPicker({ value, onChange, multiple }: { value: string[]; onChange: (v: string[]) => void; multiple: boolean }) {
+export function CountryPicker({
+  value,
+  onChange,
+  multiple,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  multiple: boolean;
+}) {
   const t = useT();
   const locale = useLocale();
   const [open, setOpen] = React.useState(false);
@@ -16,10 +24,18 @@ export function CountryPicker({ value, onChange, multiple }: { value: string[]; 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {value.map((c) => (
-        <span key={c} className="inline-flex h-7 items-center gap-1.5 rounded-sm border border-line bg-surface pl-1.5 pr-0.5 text-label-13">
+        <span
+          key={c}
+          className="inline-flex h-7 items-center gap-1.5 rounded-sm border border-line bg-surface pl-1.5 pr-0.5 text-label-13"
+        >
           <CountryCode code={c} />
           {name(c)}
-          <button type="button" aria-label={t('search.removeCountry', { country: name(c) })} onClick={() => onChange(value.filter((x) => x !== c))} className="grid size-6 place-items-center rounded-xs text-ink-3 hover:bg-hover hover:text-ink">
+          <button
+            type="button"
+            aria-label={t('search.removeCountry', { country: name(c) })}
+            onClick={() => onChange(value.filter((x) => x !== c))}
+            className="grid size-6 place-items-center rounded-xs text-ink-3 hover:bg-hover hover:text-ink"
+          >
             <X className="size-3.5" strokeWidth={1.75} aria-hidden />
           </button>
         </span>
@@ -32,9 +48,15 @@ export function CountryPicker({ value, onChange, multiple }: { value: string[]; 
           </PopoverTrigger>
           <PopoverContent className="w-72 p-0">
             <Cmdk label={t('search.searchCountry')} loop>
-              <Cmdk.Input placeholder={t('search.searchCountry')} className="h-10 w-full border-b border-line bg-transparent px-3 text-copy-14 outline-none placeholder:text-ink-3" autoFocus />
+              <Cmdk.Input
+                placeholder={t('search.searchCountry')}
+                className="h-10 w-full border-b border-line bg-transparent px-3 text-copy-14 outline-none placeholder:text-ink-3"
+                autoFocus
+              />
               <Cmdk.List className="max-h-64 overflow-y-auto p-1">
-                <Cmdk.Empty className="px-3 py-4 text-copy-14 text-ink-3">{t('app.common.noMatch')}</Cmdk.Empty>
+                <Cmdk.Empty className="px-3 py-4 text-copy-14 text-ink-3">
+                  {t('app.common.noMatch')}
+                </Cmdk.Empty>
                 {options.map((o) => (
                   <Cmdk.Item
                     key={o.code}
@@ -44,7 +66,9 @@ export function CountryPicker({ value, onChange, multiple }: { value: string[]; 
                       onChange(multiple ? [...value, o.code] : [o.code]);
                       setOpen(false);
                     }}
-                    className={cn('flex min-h-8 cursor-default items-center gap-2 rounded-sm px-2 text-copy-14 data-[disabled=true]:opacity-40 data-[selected=true]:bg-sunken max-sm:min-h-11')}
+                    className={cn(
+                      'flex min-h-8 cursor-default items-center gap-2 rounded-sm px-2 text-copy-14 data-[disabled=true]:opacity-40 data-[selected=true]:bg-sunken max-sm:min-h-11',
+                    )}
                   >
                     <CountryCode code={o.code} />
                     {o.name}

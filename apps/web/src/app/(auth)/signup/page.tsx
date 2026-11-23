@@ -17,7 +17,9 @@ export default async function Page() {
   return (
     <>
       <AuthHeading title={t('auth.signup.title')} lede={t('auth.signup.lede')} />
-      <Suspense><SignupForm /></Suspense>
+      <Suspense>
+        <SignupForm />
+      </Suspense>
     </>
   );
 }

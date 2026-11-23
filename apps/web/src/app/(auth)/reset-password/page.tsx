@@ -16,7 +16,9 @@ export default async function Page() {
   return (
     <>
       <AuthHeading title={t('auth.reset.title')} lede={t('auth.reset.lede')} />
-      <Suspense><ResetPasswordForm /></Suspense>
+      <Suspense>
+        <ResetPasswordForm />
+      </Suspense>
     </>
   );
 }

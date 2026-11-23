@@ -12,7 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('search.title') };
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ model?: string }>;
+}) {
   const { ctx, t, allowed } = await pageKit();
   if (!allowed(['campaign:read'])) return <NotAllowed t={t} ctx={ctx} title="search.title" />;
   const { model } = await searchParams;
@@ -31,7 +35,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         }
       />
       <PageBody>
-        <SearchView models={[...PROSPECTING_MODEL_CODES]} defaultCountry={ctx.org.countryCode} initialModel={model} />
+        <SearchView
+          models={[...PROSPECTING_MODEL_CODES]}
+          defaultCountry={ctx.org.countryCode}
+          initialModel={model}
+        />
       </PageBody>
     </>
   );

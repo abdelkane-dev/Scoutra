@@ -2,10 +2,31 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, ChevronsUpDown, Check, Lock, Plus, Search, LogOut, User, ShieldCheck, Languages, Keyboard, TerminalSquare } from 'lucide-react';
 import {
-  Avatar, Kbd, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
-  DropdownMenuTrigger, DropdownMenuShortcut,
+  ChevronDown,
+  ChevronsUpDown,
+  Check,
+  Lock,
+  Plus,
+  Search,
+  LogOut,
+  User,
+  ShieldCheck,
+  Languages,
+  Keyboard,
+  TerminalSquare,
+} from 'lucide-react';
+import {
+  Avatar,
+  Kbd,
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuShortcut,
 } from '@scoutra/ui';
 import { useFormat, useLocale, useT } from '@/lib/i18n/client';
 import { authClient } from '@/lib/auth-client';
@@ -38,13 +59,29 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
         active && 'bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line)] hover:bg-surface',
       )}
     >
-      <Icon className={cn('size-4 shrink-0', active ? 'text-accent-text' : 'text-ink-3 group-hover:text-ink-2')} strokeWidth={1.75} aria-hidden />
+      <Icon
+        className={cn(
+          'size-4 shrink-0',
+          active ? 'text-accent-text' : 'text-ink-3 group-hover:text-ink-2',
+        )}
+        strokeWidth={1.75}
+        aria-hidden
+      />
       <span className="truncate">{t(item.label)}</span>
       <span className="ml-auto flex items-center gap-1">
-        {locked ? <Lock className="size-3.5 text-ink-3" strokeWidth={1.75} aria-label={t('app.common.needs2fa')} /> : null}
+        {locked ? (
+          <Lock
+            className="size-3.5 text-ink-3"
+            strokeWidth={1.75}
+            aria-label={t('app.common.needs2fa')}
+          />
+        ) : null}
         {item.count ? <span className="text-label-12 text-ink-3 tnum">{item.count}</span> : null}
         {item.key && !item.count ? (
-          <span className="hidden gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 lg:flex" aria-hidden>
+          <span
+            className="hidden gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 lg:flex"
+            aria-hidden
+          >
             <Kbd>G</Kbd>
             <Kbd>{item.key === ',' ? ',' : item.key.toUpperCase()}</Kbd>
           </span>
@@ -54,7 +91,15 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
   );
 }
 
-export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpenPalette: () => void; onShowShortcuts: () => void; onNavigate?: () => void }) {
+export function Sidebar({
+  onOpenPalette,
+  onShowShortcuts,
+  onNavigate,
+}: {
+  onOpenPalette: () => void;
+  onShowShortcuts: () => void;
+  onNavigate?: () => void;
+}) {
   const t = useT();
   const locale = useLocale();
   const fmt = useFormat();
@@ -80,16 +125,30 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
 
   const total = DEMO_CREDITS.granted + DEMO_CREDITS.rollover + DEMO_CREDITS.packs;
   const left = total - DEMO_CREDITS.used;
-  const initials = app.org.name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  const initials = app.org.name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="flex h-full flex-col gap-1 px-2.5 pb-3 pt-3">
       <DropdownMenu>
-        <DropdownMenuTrigger className="mb-1 flex w-full items-center gap-2.5 rounded-sm border border-line bg-surface px-2 py-1.5 text-left hover:border-line-strong" aria-label={t('app.shell.orgMenu')}>
-          <span className="grid size-[22px] shrink-0 place-items-center rounded-[5px] bg-ink text-[11px] font-bold text-white">{initials || 'S'}</span>
+        <DropdownMenuTrigger
+          className="mb-1 flex w-full items-center gap-2.5 rounded-sm border border-line bg-surface px-2 py-1.5 text-left hover:border-line-strong"
+          aria-label={t('app.shell.orgMenu')}
+        >
+          <span className="grid size-[22px] shrink-0 place-items-center rounded-[5px] bg-ink text-[11px] font-bold text-white">
+            {initials || 'S'}
+          </span>
           <span className="min-w-0 flex-1">
-            <b className="block truncate text-[13.5px] font-semibold leading-[18px]">{app.org.name}</b>
-            <small className="block truncate text-label-12 font-normal text-ink-3">{t(`app.roles.${app.org.role}`)}</small>
+            <b className="block truncate text-[13.5px] font-semibold leading-[18px]">
+              {app.org.name}
+            </b>
+            <small className="block truncate text-label-12 font-normal text-ink-3">
+              {t(`app.roles.${app.org.role}`)}
+            </small>
           </span>
           <ChevronsUpDown className="size-4 text-ink-3" strokeWidth={1.75} aria-hidden />
         </DropdownMenuTrigger>
@@ -105,13 +164,17 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
               }}
             >
               <span className="truncate">{o.name}</span>
-              {o.id === app.org.id ? <Check className="ml-auto text-accent-text!" strokeWidth={1.75} aria-hidden /> : null}
+              {o.id === app.org.id ? (
+                <Check className="ml-auto text-accent-text!" strokeWidth={1.75} aria-hidden />
+              ) : null}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled>
             <Lock strokeWidth={1.75} aria-hidden />
-            <span className="text-label-13">{t('app.shell.country', { country: fmt.country(app.org.countryCode) })}</span>
+            <span className="text-label-13">
+              {t('app.shell.country', { country: fmt.country(app.org.countryCode) })}
+            </span>
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => router.push('/onboarding?new=1')}>
             <Plus strokeWidth={1.75} aria-hidden />
@@ -126,11 +189,16 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
         className="mb-2 flex h-8 items-center gap-2 rounded-sm border border-line bg-surface px-2 text-left text-label-13 font-normal text-ink-3 hover:border-line-strong max-lg:h-10"
       >
         <Search className="size-4" strokeWidth={1.75} aria-hidden />
-        <span className="flex-1 truncate whitespace-nowrap">{t('app.shell.searchPlaceholder')}</span>
+        <span className="flex-1 truncate whitespace-nowrap">
+          {t('app.shell.searchPlaceholder')}
+        </span>
         <Kbd aria-hidden>⌘K</Kbd>
       </button>
 
-      <nav aria-label={t('app.nav.main')} className="-mx-1 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1">
+      <nav
+        aria-label={t('app.nav.main')}
+        className="-mx-1 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1"
+      >
         {PRIMARY.filter((i) => visible(i.perm)).map((i) => (
           <NavLink key={i.id} item={i} onNavigate={onNavigate} />
         ))}
@@ -144,12 +212,23 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
               <button
                 type="button"
                 aria-expanded={open}
-                aria-label={open ? t('app.nav.collapse', { section: label }) : t('app.nav.expand', { section: label })}
+                aria-label={
+                  open
+                    ? t('app.nav.collapse', { section: label })
+                    : t('app.nav.expand', { section: label })
+                }
                 onClick={() => toggle(s.id)}
                 className="group flex h-6 w-full items-center gap-1 rounded-sm px-2 text-label-12 text-ink-3 hover:text-ink-2"
               >
                 {label}
-                <ChevronDown className={cn('size-3 transition-transform duration-[120ms]', !open && '-rotate-90')} strokeWidth={2} aria-hidden />
+                <ChevronDown
+                  className={cn(
+                    'size-3 transition-transform duration-[120ms]',
+                    !open && '-rotate-90',
+                  )}
+                  strokeWidth={2}
+                  aria-hidden
+                />
               </button>
               {open ? (
                 <div className="mt-0.5 grid gap-0.5">
@@ -167,7 +246,10 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
           ))}
           {/* Emplacement réservé : console opérateur (super-admin plateforme, mode SaaS), non implémentée. */}
           {app.user.platformOperator && app.mode === 'saas' ? (
-            <span className="flex h-8 items-center gap-2.5 px-2 text-label-14 text-ink-3" aria-disabled="true">
+            <span
+              className="flex h-8 items-center gap-2.5 px-2 text-label-14 text-ink-3"
+              aria-disabled="true"
+            >
               <TerminalSquare className="size-4" strokeWidth={1.75} aria-hidden />
               {t('app.nav.operator')}
               <span className="ml-auto text-label-12">{t('app.nav.operatorSoon')}</span>
@@ -177,24 +259,39 @@ export function Sidebar({ onOpenPalette, onShowShortcuts, onNavigate }: { onOpen
       </nav>
 
       <div className="mt-2 grid gap-3 border-t border-line px-1.5 pt-3">
-        <Link href="/settings/billing" onClick={onNavigate} className="group grid gap-1.5 rounded-sm" title={t('app.shell.creditsLink')}>
+        <Link
+          href="/settings/billing"
+          onClick={onNavigate}
+          className="group grid gap-1.5 rounded-sm"
+          title={t('app.shell.creditsLink')}
+        >
           <span className="flex justify-between text-[12.5px] text-ink-2">
             <span>{t('app.shell.credits')}</span>
-            <b className="font-semibold text-ink tnum">{t('app.shell.creditsLeft', { n: fmt.n(left) })}</b>
+            <b className="font-semibold text-ink tnum">
+              {t('app.shell.creditsLeft', { n: fmt.n(left) })}
+            </b>
           </span>
           <span className="block h-1 overflow-hidden rounded-[2px] bg-sunken" aria-hidden>
-            <span className="block h-full origin-left rounded-[2px] bg-ink" style={{ transform: `scaleX(${DEMO_CREDITS.used / total})` }} />
+            <span
+              className="block h-full origin-left rounded-[2px] bg-ink"
+              style={{ transform: `scaleX(${DEMO_CREDITS.used / total})` }}
+            />
           </span>
           <span className="text-label-12 font-normal text-ink-3 tnum">
             {t('app.shell.creditsOf', { used: fmt.n(DEMO_CREDITS.used), total: fmt.n(total) })}
           </span>
         </Link>
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-sm text-left hover:bg-hover max-lg:min-h-11" aria-label={t('app.shell.userMenu')}>
+          <DropdownMenuTrigger
+            className="flex items-center gap-2.5 rounded-sm text-left hover:bg-hover max-lg:min-h-11"
+            aria-label={t('app.shell.userMenu')}
+          >
             <Avatar name={app.user.name} />
             <span className="min-w-0 flex-1 text-[13px] leading-[18px]">
               <b className="block truncate font-medium">{app.user.name}</b>
-              <small className="block truncate text-label-12 font-normal text-ink-3">{app.user.email}</small>
+              <small className="block truncate text-label-12 font-normal text-ink-3">
+                {app.user.email}
+              </small>
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" className="w-60">

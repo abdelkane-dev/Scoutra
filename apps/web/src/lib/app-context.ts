@@ -10,7 +10,13 @@ import { getSession, requireOrgAccess, toUser } from '@/server/session';
 
 /** Contexte transmis à la coquille de l'application (aucun secret, uniquement ce que l'UI affiche). */
 export interface AppContext {
-  user: { id: string; name: string; email: string; twoFactorEnabled: boolean; platformOperator: boolean };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    twoFactorEnabled: boolean;
+    platformOperator: boolean;
+  };
   mode: 'saas' | 'license';
   org: {
     id: string;
@@ -70,7 +76,11 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     orgs = [];
   }
   const name = orgs.find((o) => o.id === ctx.orgId)?.name ?? '—';
-  const license = ctx.license as unknown as { status: string; mode?: string; expiresAt?: string | null };
+  const license = ctx.license as unknown as {
+    status: string;
+    mode?: string;
+    expiresAt?: string | null;
+  };
 
   return {
     user: {
