@@ -351,3 +351,33 @@ describe('constat 8 (étape 2) : aucune requête sur un nom de personne', () => 
     }
   });
 });
+
+describe('constat 10 (étape 2) : robots.txt conforme RFC 9309', async () => {
+  const { robotsPolicy } = await import('../src');
+  it('5xx / injoignable = tout interdit ; 4xx = permis ; Allow le plus long l’emporte ; jokers', () => {
+    expect(robotsPolicy('a.sn', { status: 503, body: '' })('/')).toBe(false);
+    expect(robotsPolicy('a.sn', 'unreachable')('/contact')).toBe(false);
+    expect(robotsPolicy('a.sn', { status: 404, body: '' })('/contact')).toBe(true);
+    const p = robotsPolicy('a.sn', {
+      status: 200,
+      body: 'User-agent: *\nDisallow: /\nAllow: /contact\nDisallow: /*.pdf$',
+    });
+    expect(p('/contact')).toBe(true);
+    expect(p('/')).toBe(false);
+    const q = robotsPolicy('a.sn', {
+      status: 200,
+      body: 'User-agent: ScoutraBot\nDisallow: /prive\n\nUser-agent: *\nDisallow: /',
+    });
+    expect(q('/')).toBe(true);
+    expect(q('/prive/x')).toBe(false);
+  });
+  it('robots.txt en erreur serveur : aucune page lue', async () => {
+    const { ctx, calls } = ctxWith([
+      [/robots\.txt/, 500, ''],
+      [/./, 200, '<p>contact@x.sn</p>'],
+    ]);
+    const f = await readWebsite('x.sn', ctx);
+    expect(f!.reachable).toBe(false);
+    expect(calls.filter((c) => !c.url.endsWith('/robots.txt'))).toHaveLength(0);
+  });
+});

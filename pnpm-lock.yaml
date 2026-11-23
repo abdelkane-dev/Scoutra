@@ -311,6 +311,9 @@ importers:
       htmlparser2:
         specifier: ^12.0.0
         version: 12.0.0
+      robots-parser:
+        specifier: ^3.1.1
+        version: 3.1.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -3543,6 +3546,10 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
+  robots-parser@3.1.1:
+    resolution: {integrity: sha512-ltsI9/0CiaaZpnJeLT4vwK86cW1AfSXoBgnQHIaCtBrg4K8UckV7HakNzWfG8UvT2hqwrLZ1YWilWMEiynBg6g==}
+    engines: {node: '>=10.0.0'}
+
   rolldown@1.2.19:
     resolution: {integrity: sha512-QIiV1J9d0pzN4jeeTH4sjPy0AZ6cAy2cG0ExeoE1+U8Rvj+hR3gYkokx0YbeUNGlZqiQJJ2utcETe0oKXwzsuA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -6560,6 +6567,8 @@ snapshots:
   resolve-pkg-maps@1.0.0: {}
 
   reusify@1.1.0: {}
+
+  robots-parser@3.1.1: {}
 
   rolldown@1.2.19:
     dependencies:

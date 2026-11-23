@@ -1,4 +1,5 @@
 import { Parser } from 'htmlparser2';
+import robotsParser from 'robots-parser';
 import type { CandidateSignal, ConnectorCtx, ConnectorManifest } from '../types';
 import { clip, isCompanyDomain, normalizeDomain } from '../util';
 
@@ -41,18 +42,31 @@ export interface WebsiteFacts {
 const PATHS = ['/', '/contact', '/a-propos', '/mentions-legales', '/about', '/contact-us'];
 const MAX_TEXT = 6000;
 
-/** Règles robots.txt (User-agent: * ou ScoutraBot), sous-ensemble prudent : Disallow seulement. */
+export const ROBOTS_USER_AGENT = 'ScoutraBot';
+
+/**
+ * Politique robots.txt conforme à la RFC 9309 (revue étape 2, constat 10) :
+ * - 2xx : règles appliquées (robots-parser : groupes, Allow/Disallow, jokers, plus long motif) ;
+ * - 4xx : fichier « indisponible » → exploration permise ;
+ * - 5xx, délai dépassé, erreur réseau : « injoignable » → TOUT est interdit.
+ * Les 500 premiers Kio seulement sont analysés (limite minimale de la RFC).
+ */
+export type RobotsPolicy = (path: string) => boolean;
+
+export function robotsPolicy(
+  domain: string,
+  fetched: { status: number; body: string } | 'unreachable',
+): RobotsPolicy {
+  if (fetched === 'unreachable' || fetched.status >= 500) return () => false;
+  if (fetched.status >= 400) return () => true;
+  if (fetched.status < 200 || fetched.status >= 300) return () => false;
+  const robot = robotsParser(`https://${domain}/robots.txt`, fetched.body.slice(0, 500 * 1024));
+  return (path) => robot.isAllowed(`https://${domain}${path}`, ROBOTS_USER_AGENT) !== false;
+}
+
+/** Compatibilité : règles d'un robots.txt reçu en 200. */
 export function robotsAllows(robots: string, path: string): boolean {
-  let applies = false;
-  const disallow: string[] = [];
-  for (const line of robots.split(/\r?\n/)) {
-    const [k, ...rest] = line.split(':');
-    const key = k?.trim().toLowerCase();
-    const val = rest.join(':').trim();
-    if (key === 'user-agent') applies = val === '*' || /scoutrabot/i.test(val);
-    else if (applies && key === 'disallow' && val) disallow.push(val);
-  }
-  return !disallow.some((d) => path.startsWith(d));
+  return robotsPolicy('example.invalid', { status: 200, body: robots })(path);
 }
 
 /** Taille maximale de HTML analysée par page (revue étape 2, constat 2). */
@@ -208,19 +222,19 @@ export async function readWebsite(
     signals: [],
     fetchedPages: 0,
   };
-  let robots = '';
+  let allowed: RobotsPolicy;
   try {
     const r = await ctx.http.request(`https://${domain}/robots.txt`, { timeoutMs: 8000 });
-    if (r.status === 200) robots = r.text().slice(0, 50_000);
+    allowed = robotsPolicy(domain, { status: r.status, body: r.status < 300 ? r.text() : '' });
   } catch {
-    /* pas de robots.txt lisible : on continue prudemment */
+    allowed = robotsPolicy(domain, 'unreachable');
   }
   const emails = new Set<string>();
   const phones = new Set<string>();
   const social = new Set<string>();
   for (const path of PATHS) {
     if (facts.fetchedPages >= 4) break;
-    if (!robotsAllows(robots, path)) {
+    if (!allowed(path)) {
       if (path === '/') facts.robotsDisallowed = true;
       continue;
     }
