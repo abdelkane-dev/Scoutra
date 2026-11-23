@@ -135,13 +135,20 @@ export async function reserveCredits(
 export async function consumeCredits(
   tx: Transaction,
   c: { orgId: string; campaignId: string; prospectId: string; amountMc: number; key: string },
-): Promise<'consumed' | 'already' | 'budget_exhausted'> {
+): Promise<'consumed' | 'already' | 'budget_exhausted' | 'campaign_closed'> {
   await lock(tx, c.orgId);
   const [done] = await tx
     .select({ id: creditConsumptions.id })
     .from(creditConsumptions)
     .where(eq(creditConsumptions.idempotencyKey, c.key));
   if (done) return 'already';
+  // Jamais de débit sur une campagne close ou en cours d'annulation (constat 13).
+  const [state] = await tx
+    .select({ status: campaigns.status })
+    .from(campaigns)
+    .where(eq(campaigns.id, c.campaignId))
+    .for('update');
+  if (state?.status !== 'running') return 'campaign_closed';
   const updated = await tx
     .update(campaigns)
     .set({ consumedMc: sql`${campaigns.consumedMc} + ${c.amountMc}` })

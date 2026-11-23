@@ -15,10 +15,12 @@ import {
   type Boss,
 } from '@scoutra/queue';
 import { registerCampaignWorkers, type CampaignDeps } from '../src/campaign';
+import { handleProcess } from '../src/campaign/process';
 import { handles, seedOrgAndOwner } from '../../../packages/db/test/helpers';
 
 const info = inject('db');
 let draftCalls = 0;
+let deps: CampaignDeps;
 const fx = (name: string) =>
   readFileSync(
     fileURLToPath(new URL(`../../../packages/connectors/test/fixtures/${name}`, import.meta.url)),
@@ -142,7 +144,7 @@ describe.skipIf(!info.available)(
       boss = createBoss(info.appUrl);
       boss.on('error', () => undefined);
       await boss.start();
-      const deps: CampaignDeps = {
+      deps = {
         db: h.app.db,
         boss,
         llm,
@@ -258,6 +260,42 @@ describe.skipIf(!info.available)(
             'campaign.status',
           ]),
         );
+      });
+      // Constat 15 : une reprise d'un prospect déjà livré ne débite ni ne compte deux fois.
+      const [one] = await withTenant(h.app.db, A, (tx) =>
+        tx.select().from(schema.prospects).where(eq(schema.prospects.campaignId, id)),
+      ).then((rows) => rows.filter((r) => r.deliveredAt));
+      await withTenant(h.app.db, A, async (tx) => {
+        await tx
+          .update(schema.prospects)
+          .set({ status: 'found' })
+          .where(eq(schema.prospects.id, one!.id));
+        await tx
+          .update(schema.campaigns)
+          .set({ status: 'running' })
+          .where(eq(schema.campaigns.id, id));
+      });
+      await handleProcess(deps, {
+        organizationId: A.orgId,
+        trackingId: id,
+        campaignId: id,
+        prospectId: one!.id,
+      });
+      const again = await campaign(A, id);
+      expect(again.deliveredCount).toBe(done.deliveredCount);
+      expect(again.consumedMc).toBe(done.consumedMc);
+      await withTenant(h.app.db, A, async (tx) => {
+        expect((await tx.select().from(schema.messages)).length).toBe(done.deliveredCount);
+        const [p1] = await tx
+          .select()
+          .from(schema.prospects)
+          .where(eq(schema.prospects.id, one!.id));
+        expect(p1?.deliveredAt).not.toBeNull();
+        expect(p1?.rejectionReason).toBeNull();
+        await tx
+          .update(schema.campaigns)
+          .set({ status: 'completed' })
+          .where(eq(schema.campaigns.id, id));
       });
       // Isolation : B ne voit rien de A
       await withTenant(h.app.db, B, async (tx) => {

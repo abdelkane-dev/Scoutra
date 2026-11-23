@@ -365,3 +365,66 @@ describe.skipIf(!info.available)('isolation multi-locataire (RLS Postgres)', () 
     );
   });
 });
+
+describe.skipIf(!info.available)('constat 13 (étape 2) : aucun débit après clôture', async () => {
+  const { consumeCredits, reserveCredits, grantCredits } = await import('../src');
+  it('consommation refusée sur une campagne non active', async () => {
+    const h = handles(info);
+    try {
+      const O = await seedOrgAndOwner(h.auth, 'closed');
+      await withTenant(h.app.db, O, async (tx) => {
+        await grantCredits(tx, {
+          orgId: O.orgId,
+          origin: 'adjustment',
+          amountMc: 5000,
+          expiresAt: new Date(Date.now() + 864e5),
+          ref: 'g1',
+        });
+        const [c] = await tx
+          .insert(schema.campaigns)
+          .values({
+            organizationId: O.orgId,
+            name: 'n',
+            promptText: 'p',
+            prospectingModel: 'b2b',
+            status: 'running',
+          })
+          .returning();
+        await reserveCredits(tx, { orgId: O.orgId, campaignId: c!.id, maxMc: 3000, minMc: 1000 });
+        expect(
+          await consumeCredits(tx, {
+            orgId: O.orgId,
+            campaignId: c!.id,
+            prospectId: c!.id,
+            amountMc: 1000,
+            key: 'k1',
+          }),
+        ).toBe('consumed');
+        await tx
+          .update(schema.campaigns)
+          .set({ status: 'completed' })
+          .where(eq(schema.campaigns.id, c!.id));
+        expect(
+          await consumeCredits(tx, {
+            orgId: O.orgId,
+            campaignId: c!.id,
+            prospectId: c!.id,
+            amountMc: 1000,
+            key: 'k2',
+          }),
+        ).toBe('campaign_closed');
+        expect(
+          await consumeCredits(tx, {
+            orgId: O.orgId,
+            campaignId: c!.id,
+            prospectId: c!.id,
+            amountMc: 1000,
+            key: 'k1',
+          }),
+        ).toBe('already');
+      });
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});

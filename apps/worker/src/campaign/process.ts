@@ -19,7 +19,17 @@ import {
   type VerificationStatus,
 } from '@scoutra/core';
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
-import { consumeCredits, count, eq, gte, recordUsage, schema, sql, withTenant } from '@scoutra/db';
+import {
+  and,
+  consumeCredits,
+  count,
+  eq,
+  gte,
+  recordUsage,
+  schema,
+  sql,
+  withTenant,
+} from '@scoutra/db';
 import type { JobPayload, prospectProcessJob } from '@scoutra/queue';
 import { usageOfError, type Usage } from '@scoutra/ai';
 import { campaignCostMode } from '@scoutra/queue';
@@ -56,7 +66,8 @@ export async function handleProcess(
       .from(schema.prospects)
       .where(eq(schema.prospects.id, p.prospectId));
     if (!c || !pr || c.status !== 'running' || pr.campaignId !== c.id) return null;
-    if (pr.status !== 'found') return null; // déjà traité (reprise)
+    // Déjà traité ou déjà livré (reprise après une panne en fin de traitement, constat 15).
+    if (pr.status !== 'found' || pr.deliveredAt) return null;
     return {
       c,
       pr,
@@ -264,6 +275,14 @@ export async function handleProcess(
   let channelDecision: ComplianceDecision | null = null;
   if (outcome === 'delivered') {
     outcome = await withTenant(deps.db, { orgId }, async (tx) => {
+      // Reprise : déjà livré par une tentative précédente → ni nouveau débit ni double comptage
+      // (revue étape 2, constat 15).
+      const [already] = await tx
+        .select({ at: schema.prospects.deliveredAt })
+        .from(schema.prospects)
+        .where(eq(schema.prospects.id, pr.id))
+        .for('update');
+      if (already?.at) return 'delivered' as const;
       const [fresh] = await tx
         .select({ delivered: schema.campaigns.deliveredCount })
         .from(schema.campaigns)
@@ -285,7 +304,7 @@ export async function handleProcess(
           amountMc: DELIVERY_CREDITS[quality] * MILLICREDITS_PER_CREDIT,
           key: `deliver:${c.id}:${pr.id}`,
         });
-        if (r === 'budget_exhausted') return 'budget_exhausted' as const;
+        if (r === 'budget_exhausted' || r === 'campaign_closed') return 'budget_exhausted' as const;
       }
       await tx
         .update(schema.campaigns)
@@ -373,7 +392,14 @@ export async function handleProcess(
         .update(schema.campaigns)
         .set({ rejectedCount: sql`${schema.campaigns.rejectedCount} + 1` })
         .where(eq(schema.campaigns.id, c.id));
-    if (draft && channelDecision) {
+    const [existingMsg] =
+      draft && channelDecision
+        ? await tx
+            .select({ id: schema.messages.id })
+            .from(schema.messages)
+            .where(and(eq(schema.messages.prospectId, pr.id), eq(schema.messages.campaignId, c.id)))
+        : [];
+    if (draft && channelDecision && !existingMsg) {
       const [m] = await tx
         .insert(schema.messages)
         .values({
