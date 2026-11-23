@@ -501,3 +501,34 @@ valeurs). `409` si déjà traitée. Journalisé.
 `{ country, senderCountry, covered, jurisdictions: [{ jurisdiction, version, sources, retentionDays,
 maxFollowUps }], business: [{ channel, outcome, conditions, ruleIds, reasons }], individual: [...],
 disclaimer }` — décision du garde-fou par canal, pour un professionnel et un particulier.
+
+## Intégrations, clés d'API, exports, support
+
+### Clés d'API des fournisseurs : `GET/POST /api/api-keys`, `DELETE /api/api-keys/:id` (`apikey:manage`, 2FA)
+
+Clés de l'organisation pour ses propres comptes (`provider` : `serper`, `brave`, `tavily`,
+`google_places`, `companies_house`). `POST { provider, label, key }` : chiffrée par enveloppe
+(AES-256-GCM), **jamais renvoyée** ; `GET` → `{ items: [{ id, provider, label, last4, createdAt,
+lastUsedAt, revokedAt }], providers }`. `DELETE` révoque (journalisé). Le worker utilise la clé
+de l'organisation en priorité, sinon la clé plateforme. (Clés d'accès à une API publique Scoutra :
+non disponibles.)
+
+### `GET /api/integrations` (action `org:read`)
+
+`{ items: [{ code, name, role, status: "ready|missing_key|not_configured", requiresKey,
+legalStatus, costTier, countries, dataLicense, legalNotes }], ai: { provider, available },
+verification: { reacher } }` — état des sources de données pour l'organisation.
+
+### Exports : `GET /api/exports`, `POST /api/exports` (`prospect:export`, 2FA)
+
+`POST { name, filters?: { q?, countries?, kind?, minScore?, signals?, campaignId? }, listId?,
+includeContacts? }` → **fichier CSV** (`text/csv`, `Content-Disposition: attachment`), prospects
+livrés de votre portée, 5 000 lignes au plus. Colonnes : `name, kind, country, city, website,
+score, stage, qualification, owner, email, phone, sources, delivered_at`. Cellules commençant par
+`= + - @` neutralisées ; coordonnées seulement pour les canaux autorisés par le garde-fou.
+Chaque export est journalisé (`GET` → `{ items: [{ id, name, format, rows, by, at, filters }] }`).
+
+### `POST /api/support` (action `org:read`, 5 par heure)
+
+`{ category: "question|bug|billing|privacy|other", subject, message }` → 201 `{ id, status,
+createdAt }`.
