@@ -107,3 +107,60 @@ describe.skipIf(!info.available)('tâches métier suivies sous RLS (tenant_jobs)
     ).toBe(0);
   });
 });
+
+describe.skipIf(!info.available)('événements de paiement (idempotents)', async () => {
+  const { applyBillingEvent } = await import('../src');
+  const { getCreditBalance, walletBalanceMc } = await import('@scoutra/db');
+  it('abonnement, renouvellement avec report 50 %, pack, rejeu sans double crédit', async () => {
+    const h2 = handles(info);
+    try {
+      const O = await seedOrgAndOwner(h2.auth, 'bill');
+      const base = { organizationId: O.orgId };
+      const start = new Date();
+      const end = new Date(Date.now() + 30 * 864e5);
+      const activated = {
+        ...base,
+        type: 'subscription.activated' as const,
+        eventId: 'evt_a',
+        plan: 'research' as const,
+        seats: 1,
+        periodStart: start.toISOString(),
+        periodEnd: end.toISOString(),
+        providerRef: 'sub_1',
+      };
+      expect(await applyBillingEvent(h2.app.db, activated)).toBe('applied');
+      expect(await applyBillingEvent(h2.app.db, activated)).toBe('duplicate');
+      expect(
+        await applyBillingEvent(h2.app.db, {
+          ...base,
+          type: 'pack.purchased',
+          eventId: 'evt_p',
+          pack: 'pack_500',
+        }),
+      ).toBe('applied');
+      expect(
+        await applyBillingEvent(h2.app.db, {
+          ...base,
+          type: 'pack.purchased',
+          eventId: 'evt_p',
+          pack: 'pack_500',
+        }),
+      ).toBe('duplicate');
+      const end2 = new Date(end.getTime() + 30 * 864e5);
+      await applyBillingEvent(h2.app.db, {
+        ...base,
+        type: 'subscription.renewed',
+        eventId: 'evt_r',
+        periodStart: end.toISOString(),
+        periodEnd: end2.toISOString(),
+      });
+      await withTenant(h2.app.db, O, async (tx) => {
+        // 1000 (forfait) + 500 (pack) + 500 (report 50 %) + 1000 (nouveau forfait)
+        expect(await getCreditBalance(tx, O.orgId)).toBe(3_000_000);
+        expect(await walletBalanceMc(tx, O.orgId)).toBe(3_000_000);
+      });
+    } finally {
+      await Promise.all([h2.app.close(), h2.auth.close(), h2.migrator.close()]);
+    }
+  });
+});
