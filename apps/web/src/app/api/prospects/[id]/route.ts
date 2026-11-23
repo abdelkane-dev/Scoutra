@@ -4,7 +4,8 @@ import { allowedChannelsOf, canDisclose, discloseContact } from '@scoutra/agents
 import { AppError } from '@scoutra/core';
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import { and, desc, eq, schema, withTenant, writeAudit } from '@scoutra/db';
-import { cryptoKeys, scopeOf } from '@/server/campaigns';
+import { prospectPatchSchema, patchProspect } from '@scoutra/crm';
+import { actorOf, cryptoKeys, scopeOf } from '@/server/campaigns';
 import { appDb } from '@/server/db';
 import { apiRoute, json } from '@/server/http';
 
@@ -132,5 +133,29 @@ export const GET = apiRoute(
       };
     });
     return json(out);
+  },
+);
+
+/** Étape, propriétaire (prospect:assign), valeur, qualification, note ; historisé. */
+export const PATCH = apiRoute(
+  {
+    action: 'prospect:write',
+    params: z.object({ id: z.uuid() }),
+    body: prospectPatchSchema,
+    rateLimit: { max: 120, windowMs: 60_000 },
+  },
+  async ({ params, body, ctx }) => {
+    const db = await appDb();
+    const p = await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, (tx) =>
+      patchProspect(tx, actorOf(ctx), params.id, body),
+    );
+    return json({
+      id: p.id,
+      stage: p.stageKey,
+      ownerUserId: p.ownerUserId,
+      valueAmount: p.valueAmount,
+      qualification: p.qualification,
+      updatedAt: p.updatedAt,
+    });
   },
 );

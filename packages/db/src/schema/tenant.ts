@@ -206,6 +206,13 @@ export const prospects = pgTable(
       .default(sql`'{}'::text[]`),
     /** Livré = facturé (1 crédit + qualité) ; null tant que non livré. */
     deliveredAt: ts('delivered_at'),
+    /** Étape du pipeline (clé de pipeline_stages de l'organisation). */
+    stageKey: varchar('stage_key', { length: 40 }).notNull().default('new'),
+    stageChangedAt: ts('stage_changed_at'),
+    /** Valeur estimée de l'opportunité, en unités de la devise de l'organisation. */
+    valueAmount: integer('value_amount'),
+    /** Qualification du lead : unqualified, qualified, disqualified. */
+    qualification: varchar('qualification', { length: 20 }).notNull().default('unqualified'),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
@@ -383,9 +390,18 @@ export const suppressionList = pgTable(
     valueHash: char('value_hash', { length: 64 }).notNull(),
     channel: contactChannel('channel').notNull(),
     reason: suppressionReason('reason').notNull(),
+    /** Nature de la valeur opposée : email, téléphone ou domaine entier. */
+    valueKind: varchar('value_kind', { length: 10 }).notNull().default('email'),
+    /** Indice affichable (email masqué, domaine) ; la valeur elle-même n'est jamais stockée. */
+    displayHint: varchar('display_hint', { length: 120 }),
+    note: varchar('note', { length: 200 }),
+    createdBy: uuid('created_by'),
     createdAt: ts('created_at').notNull().defaultNow(),
   },
-  (t) => [unique('suppression_list_unique').on(t.organizationId, t.valueHash, t.channel)],
+  (t) => [
+    unique('suppression_list_unique').on(t.organizationId, t.valueHash, t.channel),
+    check('suppression_list_kind_valid', sql`${t.valueKind} in ('email', 'phone', 'domain')`),
+  ],
 );
 
 export const tenantJobStatus = pgEnum('tenant_job_status', [
@@ -493,6 +509,8 @@ export const messages = pgTable(
     generatedBy: varchar('generated_by', { length: 20 }).notNull(),
     model: varchar('model', { length: 100 }),
     status: varchar('status', { length: 20 }).notNull().default('draft'),
+    sentAt: ts('sent_at'),
+    repliedAt: ts('replied_at'),
     complianceDecision: jsonb('compliance_decision').notNull(),
     createdBy: uuid('created_by'),
     createdAt: ts('created_at').notNull().defaultNow(),
@@ -506,7 +524,7 @@ export const messages = pgTable(
     }).onDelete('cascade'),
     check(
       'messages_status_valid',
-      sql`${t.status} in ('draft', 'approved', 'copied', 'sent_manually', 'discarded')`,
+      sql`${t.status} in ('draft', 'approved', 'to_send', 'copied', 'sent_manually', 'replied', 'discarded')`,
     ),
     check('messages_generated_by_valid', sql`${t.generatedBy} in ('ai', 'template', 'user')`),
   ],
@@ -626,4 +644,288 @@ export const billingEvents = pgTable(
     createdAt: ts('created_at').notNull().defaultNow(),
   },
   (t) => [unique('billing_events_org_event_unique').on(t.organizationId, t.eventId)],
+);
+
+// ---------------------------------------------------------------------------------------
+// CRM (étape 3) : pipeline, historique, listes, vues, tâches, séquences, automatisations,
+// notifications, recherches enregistrées, demandes des personnes, exports, support.
+// ---------------------------------------------------------------------------------------
+const prospectFk = (name: string, t: { organizationId: unknown; prospectId: unknown }) =>
+  foreignKey({
+    name,
+    columns: [t.organizationId as never, t.prospectId as never],
+    foreignColumns: [prospects.organizationId, prospects.id],
+  }).onDelete('cascade');
+
+export const pipelineStages = pgTable(
+  'pipeline_stages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    key: varchar('key', { length: 40 }).notNull(),
+    labelFr: varchar('label_fr', { length: 60 }).notNull(),
+    labelEn: varchar('label_en', { length: 60 }).notNull(),
+    position: integer('position').notNull(),
+    kind: varchar('kind', { length: 10 }).notNull().default('open'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('pipeline_stages_org_key_unique').on(t.organizationId, t.key),
+    check('pipeline_stages_kind_valid', sql`${t.kind} in ('open', 'won', 'lost')`),
+    check('pipeline_stages_key_format', sql`${t.key} ~ '^[a-z0-9_]{2,40}$'`),
+  ],
+);
+
+/** Historique d'un prospect (étape, propriétaire, statut de message, réponse saisie, note…). */
+export const prospectActivities = pgTable(
+  'prospect_activities',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    organizationId: orgId(),
+    prospectId: uuid('prospect_id').notNull(),
+    actorUserId: uuid('actor_user_id'),
+    type: varchar('type', { length: 40 }).notNull(),
+    payload: jsonb('payload').notNull().default({}),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('prospect_activities_org_prospect_idx').on(t.organizationId, t.prospectId, t.id),
+    index('prospect_activities_org_created_idx').on(t.organizationId, t.createdAt),
+    prospectFk('prospect_activities_prospect_fk', t),
+  ],
+);
+
+export const prospectLists = pgTable(
+  'prospect_lists',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    name: varchar('name', { length: 120 }).notNull(),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('prospect_lists_org_id_unique').on(t.organizationId, t.id),
+    unique('prospect_lists_org_name_unique').on(t.organizationId, t.name),
+  ],
+);
+
+export const prospectListItems = pgTable(
+  'prospect_list_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    listId: uuid('list_id').notNull(),
+    prospectId: uuid('prospect_id').notNull(),
+    addedBy: uuid('added_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('prospect_list_items_unique').on(t.organizationId, t.listId, t.prospectId),
+    foreignKey({
+      name: 'prospect_list_items_list_fk',
+      columns: [t.organizationId, t.listId],
+      foreignColumns: [prospectLists.organizationId, prospectLists.id],
+    }).onDelete('cascade'),
+    prospectFk('prospect_list_items_prospect_fk', t),
+  ],
+);
+
+export const savedViews = pgTable(
+  'saved_views',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    userId: uuid('user_id').notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    filters: jsonb('filters').notNull().default({}),
+    shared: boolean('shared').notNull().default(false),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('saved_views_org_user_idx').on(t.organizationId, t.userId)],
+);
+
+export const sequences = pgTable(
+  'sequences',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    name: varchar('name', { length: 120 }).notNull(),
+    status: varchar('status', { length: 10 }).notNull().default('active'),
+    /** Étapes : [{ day, channel, kind: 'task' | 'draft', title }] (validées par Zod). */
+    steps: jsonb('steps').notNull(),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('sequences_org_id_unique').on(t.organizationId, t.id),
+    check('sequences_status_valid', sql`${t.status} in ('active', 'paused', 'archived')`),
+  ],
+);
+
+export const sequenceEnrollments = pgTable(
+  'sequence_enrollments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    sequenceId: uuid('sequence_id').notNull(),
+    prospectId: uuid('prospect_id').notNull(),
+    stepIndex: integer('step_index').notNull().default(0),
+    nextRunAt: ts('next_run_at'),
+    status: varchar('status', { length: 12 }).notNull().default('active'),
+    enrolledBy: uuid('enrolled_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('sequence_enrollments_unique').on(t.organizationId, t.sequenceId, t.prospectId),
+    index('sequence_enrollments_due_idx').on(t.status, t.nextRunAt),
+    foreignKey({
+      name: 'sequence_enrollments_sequence_fk',
+      columns: [t.organizationId, t.sequenceId],
+      foreignColumns: [sequences.organizationId, sequences.id],
+    }).onDelete('cascade'),
+    prospectFk('sequence_enrollments_prospect_fk', t),
+    check(
+      'sequence_enrollments_status_valid',
+      sql`${t.status} in ('active', 'completed', 'stopped', 'replied')`,
+    ),
+  ],
+);
+
+export const tasks = pgTable(
+  'tasks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    prospectId: uuid('prospect_id'),
+    assigneeUserId: uuid('assignee_user_id'),
+    title: varchar('title', { length: 200 }).notNull(),
+    kind: varchar('kind', { length: 20 }).notNull().default('other'),
+    dueAt: ts('due_at'),
+    endAt: ts('end_at'),
+    status: varchar('status', { length: 12 }).notNull().default('open'),
+    source: varchar('source', { length: 12 }).notNull().default('manual'),
+    enrollmentId: uuid('enrollment_id'),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    completedAt: ts('completed_at'),
+  },
+  (t) => [
+    index('tasks_org_assignee_idx').on(t.organizationId, t.assigneeUserId, t.status, t.dueAt),
+    prospectFk('tasks_prospect_fk', t),
+    check(
+      'tasks_kind_valid',
+      sql`${t.kind} in ('call', 'email', 'whatsapp', 'meeting', 'follow_up', 'linkedin_manual', 'other')`,
+    ),
+    check('tasks_status_valid', sql`${t.status} in ('open', 'done', 'cancelled')`),
+    check('tasks_source_valid', sql`${t.source} in ('manual', 'sequence', 'automation')`),
+  ],
+);
+
+export const automations = pgTable(
+  'automations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    name: varchar('name', { length: 120 }).notNull(),
+    enabled: boolean('enabled').notNull().default(true),
+    trigger: varchar('trigger', { length: 30 }).notNull(),
+    triggerArg: varchar('trigger_arg', { length: 100 }).notNull().default(''),
+    action: varchar('action', { length: 30 }).notNull(),
+    actionArg: varchar('action_arg', { length: 200 }).notNull().default(''),
+    runs: integer('runs').notNull().default(0),
+    lastRunAt: ts('last_run_at'),
+    createdBy: uuid('created_by'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('automations_org_trigger_idx').on(t.organizationId, t.trigger, t.enabled)],
+);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    userId: uuid('user_id').notNull(),
+    title: varchar('title', { length: 200 }).notNull(),
+    body: varchar('body', { length: 1000 }),
+    link: varchar('link', { length: 300 }),
+    readAt: ts('read_at'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('notifications_org_user_idx').on(t.organizationId, t.userId, t.createdAt)],
+);
+
+export const savedSearches = pgTable(
+  'saved_searches',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    userId: uuid('user_id').notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    /** Filtres de prospects et/ou types de signaux suivis. */
+    filters: jsonb('filters').notNull().default({}),
+    alert: boolean('alert').notNull().default(false),
+    lastSeenAt: ts('last_seen_at').notNull().defaultNow(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('saved_searches_org_user_idx').on(t.organizationId, t.userId)],
+);
+
+/** Demandes des personnes concernées (effacement, opposition, accès), délai légal suivi. */
+export const dataSubjectRequests = pgTable(
+  'data_subject_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    type: varchar('type', { length: 20 }).notNull(),
+    subjectHash: char('subject_hash', { length: 64 }).notNull(),
+    subjectHint: varchar('subject_hint', { length: 120 }),
+    status: varchar('status', { length: 12 }).notNull().default('open'),
+    receivedAt: ts('received_at').notNull().defaultNow(),
+    dueAt: ts('due_at').notNull(),
+    completedAt: ts('completed_at'),
+    handledBy: uuid('handled_by'),
+    result: jsonb('result').notNull().default({}),
+  },
+  (t) => [
+    index('data_subject_requests_org_status_idx').on(t.organizationId, t.status),
+    check('dsr_type_valid', sql`${t.type} in ('erasure', 'opposition', 'access', 'rectification')`),
+    check('dsr_status_valid', sql`${t.status} in ('open', 'in_progress', 'done', 'rejected')`),
+  ],
+);
+
+export const exportLogs = pgTable(
+  'export_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    userId: uuid('user_id'),
+    name: varchar('name', { length: 120 }).notNull(),
+    format: varchar('format', { length: 10 }).notNull(),
+    rows: integer('rows').notNull(),
+    filters: jsonb('filters').notNull().default({}),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('export_logs_org_created_idx').on(t.organizationId, t.createdAt)],
+);
+
+export const supportRequests = pgTable(
+  'support_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: orgId(),
+    userId: uuid('user_id'),
+    category: varchar('category', { length: 20 }).notNull(),
+    subject: varchar('subject', { length: 200 }).notNull(),
+    message: varchar('message', { length: 5000 }).notNull(),
+    status: varchar('status', { length: 12 }).notNull().default('open'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    check(
+      'support_category_valid',
+      sql`${t.category} in ('question', 'bug', 'billing', 'privacy', 'other')`,
+    ),
+  ],
 );

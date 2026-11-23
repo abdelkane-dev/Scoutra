@@ -276,3 +276,55 @@ d'abonnement plus ancien que le dernier appliqué, ou une période déjà ouvert
 (`stale`). Octroi du forfait par période, report de 50 % un mois, packs valables 12 mois.
 L'interface n'appelle pas cette route ; le passage en caisse (`createCheckout`) sera exposé avec
 le prestataire.
+
+## CRM : prospects (étape 3)
+
+Portée identique partout : un `member` n'agit que sur ses prospects (`ownerUserId` = lui) ; un
+prospect hors de sa portée répond `404`.
+
+### `GET /api/prospects` — compléments
+
+Nouveaux filtres : `stage`, `ownerUserId`, `listId`, `qualification`
+(`unqualified|qualified|disqualified`). Nouveaux champs par ligne : `stage`, `qualification`,
+`valueAmount`, `ownerName` (nom du membre propriétaire), `emailStatus`
+(`valid|risky|invalid|none`, meilleur email vérifié).
+
+### `PATCH /api/prospects/:id` (action `prospect:write`)
+
+```json
+{ "stage": "meeting", "ownerUserId": "uuid|null", "valueAmount": 1200, "qualification": "qualified", "note": "Rappeler jeudi" }
+```
+
+Au moins un champ. `ownerUserId` exige `prospect:assign` (manager, admin, owner) et un membre de
+l'organisation (`invalid_input` sinon). `stage` : une clé de `GET /api/pipeline/stages`. Chaque
+changement est historisé ; un changement d'étape déclenche les automatisations. Réponse :
+`{ id, stage, ownerUserId, valueAmount, qualification, updatedAt }`.
+
+### `POST /api/prospects/bulk` (action `prospect:write`, 30/min)
+
+```json
+{ "ids": ["uuid", "…"], "action": { "type": "add_to_list", "listId": "uuid" } }
+```
+
+`action.type` : `add_to_list` / `remove_from_list` (`listId`), `move_stage` (`stage`),
+`assign` (`ownerUserId`, exige `prospect:assign`), `enroll` (`sequenceId`), `qualify`
+(`qualification`). 500 identifiants au plus. Réponse `{ affected, skipped }` (`skipped` :
+prospects hors de votre portée ou déjà présents).
+
+### `GET /api/prospects/:id/activities` (action `prospect:read`)
+
+`{ items: [{ id, type, payload, actorUserId, actorName, at }] }`, du plus récent au plus ancien.
+Types : `stage_changed`, `owner_changed`, `qualification_changed`, `note`, `message_status`,
+`reply_logged`, `task_created`, `task_done`, `sequence_enrolled`, `list_added`, `automation`.
+
+### Listes : `GET /api/lists`, `POST /api/lists`, `DELETE /api/lists/:id`
+
+`GET` → `{ items: [{ id, name, size, createdBy, createdAt }] }`. `POST { name }` → 201
+(`conflict` si le nom existe). `DELETE` : auteur de la liste ou chef d'équipe ; les prospects
+restent. Ajout/retrait de prospects : `POST /api/prospects/bulk`.
+
+### Vues enregistrées : `GET /api/views`, `POST /api/views`, `DELETE /api/views/:id`
+
+`POST { name, filters, shared }` où `filters` reprend les paramètres de `GET /api/prospects`
+(+ `columns: string[]`). `GET` renvoie mes vues et les vues partagées (`mine: boolean`).
+Seul l'auteur supprime une vue.

@@ -6,7 +6,8 @@ import type { CostMode } from '@scoutra/connectors';
 import { AppError, targetSpecSchema, type TargetSpec } from '@scoutra/core';
 import { createKeyring, decodeMasterKey, type Keyring } from '@scoutra/crypto';
 import { and, desc, eq, isNull, schema, type Transaction } from '@scoutra/db';
-import type { DataScope } from '@scoutra/auth';
+import { can, dataScope, type DataScope } from '@scoutra/auth';
+import type { Actor } from '@scoutra/crm';
 import { getEnv } from './env';
 import type { OrgContext } from './session';
 
@@ -126,5 +127,15 @@ export function campaignView(c: typeof schema.campaigns.$inferSelect) {
     createdAt: c.createdAt,
     startedAt: c.startedAt,
     finishedAt: c.finishedAt,
+  };
+}
+
+/** Acteur CRM : portée (siens / équipe) et droit d'attribution, d'après le rôle. */
+export function actorOf(ctx: OrgContext): Actor {
+  return {
+    orgId: ctx.orgId,
+    userId: ctx.user.id,
+    ownerOnly: scopeOf(ctx, dataScope(ctx.role)),
+    canAssign: can(ctx.role, 'prospect:assign'),
   };
 }

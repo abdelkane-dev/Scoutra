@@ -1,0 +1,19 @@
+{
+  "name": "@scoutra/crm",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@scoutra/compliance": "workspace:*",
+    "@scoutra/core": "workspace:*",
+    "@scoutra/crypto": "workspace:*",
+    "@scoutra/db": "workspace:*",
+    "zod": "^4.6.7"
+  }
+}

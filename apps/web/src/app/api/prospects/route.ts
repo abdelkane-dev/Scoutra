@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { dataScope } from '@scoutra/auth';
 import { PROSPECT_KINDS, isoCountrySchema } from '@scoutra/core';
-import { and, asc, desc, eq, gte, isNotNull, schema, sql, withTenant } from '@scoutra/db';
+import { and, asc, desc, eq, gte, inArray, isNotNull, schema, sql, withTenant } from '@scoutra/db';
+import { emailStatusOf, memberNames } from '@scoutra/crm';
 import { scopeOf } from '@/server/campaigns';
 import { appDb } from '@/server/db';
 import { apiRoute, json } from '@/server/http';
@@ -20,6 +21,13 @@ const query = z
     country: isoCountrySchema.optional(),
     kind: z.enum(PROSPECT_KINDS).optional(),
     q: z.string().trim().min(2).max(100).optional(),
+    stage: z
+      .string()
+      .regex(/^[a-z0-9_]{2,40}$/)
+      .optional(),
+    ownerUserId: z.uuid().optional(),
+    listId: z.uuid().optional(),
+    qualification: z.enum(['unqualified', 'qualified', 'disqualified']).optional(),
     sort: z.enum(['score', 'recent', 'name']).default('score'),
     limit: z.coerce.number().int().min(1).max(100).default(50),
     offset: z.coerce.number().int().min(0).max(100_000).default(0),
@@ -50,6 +58,9 @@ export const GET = apiRoute({ action: 'prospect:read' }, async ({ req, ctx }) =>
         attributes: p.attributes,
         channelDecisions: p.channelDecisions,
         ownerUserId: p.ownerUserId,
+        stage: p.stageKey,
+        qualification: p.qualification,
+        valueAmount: p.valueAmount,
         deliveredAt: p.deliveredAt,
         createdAt: p.createdAt,
       })
@@ -64,6 +75,18 @@ export const GET = apiRoute({ action: 'prospect:read' }, async ({ req, ctx }) =>
           f.minScore !== undefined ? gte(p.score, f.minScore) : undefined,
           f.country ? eq(p.countryCode, f.country) : undefined,
           f.kind ? eq(p.kind, f.kind) : undefined,
+          f.stage ? eq(p.stageKey, f.stage) : undefined,
+          f.ownerUserId ? eq(p.ownerUserId, f.ownerUserId) : undefined,
+          f.qualification ? eq(p.qualification, f.qualification) : undefined,
+          f.listId
+            ? inArray(
+                p.id,
+                tx
+                  .select({ id: schema.prospectListItems.prospectId })
+                  .from(schema.prospectListItems)
+                  .where(eq(schema.prospectListItems.listId, f.listId)),
+              )
+            : undefined,
           // Recherche paramétrée (jamais concaténée) ; % et _ échappés.
           f.q
             ? sql`${p.displayName} ilike ${`%${f.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`}`
@@ -81,8 +104,23 @@ export const GET = apiRoute({ action: 'prospect:read' }, async ({ req, ctx }) =>
       .limit(f.limit + 1)
       .offset(f.offset),
   );
+  const page = rows.slice(0, f.limit);
+  // Noms des propriétaires et statut d'email lisible (meilleur email vérifié).
+  const extra = await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, async (tx) => {
+    const names = await memberNames(tx);
+    const ids = page.map((r) => r.id);
+    const emails = ids.length
+      ? await tx
+          .select({ p: schema.contacts.prospectId, s: schema.contacts.verificationStatus })
+          .from(schema.contacts)
+          .where(
+            and(inArray(schema.contacts.prospectId, ids), eq(schema.contacts.channel, 'email')),
+          )
+      : [];
+    return { names, emails };
+  });
   return json({
-    items: rows.slice(0, f.limit).map((r) => {
+    items: page.map((r) => {
       const a = (r.attributes ?? {}) as Record<string, unknown>;
       const decisions = (r.channelDecisions ?? []) as { channel: string; outcome: string }[];
       return {
@@ -92,6 +130,8 @@ export const GET = apiRoute({ action: 'prospect:read' }, async ({ req, ctx }) =>
         category: (a.category as string | null) ?? null,
         signals: ((a.signals as { key: string }[] | undefined) ?? []).map((s) => s.key),
         channels: decisions.map((d) => ({ channel: d.channel, outcome: d.outcome })),
+        ownerName: r.ownerUserId ? (extra.names.get(r.ownerUserId)?.name ?? null) : null,
+        emailStatus: emailStatusOf(extra.emails.filter((e) => e.p === r.id).map((e) => e.s)),
       };
     }),
     nextOffset: rows.length > f.limit ? f.offset + f.limit : null,

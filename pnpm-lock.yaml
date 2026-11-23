@@ -327,6 +327,24 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/crm:
+    dependencies:
+      '@scoutra/compliance':
+        specifier: workspace:*
+        version: link:../compliance
+      '@scoutra/core':
+        specifier: workspace:*
+        version: link:../core
+      '@scoutra/crypto':
+        specifier: workspace:*
+        version: link:../crypto
+      '@scoutra/db':
+        specifier: workspace:*
+        version: link:../db
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+
   packages/crypto:
     dependencies:
       zod:

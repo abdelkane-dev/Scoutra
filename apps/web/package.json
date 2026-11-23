@@ -19,6 +19,7 @@
     "@scoutra/config": "workspace:*",
     "@scoutra/connectors": "workspace:*",
     "@scoutra/core": "workspace:*",
+    "@scoutra/crm": "workspace:*",
     "@scoutra/crypto": "workspace:*",
     "@scoutra/db": "workspace:*",
     "@scoutra/i18n": "workspace:*",

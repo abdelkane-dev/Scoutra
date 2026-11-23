@@ -44,6 +44,20 @@ export const TENANT_TABLES = [
   'credit_consumptions',
   'subscriptions',
   'billing_events',
+  'pipeline_stages',
+  'prospect_activities',
+  'prospect_lists',
+  'prospect_list_items',
+  'saved_views',
+  'sequences',
+  'sequence_enrollments',
+  'tasks',
+  'automations',
+  'notifications',
+  'saved_searches',
+  'data_subject_requests',
+  'export_logs',
+  'support_requests',
 ] as const;
 export * from './playbooks';
 export * from './wallet';
