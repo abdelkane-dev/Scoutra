@@ -57,6 +57,13 @@
       "when": 1795443677147,
       "tag": "0007_billing_events",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795443678147,
+      "tag": "0008_sweeper",
+      "breakpoints": true
     }
   ]
 }

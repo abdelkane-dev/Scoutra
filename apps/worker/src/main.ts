@@ -3,7 +3,7 @@ import { loadEnv, workerEnvSchema } from '@scoutra/config';
 import { assertRlsEnforcedRole, createDb } from '@scoutra/db';
 import { createLlmClient } from '@scoutra/ai';
 import { createBoss, pingJob, work } from '@scoutra/queue';
-import { createCampaignDeps, registerCampaignWorkers } from './campaign';
+import { createCampaignDeps, registerCampaignWorkers, startCampaignSweeper } from './campaign';
 import { handlePing } from './handlers/ping';
 
 async function main() {
@@ -16,7 +16,9 @@ async function main() {
   await boss.start();
   await work(boss, pingJob, (payload, { jobId }) => handlePing(handle.db, payload, jobId));
   const llm = createLlmClient(env);
-  await registerCampaignWorkers(createCampaignDeps({ env, db: handle.db, boss, llm }));
+  const campaignDeps = createCampaignDeps({ env, db: handle.db, boss, llm });
+  await registerCampaignWorkers(campaignDeps);
+  const stopSweeper = startCampaignSweeper(campaignDeps);
   if (!llm.available)
     console.warn(
       '[worker] aucun modèle d’IA configuré : interprétation heuristique et messages modèles (mode dégradé)',
@@ -37,6 +39,7 @@ async function main() {
 
   const shutdown = async (signal: string) => {
     healthy = false;
+    stopSweeper();
     console.info(`[worker] ${signal} reçu, arrêt propre…`);
     await boss.stop({ graceful: true, timeout: 20_000 });
     await handle.close();

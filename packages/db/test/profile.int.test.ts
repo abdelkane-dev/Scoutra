@@ -108,3 +108,56 @@ describe.skipIf(!info.available)(
     });
   },
 );
+
+describe.skipIf(!info.available)(
+  'constat 16 (étape 2) : balayage des campagnes inactives',
+  async () => {
+    const { staleCampaigns } = await import('../src');
+    it('identifiants des campagnes actives inactives seulement, toutes organisations', async () => {
+      const h = handles(info);
+      try {
+        const O1 = await seedOrgAndOwner(h.auth, 'sw1');
+        const O2 = await seedOrgAndOwner(h.auth, 'sw2');
+        const old = new Date(Date.now() - 3600_000);
+        const mk = (
+          o: { orgId: string; userId: string },
+          status: 'running' | 'completed',
+          updatedAt: Date,
+        ) =>
+          withTenant(
+            h.app.db,
+            o,
+            async (tx) =>
+              (
+                await tx
+                  .insert(schema.campaigns)
+                  .values({
+                    organizationId: o.orgId,
+                    name: 'n',
+                    promptText: 'p',
+                    prospectingModel: 'b2b',
+                    status,
+                    updatedAt,
+                  })
+                  .returning()
+              )[0]!.id,
+          );
+        const a = await mk(O1, 'running', old);
+        const b = await mk(O2, 'running', old);
+        await mk(O1, 'running', new Date());
+        await mk(O2, 'completed', old);
+        const ids = (await staleCampaigns(h.app.db)).map((s) => s.campaignId);
+        expect(ids).toEqual(expect.arrayContaining([a, b]));
+        expect(ids.filter((i) => i === a || i === b)).toHaveLength(2);
+        const rows = await staleCampaigns(h.app.db);
+        expect(
+          rows.every((r) => Object.keys(r).sort().join() === 'campaignId,organizationId'),
+        ).toBe(true);
+        // Sans contexte d'organisation, la table elle-même reste invisible (RLS).
+        expect(await h.app.db.select().from(schema.campaigns)).toHaveLength(0);
+      } finally {
+        await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+      }
+    });
+  },
+);
