@@ -31,3 +31,4 @@
 - 23/11/2026 — Politique plus stricte que la loi : pas d'email à froid vers un particulier sans consentement, y compris aux États-Unis.
 - 23/11/2026 — Rédaction au niveau rapide (Haiku, effort low) par défaut ; essai gratuit de 100 crédits.
 - 23/11/2026 — Crawl4AI non branché tant que le proxy de sortie filtrant n'existe pas (protection SSRF).
+- 23/11/2026 — Sécurité étape 2 : un prospect personne est toujours traité comme particulier ; liens retirés des brouillons hors domaines de l'expéditeur ; recherches visant une personne nommée refusées ; robots.txt RFC 9309 (erreur serveur = interdit) ; essai gratuit limité à la première organisation.

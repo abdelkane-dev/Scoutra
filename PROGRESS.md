@@ -33,5 +33,5 @@
 - [x] Orchestration : crédits en millicrédits, garde-fou de coût, quotas, SSE ; API documentée (docs/api.md) ; 269 tests
 - [ ] Assignation, clés API client, actions sur messages, prestataire de paiement, expiration planifiée des crédits
 - [ ] Crawl4AI derrière un proxy de sortie filtrant
-- [ ] Revue sécurité de l'étape 2
+- [x] Revue sécurité de l'étape 2 : 20 constats traités (12 et 18 partiels), 291 tests
 - [ ] Interface branchée sur l'API (en cours, frontend-dev)
