@@ -62,6 +62,8 @@ export const organizations = pgTable(
       .default(sql`'{}'::text[]`),
     /** Essai gratuit possible : seulement la PREMIÈRE organisation d'un utilisateur (anti-abus). */
     trialEligible: boolean('trial_eligible').notNull().default(false),
+    /** Site web de l'expéditeur (domaine) : liste blanche des liens des brouillons. */
+    websiteDomain: text('website_domain'),
     createdAt: ts('created_at').notNull().defaultNow(),
   },
   (t) => [

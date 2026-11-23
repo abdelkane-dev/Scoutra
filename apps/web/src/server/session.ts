@@ -23,7 +23,12 @@ export interface OrgContext {
   orgId: string;
   role: OrgRole;
   license: LicenseState;
-  org: { countryCode: string; accountType: string | null; sectors: string[] };
+  org: {
+    countryCode: string;
+    accountType: string | null;
+    sectors: string[];
+    websiteDomain: string | null;
+  };
 }
 
 /** Session courante ou null (cookies HttpOnly lus côté serveur). */
@@ -78,6 +83,7 @@ export async function requireOrgAccess(action: Action): Promise<OrgContext> {
         countryCode: schema.organizations.countryCode,
         accountType: schema.organizations.accountType,
         sectors: schema.organizations.sectors,
+        websiteDomain: schema.organizations.websiteDomain,
       })
       .from(schema.organizations);
     const [member] = await tx
@@ -101,12 +107,12 @@ export async function requireOrgAccess(action: Action): Promise<OrgContext> {
   });
   if (!decision.ok) throw new AppError(decision.reason);
 
-  const { countryCode, accountType, sectors } = found.org;
+  const { countryCode, accountType, sectors, websiteDomain } = found.org;
   return {
     user,
     orgId,
     role: found.role,
     license,
-    org: { countryCode, accountType, sectors },
+    org: { countryCode, accountType, sectors, websiteDomain },
   };
 }

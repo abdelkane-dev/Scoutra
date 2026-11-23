@@ -76,8 +76,12 @@ Référentiels avec libellés FR/EN : `accountTypes` (`{code, fr, en}`), `sector
 Onboarding et paramètres. Corps strict :
 
 ```json
-{ "accountType": "startup", "sectors": ["j_tech_media", "m_professional"] }
+{ "accountType": "startup", "sectors": ["j_tech_media", "m_professional"], "website": "https://www.acme.sn" }
 ```
+
+- `website` (facultatif, `null` pour effacer) : site de l'expéditeur, normalisé en domaine
+  (`acme.sn`). C'est le **seul domaine dont les liens sont conservés** dans les brouillons générés
+  (les autres liens sont retirés). Renvoyé dans `GET /api/me` (`organization.website`).
 
 - `accountType` : `individual | freelancer | sme | startup | enterprise | nonprofit |
 public_sector | agency`.

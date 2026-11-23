@@ -22,7 +22,7 @@ describe.skipIf(!info.available)('profil d’organisation (type de compte, secte
     await withTenant(h.app.db, A, async (tx) => {
       await tx
         .update(schema.organizations)
-        .set({ accountType: 'sme', sectors: ['f_construction'] });
+        .set({ accountType: 'sme', sectors: ['f_construction'], websiteDomain: 'acme.sn' });
     });
     const rows = await h.auth.db
       .select({ id: schema.organizations.id, t: schema.organizations.accountType })

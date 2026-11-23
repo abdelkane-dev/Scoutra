@@ -32,6 +32,7 @@ export const GET = apiRoute({ public: true }, async () => {
       countryCode: ctx.org.countryCode,
       accountType: ctx.org.accountType,
       sectors: ctx.org.sectors,
+      website: ctx.org.websiteDomain,
       onboardingComplete: ctx.org.accountType !== null && ctx.org.sectors.length > 0,
       permissions: perms.allowed,
       twoFactorRequiredFor: perms.needsTwoFactor,

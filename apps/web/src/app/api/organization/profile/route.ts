@@ -16,7 +16,11 @@ export const PUT = apiRoute(
     await withTenant(db, { orgId: ctx.orgId, userId: ctx.user.id }, async (tx) => {
       await tx
         .update(schema.organizations)
-        .set({ accountType: body.accountType, sectors: body.sectors })
+        .set({
+          accountType: body.accountType,
+          sectors: body.sectors,
+          ...(body.website !== undefined ? { websiteDomain: body.website } : {}),
+        })
         .where(eq(schema.organizations.id, ctx.orgId));
       await writeAudit(tx, {
         orgId: ctx.orgId,
@@ -25,9 +29,9 @@ export const PUT = apiRoute(
         action: 'org.profile_updated',
         targetType: 'organization',
         targetId: ctx.orgId,
-        metadata: { accountType: body.accountType, sectors: body.sectors },
+        metadata: { accountType: body.accountType, sectors: body.sectors, website: body.website },
       });
     });
-    return json({ accountType: body.accountType, sectors: body.sectors });
+    return json({ accountType: body.accountType, sectors: body.sectors, website: body.website });
   },
 );

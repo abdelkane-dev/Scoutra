@@ -15,6 +15,7 @@ export interface OrgInfo {
   id: string;
   name: string;
   countryCode: string;
+  websiteDomain: string | null;
 }
 
 export async function loadOrg(tx: Transaction): Promise<OrgInfo> {
@@ -23,6 +24,7 @@ export async function loadOrg(tx: Transaction): Promise<OrgInfo> {
       id: schema.organizations.id,
       name: schema.organizations.name,
       countryCode: schema.organizations.countryCode,
+      websiteDomain: schema.organizations.websiteDomain,
     })
     .from(schema.organizations);
   if (!o) throw new Error('organisation introuvable');

@@ -53,3 +53,21 @@ describe('profil d’organisation', async () => {
     ).toBe(false);
   });
 });
+
+describe('profil : site web de l’expéditeur', async () => {
+  const { orgProfileSchema } = await import('../src');
+  it('normalisé en domaine ; null pour effacer ; invalide refusé', () => {
+    const base = { accountType: 'sme', sectors: ['f_construction'] };
+    expect(orgProfileSchema.parse({ ...base, website: 'https://www.Acme.sn/offre' }).website).toBe(
+      'acme.sn',
+    );
+    expect(orgProfileSchema.parse({ ...base, website: null }).website).toBeNull();
+    expect(orgProfileSchema.parse(base).website).toBeUndefined();
+    expect(orgProfileSchema.safeParse({ ...base, website: 'javascript:alert(1)' }).success).toBe(
+      false,
+    );
+    expect(orgProfileSchema.safeParse({ ...base, website: 'https://u:p@x.sn' }).success).toBe(
+      false,
+    );
+  });
+});

@@ -119,6 +119,23 @@ export const SECTOR_CODES = SECTORS.map((s) => s.code) as [Sector, ...Sector[]];
 export const sectorSchema = z.enum(SECTOR_CODES);
 export const MAX_ORG_SECTORS = 10;
 
+/** Domaine d'un site (https://www.exemple.sn/x → exemple.sn), sinon null. */
+export function normalizeWebsiteDomain(input: string): string | null {
+  let v = input.trim().toLowerCase();
+  if (!v) return null;
+  if (!/^https?:\/\//.test(v)) v = `https://${v}`;
+  try {
+    const u = new URL(v);
+    if (u.username || u.password) return null;
+    const host = u.hostname.replace(/^www\./, '').replace(/\.$/, '');
+    return /^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/.test(host)
+      ? host
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export const orgProfileSchema = z
   .object({
     accountType: accountTypeSchema,
@@ -127,6 +144,22 @@ export const orgProfileSchema = z
       .min(1)
       .max(MAX_ORG_SECTORS)
       .transform((a) => [...new Set(a)]),
+    /**
+     * Site web de l'expéditeur : seul domaine dont les liens sont conservés dans les brouillons
+     * (liste blanche, revue étape 2 constat 7). `null` pour l'effacer.
+     */
+    website: z
+      .string()
+      .max(300)
+      .nullable()
+      .optional()
+      .transform((v, ctx) => {
+        if (v === undefined || v === null || v.trim() === '')
+          return v === undefined ? undefined : null;
+        const d = normalizeWebsiteDomain(v);
+        if (!d) ctx.addIssue({ code: 'custom', message: 'site invalide' });
+        return d;
+      }),
   })
   .strict();
 export type OrgProfile = z.infer<typeof orgProfileSchema>;

@@ -329,7 +329,11 @@ export async function handleProcess(
       language: spec.language,
       quality,
       decision: best.decision,
-      sender: { name: org.name, offer: c.promptText.slice(0, 600) },
+      sender: {
+        name: org.name,
+        offer: c.promptText.slice(0, 600),
+        linkDomains: org.websiteDomain ? [org.websiteDomain] : [],
+      },
       prospect: {
         displayName: pr.displayName,
         category: scoringInput.prospect.category,
