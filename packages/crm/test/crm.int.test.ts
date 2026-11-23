@@ -442,3 +442,85 @@ describe.skipIf(!info.available)('CRM : signaux et recherches enregistrées', ()
     }
   });
 });
+
+describe.skipIf(!info.available)('CRM : rapports réels', () => {
+  it('entonnoir cumulé, canaux, pays, crédits, par membre ; portée membre', async () => {
+    const h = handles(info);
+    const { buildReport, patchMessage } = await import('../src');
+    try {
+      const O = await seedOrgAndOwner(h.auth, 'rep');
+      const T = <R>(fn: Parameters<typeof withTenant<R>>[2]) => withTenant(h.app.db, O, fn);
+      const actor: Actor = { orgId: O.orgId, userId: O.userId, ownerOnly: null, canAssign: true };
+      const [c] = await T((tx) =>
+        tx
+          .insert(schema.campaigns)
+          .values({
+            organizationId: O.orgId,
+            name: 'c',
+            promptText: 'p',
+            prospectingModel: 'b2b',
+            status: 'running',
+            reservedMc: 10_000,
+          })
+          .returning(),
+      );
+      const ps = await T((tx) =>
+        tx
+          .insert(schema.prospects)
+          .values(
+            (['new', 'contacted', 'meeting', 'won'] as const).map((stage, i) => ({
+              organizationId: O.orgId,
+              campaignId: c!.id,
+              kind: 'company',
+              prospectingModel: 'b2b',
+              displayName: `P${i}`,
+              countryCode: i < 3 ? 'FR' : 'SN',
+              dedupeKey: `rep-${i}-${O.orgId}`,
+              deliveredAt: new Date(),
+              stageKey: stage,
+              ownerUserId: O.userId,
+            })),
+          )
+          .returning(),
+      );
+      await T(async (tx) => {
+        const [m] = await tx
+          .insert(schema.messages)
+          .values({
+            organizationId: O.orgId,
+            prospectId: ps[1]!.id,
+            channel: 'email',
+            language: 'fr',
+            body: 'x',
+            generatedBy: 'ai',
+            complianceDecision: {},
+          })
+          .returning();
+        await patchMessage(tx, actor, m!.id, { status: 'sent_manually' });
+        await patchMessage(tx, actor, m!.id, { status: 'replied' });
+        await tx.insert(schema.creditConsumptions).values({
+          organizationId: O.orgId,
+          campaignId: c!.id,
+          prospectId: ps[0]!.id,
+          amountMc: 2000,
+          idempotencyKey: 'rep-k1',
+        });
+      });
+      const r = await T((tx) =>
+        buildReport(tx, O.orgId, { days: 30, ownerOnly: null, team: true }),
+      );
+      expect(r.funnel.map((f) => f.n)).toEqual([4, 3, 2, 2, 1]);
+      expect(r.channels[0]).toMatchObject({ channel: 'email', sent: 1, replied: 1, rate: 1 });
+      expect(r.countries[0]).toEqual({ cc: 'FR', n: 3 });
+      expect(r.credits.at(-1)?.used).toBe(2);
+      expect(r.members?.[0]).toMatchObject({ userId: O.userId, prospects: 4, won: 1 });
+      const own = await T((tx) =>
+        buildReport(tx, O.orgId, { days: 30, ownerOnly: randomUUID(), team: false }),
+      );
+      expect(own.funnel[0]!.n).toBe(0);
+      expect(own.members).toBeUndefined();
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});

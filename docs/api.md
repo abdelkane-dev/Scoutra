@@ -445,3 +445,28 @@ où `results` compte les prospects livrés correspondants et `fresh` ceux livré
 consultation. `PATCH { name?, filters?, alert?, markSeen?: true }` (`markSeen` remet `fresh` à 0).
 Les alertes sont calculées sur les prospects déjà trouvés : relancer une recherche (et dépenser des
 crédits) reste une action explicite (`POST /api/campaigns`).
+
+## Rapports
+
+### `GET /api/reports?range=7d|30d|90d|365d` (action `report:read_own`)
+
+Calculés sur les vraies tables. Les rôles avec `report:read_team` (manager, admin, owner,
+viewer) voient l'équipe et la ventilation par membre ; un `member` ne voit que ses chiffres.
+
+```json
+{
+  "range": { "days": 90, "since": "…" }, "scope": "team",
+  "funnel": [{ "stage": "new", "label": { "fr": "Nouveau", "en": "New" }, "n": 754 }],
+  "channels": [{ "channel": "email", "sent": 310, "replied": 34, "rate": 0.11 }],
+  "countries": [{ "cc": "FR", "n": 168 }],
+  "weekly": [{ "week": "2026-11-16", "delivered": 96, "meetings": 4 }],
+  "credits": [{ "day": "2026-11-22", "used": 2186 }],
+  "members": [{ "userId": "uuid", "name": "…", "prospects": 120, "meetings": 9, "won": 3 }]
+}
+```
+
+- `funnel` : prospects livrés sur la période, cumulés (un prospect à « Rendez-vous » compte aussi
+  dans « Contacté »…), étapes perdues exclues.
+- `channels` : taux de réponse sur les messages saisis comme envoyés (`sent_manually` /
+  `replied`).
+- `credits` : consommation cumulée par jour (crédits). `members` absent pour un `member`.
