@@ -83,6 +83,20 @@ export const TRIAL = { credits: 100, costGuardUsd: 1, plan: 'research' as PlanCo
 /** Seuils du garde-fou : bascule économique à 70 %, sources gratuites seules à 100 %. */
 export const COST_GUARD_THRESHOLDS = { economy: 0.7, freeOnly: 1 } as const;
 
+/**
+ * Borne de coût réel PAR CAMPAGNE (revue étape 2, constat 4) : 2 × le coût cible par crédit
+ * (≈ 0,019 $) appliqué aux crédits réservés, avec un minimum pour l'interprétation et la recherche.
+ */
+export const CAMPAIGN_COST_CAP = { usdPerReservedCredit: 0.04, minUsd: 0.5 } as const;
+
+export function campaignCostCapMicroUsd(reservedMc: number): number {
+  const credits = reservedMc / MILLICREDITS_PER_CREDIT;
+  return Math.round(
+    Math.max(CAMPAIGN_COST_CAP.minUsd, credits * CAMPAIGN_COST_CAP.usdPerReservedCredit) *
+      1_000_000,
+  );
+}
+
 /** Hypothèses d'estimation (remplacées par les mesures de la bêta). */
 export const ESTIMATE_DEFAULTS = {
   /** Part des prospects demandés effectivement livrés, borne basse prudente. */

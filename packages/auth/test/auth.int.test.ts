@@ -117,6 +117,20 @@ describe.skipIf(!info.available)('Better Auth (Postgres réel)', () => {
       .from(schema.organizations)
       .where(eq(schema.organizations.id, orgId));
     expect(row?.countryCode).toBe('ML');
+    expect(row?.trialEligible).toBe(true);
+  });
+
+  it('constat 4 (étape 2) : essai réservé à la première organisation, non falsifiable', async () => {
+    const org2 = await auth.api.createOrganization({
+      headers: H.owner,
+      body: { name: 'Seconde', slug: 'seconde', countryCode: 'SN', trialEligible: true } as never,
+    });
+    const [row] = await authDb.db
+      .select()
+      .from(schema.organizations)
+      .where(eq(schema.organizations.id, org2!.id));
+    expect(row?.trialEligible).toBe(false);
+    await auth.api.setActiveOrganization({ headers: H.owner, body: { organizationId: orgId } });
   });
 
   it('constat 4 : action sensible refusée à un owner sans 2FA (code two_factor_required)', async () => {

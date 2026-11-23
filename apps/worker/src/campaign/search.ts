@@ -13,6 +13,7 @@ import {
   type Transaction,
 } from '@scoutra/db';
 import {
+  campaignCostMode,
   prospectProcessJob,
   publishTenantJob,
   type JobPayload,
@@ -135,9 +136,21 @@ export async function handleSearch(
   if (!ctx?.spec) return { skipped: true };
   // Assez de candidats : on n'interroge plus (coût maîtrisé).
   if (ctx.c.candidatesCount >= ctx.c.maxProspects * 4) return { skipped: 'enough_candidates' };
+  // Réservation consommée ou nombre demandé livré : plus aucune requête (constat 4).
+  if (
+    ctx.c.deliveredCount >= ctx.c.maxProspects ||
+    (deps.mode === 'saas' && ctx.c.reservedMc > 0 && ctx.c.consumedMc >= ctx.c.reservedMc)
+  )
+    return { skipped: 'budget_reached' };
   const query = connector.buildQueries(ctx.spec.spec)[p.queryIndex];
   if (!query) return { skipped: 'no_query' };
   if (!deps.breaker.canCall(p.connector)) return { skipped: 'circuit_open' };
+  const mode = await withTenant(deps.db, { orgId }, (tx) =>
+    campaignCostMode(tx, deps.mode, ctx.c, deps.now()),
+  );
+  const tier = connector.manifest.costTier;
+  if ((mode === 'free_only' && tier !== 'free') || (mode === 'economy' && tier === 'paid'))
+    return { skipped: 'cost_guard' };
   if (!deps.limiter(p.connector, connector.manifest.rateLimit.perSecond))
     throw new RetryLaterError('limite de débit');
 

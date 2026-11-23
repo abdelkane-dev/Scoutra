@@ -4,6 +4,7 @@ import {
   MILLICREDITS_PER_CREDIT,
   PLANS,
   TRIAL,
+  campaignCostCapMicroUsd,
   costModeFor,
   type CostMode,
   type PlanConfig,
@@ -50,6 +51,32 @@ export async function currentCostMode(
   return costModeFor(await costSince(tx, periodStart), costCapUsd);
 }
 
+const RANK: Record<CostMode, number> = { normal: 0, economy: 1, free_only: 2 };
+
+/**
+ * Mode de coût EFFECTIF d'une campagne, réévalué à chaque appel coûteux (constat 4) : le plus
+ * strict entre le garde-fou de l'organisation et la borne de coût de la campagne
+ * (≥ 70 % : économie, ≥ 100 % : gratuit seul). Licence : toujours normal.
+ */
+export async function campaignCostMode(
+  tx: Transaction,
+  mode: 'saas' | 'license',
+  campaign: { id: string; reservedMc: number },
+  now: Date,
+): Promise<CostMode> {
+  if (mode === 'license') return 'normal';
+  const org = await currentCostMode(tx, mode, now);
+  const [row] = await tx
+    .select({ total: sql<string>`coalesce(sum(${schema.usageEvents.costMicroUsd}), 0)` })
+    .from(schema.usageEvents)
+    .where(eq(schema.usageEvents.campaignId, campaign.id));
+  const camp = costModeFor(
+    Number(row?.total ?? 0),
+    campaignCostCapMicroUsd(campaign.reservedMc) / 1_000_000,
+  );
+  return RANK[camp] > RANK[org] ? camp : org;
+}
+
 /**
  * Essai sans carte (barème : 100 crédits, coût réel plafonné à 1 $) : octroyé une seule fois
  * (clé d'idempotence `trial`) à une organisation sans abonnement.
@@ -57,6 +84,10 @@ export async function currentCostMode(
 export async function ensureTrialCredits(tx: Transaction, orgId: string): Promise<void> {
   const [s] = await tx.select({ id: schema.subscriptions.id }).from(schema.subscriptions);
   if (s) return;
+  const [org] = await tx
+    .select({ eligible: schema.organizations.trialEligible })
+    .from(schema.organizations);
+  if (!org?.eligible) return; // pas la première organisation de son propriétaire
   await grantCredits(tx, {
     orgId,
     origin: 'trial',

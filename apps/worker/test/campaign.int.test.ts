@@ -156,6 +156,11 @@ describe.skipIf(!info.available)(
         now: () => new Date(),
       };
       await registerCampaignWorkers(deps);
+      // A : première organisation de son propriétaire → éligible à l'essai.
+      await h.auth.db
+        .update(schema.organizations)
+        .set({ trialEligible: true })
+        .where(eq(schema.organizations.id, A.orgId));
       await withTenant(h.app.db, A, (tx) =>
         grantCredits(tx, {
           orgId: A.orgId,

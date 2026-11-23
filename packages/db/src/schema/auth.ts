@@ -60,6 +60,8 @@ export const organizations = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    /** Essai gratuit possible : seulement la PREMIÈRE organisation d'un utilisateur (anti-abus). */
+    trialEligible: boolean('trial_eligible').notNull().default(false),
     createdAt: ts('created_at').notNull().defaultNow(),
   },
   (t) => [

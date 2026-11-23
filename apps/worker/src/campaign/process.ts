@@ -21,6 +21,7 @@ import {
 import { decryptSecret, type EncryptedSecret } from '@scoutra/crypto';
 import { consumeCredits, count, eq, gte, recordUsage, schema, sql, withTenant } from '@scoutra/db';
 import type { JobPayload, prospectProcessJob } from '@scoutra/queue';
+import { campaignCostMode } from '@scoutra/queue';
 import { emit, latestSpec, loadOrg, planFor, recordLlm } from './context';
 import { connectorCtx, resolveKeys, type CampaignDeps } from './deps';
 import { insertContact } from './search';
@@ -67,7 +68,29 @@ export async function handleProcess(
   const { c, pr, org } = loaded;
   const spec = loaded.spec.spec;
   const playbook = playbookFor(spec.model);
-  const economy = c.costMode !== 'normal';
+  // Réservation atteinte (ou nombre demandé livré) : on s'arrête AVANT toute dépense (constat 4).
+  const perMc = DELIVERY_CREDITS[c.quality as DeliveryQuality] * MILLICREDITS_PER_CREDIT;
+  if (
+    (deps.mode === 'saas' && c.consumedMc + perMc > c.reservedMc) ||
+    c.deliveredCount >= c.maxProspects
+  ) {
+    await withTenant(deps.db, { orgId }, async (tx) => {
+      await tx
+        .update(schema.prospects)
+        .set({ status: 'rejected', rejectionReason: 'budget_exhausted', updatedAt: deps.now() })
+        .where(eq(schema.prospects.id, pr.id));
+      await emit(tx, orgId, c.id, 'prospect.updated', {
+        prospectId: pr.id,
+        status: 'rejected',
+        score: null,
+        reason: 'budget_exhausted',
+      });
+    });
+    return { outcome: 'budget_exhausted' };
+  }
+  // Mode de coût réévalué avant CHAQUE appel IA (garde-fou organisation + borne de campagne).
+  const costMode = () =>
+    withTenant(deps.db, { orgId }, (tx) => campaignCostMode(tx, deps.mode, c, deps.now()));
   const key = await resolveKeys(deps, orgId);
 
   // 1. Enrichissement (site public)
@@ -79,7 +102,9 @@ export async function handleProcess(
       ? await readWebsite(pr.websiteDomain, connectorCtx(deps, key, signal))
       : null;
   const ai =
-    site && !economy ? await extractSiteFacts(site, deps.llm, signal).catch(() => null) : null;
+    site && (await costMode()) === 'normal'
+      ? await extractSiteFacts(site, deps.llm, signal).catch(() => null)
+      : null;
 
   // 2. Contacts du site + vérification
   const verified = await withTenant(deps.db, { orgId }, async (tx) => {
@@ -203,7 +228,8 @@ export async function handleProcess(
       websiteReachable: site?.reachable,
     },
   };
-  const scored = await scoreProspect(scoringInput, deps.llm, { allowAi: !economy, signal }).catch(
+  const scoringAi = (await costMode()) === 'normal';
+  const scored = await scoreProspect(scoringInput, deps.llm, { allowAi: scoringAi, signal }).catch(
     async () => scoreProspect(scoringInput, deps.llm, { allowAi: false }),
   );
 
@@ -279,7 +305,10 @@ export async function handleProcess(
       reasons: scored.result.reasons.map((r) => r.finding),
     };
     // Une erreur d'IA ne prive jamais d'un prospect payé : repli sur le modèle de message.
-    draft = await draftMessage(input, deps.llm, signal).catch(() =>
+    // Au-delà de la borne de coût : message modèle (aucun appel IA), le prospect reste livré.
+    const draftLlm =
+      (await costMode()) === 'free_only' ? { ...deps.llm, available: false } : deps.llm;
+    draft = await draftMessage(input, draftLlm, signal).catch(() =>
       draftMessage(input, { ...deps.llm, available: false }),
     );
   }

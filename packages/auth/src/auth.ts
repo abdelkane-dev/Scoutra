@@ -282,6 +282,7 @@ export function createAuth({ env, authDb, email }: CreateAuthOptions) {
           organization: {
             additionalFields: {
               countryCode: { type: 'string', required: true, input: true },
+              trialEligible: { type: 'boolean', required: false, input: false },
             },
           },
         },
@@ -301,13 +302,19 @@ export function createAuth({ env, authDb, email }: CreateAuthOptions) {
             const role = await authorize(invitation.organizationId, inviter.id, 'member:invite');
             if (!(assignableRoles(role) as string[]).includes(invitation.role)) deny('forbidden');
           },
-          beforeCreateOrganization: async ({ organization: org }) => {
+          beforeCreateOrganization: async ({ organization: org, user }) => {
             const parsed = isoCountrySchema.safeParse(
               (org as { countryCode?: unknown }).countryCode,
             );
             if (!parsed.success)
               throw new APIError('BAD_REQUEST', { message: 'invalid_country_code' });
-            return { data: { ...org, countryCode: parsed.data } };
+            // Essai gratuit : seulement pour la première organisation possédée par l'utilisateur
+            // (revue étape 2, constat 4). Toujours fixé ici, jamais pris de la requête.
+            const [{ n } = { n: 0 }] = await authDb
+              .select({ n: count() })
+              .from(schema.members)
+              .where(and(eq(schema.members.userId, user.id), eq(schema.members.role, 'owner')));
+            return { data: { ...org, countryCode: parsed.data, trialEligible: n === 0 } };
           },
         },
         // L'identifiant d'invitation sert de jeton à usage unique (statut pending → accepted),

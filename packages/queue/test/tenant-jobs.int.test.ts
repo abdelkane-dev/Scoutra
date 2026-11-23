@@ -164,3 +164,57 @@ describe.skipIf(!info.available)('événements de paiement (idempotents)', async
     }
   });
 });
+
+describe.skipIf(!info.available)('constat 4 (étape 2) : borne de coût par campagne', async () => {
+  const { campaignCostMode } = await import('../src');
+  const { recordUsage } = await import('@scoutra/db');
+  it('économie à 70 % de la borne, gratuit seul à 100 %, réévalué à chaque appel', async () => {
+    const h3 = handles(info);
+    try {
+      const O = await seedOrgAndOwner(h3.auth, 'cap');
+      await withTenant(h3.app.db, O, async (tx) => {
+        await tx.insert(schema.subscriptions).values({
+          organizationId: O.orgId,
+          plan: 'pipeline',
+          status: 'active',
+          periodStart: new Date(Date.now() - 864e5),
+          periodEnd: new Date(Date.now() + 864e5),
+          provider: 't',
+        });
+        const [c] = await tx
+          .insert(schema.campaigns)
+          .values({
+            organizationId: O.orgId,
+            name: 'n',
+            promptText: 'p',
+            prospectingModel: 'b2b',
+            reservedMc: 10_000,
+          })
+          .returning();
+        const camp = { id: c!.id, reservedMc: 10_000 }; // borne = max(0,5 $, 10 × 0,04 $) = 0,5 $
+        expect(await campaignCostMode(tx, 'saas', camp, new Date())).toBe('normal');
+        await recordUsage(tx, {
+          orgId: O.orgId,
+          campaignId: c!.id,
+          kind: 'llm',
+          provider: 'x',
+          source: 'x',
+          costMicroUsd: 360_000,
+        });
+        expect(await campaignCostMode(tx, 'saas', camp, new Date())).toBe('economy');
+        await recordUsage(tx, {
+          orgId: O.orgId,
+          campaignId: c!.id,
+          kind: 'llm',
+          provider: 'x',
+          source: 'x',
+          costMicroUsd: 200_000,
+        });
+        expect(await campaignCostMode(tx, 'saas', camp, new Date())).toBe('free_only');
+        expect(await campaignCostMode(tx, 'license', camp, new Date())).toBe('normal');
+      });
+    } finally {
+      await Promise.all([h3.app.close(), h3.auth.close(), h3.migrator.close()]);
+    }
+  });
+});

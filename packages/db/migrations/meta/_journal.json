@@ -43,6 +43,13 @@
       "when": 1795378492377,
       "tag": "0005_campaigns_credits",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795442375740,
+      "tag": "0006_trial",
+      "breakpoints": true
     }
   ]
 }
