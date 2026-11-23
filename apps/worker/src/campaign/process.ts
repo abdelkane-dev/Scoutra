@@ -389,11 +389,15 @@ export async function handleProcess(
         updatedAt: deps.now(),
       })
       .where(eq(schema.prospects.id, pr.id));
-    if (!delivered)
+    if (!delivered) {
       await tx
         .update(schema.campaigns)
         .set({ rejectedCount: sql`${schema.campaigns.rejectedCount} + 1` })
         .where(eq(schema.campaigns.id, c.id));
+      // Minimisation (constat 20) : un prospect écarté ne garde aucune coordonnée (les preuves
+      // liées aux contacts suivent par cascade) ; seuls nom, source et raison restent.
+      await tx.delete(schema.contacts).where(eq(schema.contacts.prospectId, pr.id));
+    }
     const [existingMsg] =
       draft && channelDecision
         ? await tx

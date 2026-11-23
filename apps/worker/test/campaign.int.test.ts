@@ -237,6 +237,10 @@ describe.skipIf(!info.available)(
         const msgs = await tx.select().from(schema.messages);
         expect(msgs.length).toBe(done.deliveredCount);
         expect(msgs[0]!.footer).toContain('STOP');
+        // Constat 20 : aucun contact conservé pour un prospect écarté.
+        const rejectedIds = prospects.filter((p) => !p.deliveredAt).map((p) => p.id);
+        const kept = await tx.select({ p: schema.contacts.prospectId }).from(schema.contacts);
+        expect(kept.filter((k) => rejectedIds.includes(k.p))).toHaveLength(0);
         const contacts = await tx.select().from(schema.contacts);
         expect(JSON.stringify(contacts)).not.toContain('@lebaobab');
         expect((await tx.select().from(schema.evidence)).length).toBeGreaterThan(0);
