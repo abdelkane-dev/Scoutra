@@ -33,6 +33,7 @@ import {
 } from '@scoutra/db';
 import type { JobPayload } from '@scoutra/queue';
 import { usageOfError, type Usage } from '@scoutra/ai';
+import { runAutomations } from '@scoutra/crm';
 import { campaignCostMode, prospectProcessJob, publishTenantJob } from '@scoutra/queue';
 import { emit, latestSpec, loadOrg, planFor, recordLlm } from './context';
 import { connectorCtx, resolveKeys, type CampaignDeps } from './deps';
@@ -441,6 +442,14 @@ export async function handleProcess(
       await recordLlm(tx, orgId, c.id, 'drafting', draft.usage, deps.llm.provider);
       await emit(tx, orgId, c.id, 'message.drafted', { prospectId: pr.id, messageId: m!.id });
     }
+    // Automatisations internes du prospect livré (assigner, tâche, étape, notifier).
+    if (delivered)
+      await runAutomations(tx, orgId, {
+        type: 'delivered',
+        prospectId: pr.id,
+        score: scored.result.score,
+        signals: signals.map((x) => x.key),
+      });
     await emit(tx, orgId, c.id, 'prospect.updated', {
       prospectId: pr.id,
       status: delivered ? 'drafted' : 'rejected',

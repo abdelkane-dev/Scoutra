@@ -383,3 +383,45 @@ Réponse 201 `{ id, replaces, channel, subject, body, footer, generatedBy, statu
 awaitingAction, items: [{ from: "me"|"them", kind: "draft"|"sent"|"reply", body, subject, channel,
 status?, messageId?, at }] }] }` — un fil par prospect visible ; `status` filtre `replied`,
 `to_send` ou `sent_manually`.
+
+## Tâches, agenda, séquences, automatisations, notifications
+
+### Tâches : `GET /api/tasks`, `POST /api/tasks`, `PATCH /api/tasks/:id`, `DELETE /api/tasks/:id`
+
+Actions `task:read` / `task:write`. Un `member` voit les tâches qui lui sont assignées ou qu'il a
+créées ; l'équipe voit tout. `GET ?status=open|done|cancelled&due=overdue|today|week&mine=true&limit=`
+→ `{ items: [{ id, title, kind, status, source: "manual|sequence|automation", dueAt, endAt,
+overdue, prospectId, prospectName, assigneeUserId, assigneeName, createdAt }] }`.
+`POST { title, kind: "call|email|whatsapp|meeting|follow_up|linkedin_manual|other", dueAt?, endAt?,
+prospectId?, assigneeUserId? }` (assigner à quelqu'un d'autre exige `prospect:assign`). `PATCH`
+accepte les mêmes champs + `status`.
+
+### `GET /api/agenda?from=ISO&to=ISO` (action `task:read`, 31 jours au plus)
+
+`{ items: [{ id, title, kind, start, end, who, prospectId, prospectName, done }] }` (fin par défaut
+: début + 30 min).
+
+### Séquences : `GET /api/sequences` (`sequence:read`), `POST /api/sequences`, `PATCH /api/sequences/:id` (`sequence:manage`), `POST /api/sequences/:id/enroll` (`sequence:enroll`)
+
+`POST { name, status?, steps: [{ day, channel: "email|phone|whatsapp|linkedin_manual|other", kind:
+"task|draft", title, template? }] }` (jours croissants, 20 étapes au plus). Chaque minute, le worker
+exécute les étapes dues : **tâche** pour l'utilisateur, ou **brouillon** email (si le garde-fou
+autorise l'email pour ce prospect ; `{{name}}` remplacé). **Aucun envoi.** Une réponse saisie
+arrête la séquence du prospect. `GET` → `{ items: [{ id, name, status, steps, enrolled, active,
+replyRate, createdBy, createdAt }] }`. `enroll { prospectIds }` → `{ enrolled, skipped }`.
+
+### Automatisations : `GET /api/automations` (`automation:read`), `POST`, `PUT /api/automations/:id`, `DELETE` (`automation:manage`)
+
+`{ name, enabled, trigger, triggerArg, action, actionArg }` :
+- `trigger` : `delivered` (prospect livré), `score_above` (`triggerArg` = score), `signal`
+  (`triggerArg` = clé de signal), `replied` (réponse saisie), `stage_changed` (`triggerArg` =
+  étape, vide = toutes) ;
+- `action` : `assign` (`actionArg` = id de membre), `create_task` (`actionArg` = titre),
+  `move_stage` (`actionArg` = étape), `notify` (`actionArg` = id de membre ou `owner`).
+Réponse : `{ id, name, enabled, trigger, triggerArg, action, actionArg, runs, lastRunAt }`.
+Actions internes uniquement ; une action d'automatisation ne redéclenche pas d'automatisation.
+
+### Notifications : `GET /api/notifications` · `POST /api/notifications/read { ids? }`
+
+`{ unread, items: [{ id, title, body, link, read, at }] }` (les miennes). `read` sans `ids` :
+tout marquer comme lu.

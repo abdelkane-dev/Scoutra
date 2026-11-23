@@ -191,6 +191,15 @@ describe.skipIf(!info.available)(
       expect(ready.estimate).toMatchObject({ credits: { low: 3, high: 5 } });
       expect(ready.degraded).toBe(true); // aucune clé : sources gratuites seulement
 
+      await withTenant(h.app.db, A, (tx) =>
+        tx.insert(schema.automations).values({
+          organizationId: A.orgId,
+          name: 'Livré',
+          trigger: 'delivered',
+          action: 'create_task',
+          actionArg: 'Premier contact',
+        }),
+      );
       // Constat 5 : le quota de la formule est revérifié au lancement.
       await withTenant(h.app.db, A, (tx) =>
         tx.update(schema.campaigns).set({ maxProspects: 9999 }).where(eq(schema.campaigns.id, id)),
@@ -265,6 +274,9 @@ describe.skipIf(!info.available)(
           ]),
         );
       });
+      // Automatisation « prospect livré » → une tâche par prospect livré.
+      const autoTasks = await withTenant(h.app.db, A, (tx) => tx.select().from(schema.tasks));
+      expect(autoTasks.filter((t) => t.source === 'automation')).toHaveLength(done.deliveredCount);
       // Constat 15 : une reprise d'un prospect déjà livré ne débite ni ne compte deux fois.
       const [one] = await withTenant(h.app.db, A, (tx) =>
         tx.select().from(schema.prospects).where(eq(schema.prospects.campaignId, id)),

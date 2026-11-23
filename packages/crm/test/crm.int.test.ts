@@ -343,3 +343,39 @@ describe.skipIf(!info.available)(
     });
   },
 );
+
+describe.skipIf(!info.available)('CRM : tâches et agenda', () => {
+  it('création, attribution contrôlée, portée du membre, filtres', async () => {
+    const h = handles(info);
+    const { createTask, listTasks, patchTask } = await import('../src');
+    try {
+      const O = await seedOrgAndOwner(h.auth, 'tasks');
+      const mid = randomUUID();
+      await h.auth.db
+        .insert(schema.users)
+        .values({ id: mid, name: 'Membre', email: `t-${mid}@test.invalid` });
+      await h.auth.db
+        .insert(schema.members)
+        .values({ organizationId: O.orgId, userId: mid, role: 'member' });
+      const T = <R>(fn: Parameters<typeof withTenant<R>>[2]) => withTenant(h.app.db, O, fn);
+      const lead: Actor = { orgId: O.orgId, userId: O.userId, ownerOnly: null, canAssign: true };
+      const mem: Actor = { orgId: O.orgId, userId: mid, ownerOnly: mid, canAssign: false };
+      const soon = new Date(Date.now() - 3600_000).toISOString();
+      const t1 = await T((tx) =>
+        createTask(tx, lead, { title: 'Appeler', kind: 'call', dueAt: soon, assigneeUserId: mid }),
+      );
+      await T((tx) => createTask(tx, lead, { title: 'Pour moi', kind: 'other' }));
+      await expect(
+        T((tx) => createTask(tx, mem, { title: 'x', kind: 'other', assigneeUserId: O.userId })),
+      ).rejects.toMatchObject({ code: 'forbidden' });
+      const mine = await T((tx) => listTasks(tx, mem, { limit: 50 }));
+      expect(mine.map((t) => t.title)).toEqual(['Appeler']);
+      expect(mine[0]).toMatchObject({ overdue: true, assigneeName: 'Membre' });
+      expect(await T((tx) => listTasks(tx, lead, { due: 'overdue', limit: 50 }))).toHaveLength(1);
+      const done = await T((tx) => patchTask(tx, mem, t1.id, { status: 'done' }));
+      expect(done.completedAt).not.toBeNull();
+    } finally {
+      await Promise.all([h.app.close(), h.auth.close(), h.migrator.close()]);
+    }
+  });
+});

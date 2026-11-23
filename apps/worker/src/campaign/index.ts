@@ -3,11 +3,13 @@ import {
   campaignInterpretJob,
   campaignPlanJob,
   publishTenantJob,
+  sequenceStepJob,
   prospectProcessJob,
   searchRunJob,
   workTenant,
 } from '@scoutra/queue';
-import { staleCampaigns } from '@scoutra/db';
+import { dueEnrollments, runEnrollmentStep } from '@scoutra/crm';
+import { staleCampaigns, withTenant } from '@scoutra/db';
 import type { CampaignDeps } from './deps';
 import { handleFinalize } from './finalize';
 import { handleInterpret } from './interpret';
@@ -57,6 +59,39 @@ export function startCampaignSweeper(deps: CampaignDeps, everyMs = 120_000): () 
         '[worker] balayage des campagnes :',
         err instanceof Error ? err.message : 'erreur',
       );
+    }
+  };
+  const t = setInterval(() => void tick(), everyMs);
+  void tick();
+  return () => clearInterval(t);
+}
+
+/** Séquences : chaque minute, les étapes dues deviennent des tâches métier par organisation. */
+export async function registerSequenceWorker(
+  deps: CampaignDeps,
+  everyMs = 60_000,
+): Promise<() => void> {
+  await workTenant(deps.boss, deps.db, sequenceStepJob, (p) =>
+    withTenant(deps.db, { orgId: p.organizationId }, (tx) =>
+      runEnrollmentStep(tx, p.organizationId, p.enrollmentId),
+    ),
+  );
+  const tick = async () => {
+    try {
+      for (const d of await dueEnrollments(deps.db))
+        await publishTenantJob(
+          deps.boss,
+          deps.db,
+          sequenceStepJob,
+          { organizationId: d.organizationId, enrollmentId: d.enrollmentId },
+          {
+            refType: 'enrollment',
+            refId: d.enrollmentId,
+            singletonKey: `seq:${d.enrollmentId}`,
+          },
+        );
+    } catch (err) {
+      console.error('[worker] séquences :', err instanceof Error ? err.message : 'erreur');
     }
   };
   const t = setInterval(() => void tick(), everyMs);

@@ -76,6 +76,13 @@ export const campaignFinalizeJob = defineJob({
   queue: { retryLimit: 5, retryDelay: 10, retryBackoff: true, expireInSeconds: 60 },
 });
 
+/** Étape due d'une séquence : crée une tâche ou un brouillon (jamais d'envoi). */
+export const sequenceStepJob = defineJob({
+  name: 'sequence.step',
+  schema: tracked.extend({ enrollmentId: z.uuid() }).strict(),
+  queue: { retryLimit: 3, retryDelay: 30, retryBackoff: true, expireInSeconds: 60 },
+});
+
 export const ALL_JOBS = [
   pingJob,
   campaignInterpretJob,
@@ -83,6 +90,7 @@ export const ALL_JOBS = [
   searchRunJob,
   prospectProcessJob,
   campaignFinalizeJob,
+  sequenceStepJob,
 ] as const;
 
 export type JobPayload<J extends JobDefinition<z.ZodType>> = z.infer<J['schema']>;
