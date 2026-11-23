@@ -32,6 +32,7 @@ import { useFormat, useLocale, useT } from '@/lib/i18n/client';
 import { authClient } from '@/lib/auth-client';
 import { setLocaleCookie } from '@/lib/locale-cookie';
 import { DEMO_CREDITS } from '@/lib/demo/workspace';
+import { useCredits } from '@/lib/use-credits';
 import { HELP, PRIMARY, SECTIONS, type NavItem } from './nav-config';
 import { useApp, usePerm } from './app-provider';
 
@@ -123,8 +124,15 @@ export function Sidebar({
       return next;
     });
 
-  const total = DEMO_CREDITS.granted + DEMO_CREDITS.rollover + DEMO_CREDITS.packs;
-  const left = total - DEMO_CREDITS.used;
+  // Solde réel (GET /api/credits) si disponible, sinon démonstration.
+  const real = useCredits(app.mode === 'saas');
+  const demoTotal = DEMO_CREDITS.granted + DEMO_CREDITS.rollover + DEMO_CREDITS.packs;
+  const left = real?.balance ?? demoTotal - DEMO_CREDITS.used;
+  const total =
+    real?.balance !== undefined
+      ? Math.max(real.plan?.monthlyCredits ?? 0, real.balance, 1)
+      : demoTotal;
+  const used = Math.max(0, total - left);
   const initials = app.org.name
     .split(/\s+/)
     .map((w) => w[0])
@@ -274,11 +282,11 @@ export function Sidebar({
           <span className="block h-1 overflow-hidden rounded-[2px] bg-sunken" aria-hidden>
             <span
               className="block h-full origin-left rounded-[2px] bg-ink"
-              style={{ transform: `scaleX(${DEMO_CREDITS.used / total})` }}
+              style={{ transform: `scaleX(${used / total})` }}
             />
           </span>
           <span className="text-label-12 font-normal text-ink-3 tnum">
-            {t('app.shell.creditsOf', { used: fmt.n(DEMO_CREDITS.used), total: fmt.n(total) })}
+            {t('app.shell.creditsOf', { used: fmt.n(used), total: fmt.n(total) })}
           </span>
         </Link>
         <DropdownMenu>

@@ -32,6 +32,8 @@ import { WRITING_SURCHARGE } from '@/lib/pricing';
 import { usePerm } from './app-provider';
 import { CountryPicker } from './country-picker';
 import { ProspectSheet } from './prospect-sheet';
+import { LiveRun } from './live-search';
+import { apiFetch } from '@/lib/api';
 
 type Kind = 'companies' | 'people' | 'both';
 type Zone = 'one' | 'many' | 'world';
@@ -74,6 +76,7 @@ export function SearchView({
   const [error, setError] = React.useState<string | null>(null);
   const [run, setRun] = React.useState<Run | null>(null);
   const [selected, setSelected] = React.useState<DemoProspect | null>(null);
+  const [liveId, setLiveId] = React.useState<string | null>(null);
   const timers = React.useRef<number[]>([]);
   React.useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -82,10 +85,39 @@ export function SearchView({
   const perProspect = 1 + WRITING_SURCHARGE[writing];
   const estimate = max * perProspect;
 
-  const launch = () => {
-    if (query.trim().length < 10) return setError(t('search.queryTooShort'));
-    if (zone !== 'world' && countries.length === 0) return setError(t('search.needCountry'));
-    setError(null);
+  const validate = () => {
+    let err: string | null = null;
+    if (query.trim().length < 10) err = t('search.queryTooShort');
+    else if (zone !== 'world' && countries.length === 0) err = t('search.needCountry');
+    setError(err);
+    return err === null;
+  };
+
+  /** Vraie recherche (POST /api/campaigns) ; repli sur la démonstration si l'API ne répond pas. */
+  const launch = async () => {
+    if (!validate()) return;
+    const zoneText =
+      zone === 'world' ? t('app.common.world') : countries.map((c) => fmt.country(c)).join(', ');
+    const prompt = `${query.trim()}\n${t('search.zone')} : ${zoneText}. ${t('search.target')} : ${t(`app.kinds.${kind}`)}.`;
+    const r = await apiFetch<{ id: string }>('/api/campaigns', {
+      method: 'POST',
+      body: { prompt, model, maxProspects: max, quality: writing },
+    });
+    if (r.data) {
+      setRun(null);
+      setLiveId(r.data.id);
+      return;
+    }
+    if (r.error && r.error.status > 0 && r.error.status < 500) {
+      const key = `live.errors.${r.error.code}` as MessageKey;
+      return setError(t(key) === key ? r.error.message || t('auth.errors.unknown') : t(key));
+    }
+    toast(t('live.demoFallback'));
+    launchDemo();
+  };
+
+  const launchDemo = () => {
+    setLiveId(null);
     timers.current.forEach(clearTimeout);
     timers.current = [];
     const now = new Date();
@@ -164,7 +196,7 @@ export function SearchView({
           className="grid gap-5 p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            launch();
+            void launch();
           }}
         >
           <div className="grid gap-1.5">
@@ -177,7 +209,7 @@ export function SearchView({
               placeholder={t('search.queryPlaceholder')}
               aria-describedby="q-hint"
               onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') launch();
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') void launch();
               }}
               className="text-copy-14"
             />
@@ -320,7 +352,15 @@ export function SearchView({
 
       {/* Déroulé et résultats */}
       <div className="grid min-w-0 content-start gap-4">
-        {!run ? (
+        {liveId ? (
+          <LiveRun
+            id={liveId}
+            onDemo={() => {
+              if (validate()) launchDemo();
+            }}
+            onReset={() => setLiveId(null)}
+          />
+        ) : !run ? (
           <Panel aria-labelledby="h-idle">
             <PanelHeader>
               <PanelTitle id="h-idle">{t('search.idleTitle')}</PanelTitle>

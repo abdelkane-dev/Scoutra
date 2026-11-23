@@ -1557,4 +1557,66 @@ export const fr = {
     },
   },
   // </ui:prefs>
+  // <ui:live>
+  live: {
+    interpreting: 'L’agent Interprète prépare la fiche cible…',
+    stalled:
+      'L’agent Interprète ne répond pas. Le service de tâches (worker) est peut-être arrêté.',
+    showDemo: 'Voir une démonstration',
+    demoFallback: 'API indisponible : déroulé de démonstration affiché.',
+    targetTitle: 'Fiche cible à confirmer',
+    targetLede: 'Vérifiez ce que l’agent a compris avant de lancer la recherche.',
+    method: {
+      ai: 'Interprétée par l’IA',
+      heuristic: 'Interprétation approximative (aucune IA configurée) : relisez la fiche',
+    },
+    confidence: 'Confiance : {pct}',
+    countries: 'Pays',
+    keywords: 'Mots-clés',
+    kinds: 'Cibles',
+    questions: 'Questions de l’agent',
+    estimate: 'Estimation : {low} à {high} crédits',
+    estimateLicense: 'Mode licence : aucun crédit, coût porté par vos clés.',
+    degraded: 'Mode dégradé : seules des sources gratuites seront interrogées.',
+    excluded: 'Sources écartées : {list}',
+    launch: 'Lancer la recherche',
+    cancel: 'Annuler',
+    cancelled: 'Recherche annulée',
+    running: 'Recherche en cours',
+    completed: 'Recherche terminée',
+    failed: 'La recherche a échoué. Les crédits réservés sont remboursés.',
+    counts: '{delivered} livrés, {rejected} écartés, {candidates} candidats',
+    credits: '{consumed} crédits consommés sur {reserved} réservés',
+    warning: {
+      degraded_free_sources_only: 'Sources gratuites uniquement pour cette recherche.',
+      no_source_available:
+        'Aucune source disponible pour cette cible : aucun prospect, aucun débit.',
+      source_failed: 'Une source n’a pas répondu ; les autres continuent.',
+    },
+    reasons: {
+      missing_key: 'clé manquante',
+      missing_service: 'service non configuré',
+      cost_guard: 'plafond de coût',
+      circuit_open: 'source en panne',
+      country: 'pays non couvert',
+      kind: 'type non couvert',
+      model: 'modèle non couvert',
+      not_in_playbook: 'hors playbook',
+      search_provider_already_chosen: 'moteur déjà choisi',
+    },
+    errors: {
+      insufficient_credits:
+        'Crédits insuffisants. Achetez un pack ou réduisez le nombre de prospects.',
+      quota_exceeded:
+        'Limite de votre formule atteinte (campagnes simultanées ou prospects par campagne).',
+    },
+    realData: 'Données réelles',
+    noReal: 'Aucun prospect réel pour l’instant : les données de démonstration sont affichées.',
+    showReal: 'Données réelles',
+    showDemoData: 'Démonstration',
+    masked: 'Masqué jusqu’à la livraison',
+    footer: 'Pied de page légal ajouté à l’envoi',
+    template: 'Modèle',
+  },
+  // </ui:live>
 } as const;

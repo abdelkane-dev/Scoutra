@@ -5,6 +5,7 @@ import {
   organizationClient,
   twoFactorClient,
 } from 'better-auth/client/plugins';
+import { BETTER_AUTH_ROLES } from '@scoutra/auth/roles';
 
 /**
  * Client Better Auth (routes /api/auth/*, même origine : cookies HttpOnly, aucun jeton côté JS).
@@ -13,6 +14,7 @@ import {
 export const authClient = createAuthClient({
   plugins: [
     organizationClient({
+      roles: BETTER_AUTH_ROLES,
       schema: inferOrgAdditionalFields({
         organization: {
           additionalFields: { countryCode: { type: 'string', required: true, input: true } },

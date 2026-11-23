@@ -27,6 +27,7 @@ import {
   Tooltip,
   cn,
   toast,
+  Segmented,
 } from '@scoutra/ui';
 import { useFormat, useLocale, useT } from '@/lib/i18n/client';
 import { DEMO_LISTS, DEMO_PROSPECTS } from '@/lib/demo/prospects';
@@ -36,6 +37,99 @@ import { allowedChannels } from '@/lib/channel-rules';
 import { DataTable, type Column, type Facet, type SavedView } from './data-table';
 import { ProspectSheet } from './prospect-sheet';
 import { useApp, usePerm } from './app-provider';
+import { RealProspectSheet } from './live-search';
+import { apiFetch } from '@/lib/api';
+import type { ApiProspectItem } from '@/lib/api-types';
+import type { MessageKey } from '@scoutra/i18n';
+
+/** Prospects réels (GET /api/prospects) ; null = pas encore chargés ou API indisponible. */
+function useRealProspects() {
+  const [items, setItems] = React.useState<ApiProspectItem[] | null>(null);
+  React.useEffect(() => {
+    void apiFetch<{ items: ApiProspectItem[] }>('/api/prospects?limit=100&sort=score').then((r) =>
+      setItems(r.data ? r.data.items : []),
+    );
+  }, []);
+  return items;
+}
+
+function RealProspects({ items }: { items: ApiProspectItem[] }) {
+  const t = useT();
+  const fmt = useFormat();
+  const [open, setOpen] = React.useState<string | null>(null);
+  const cols: Column<ApiProspectItem>[] = [
+    {
+      id: 'name',
+      header: t('work.base.colProspect'),
+      primary: true,
+      sortValue: (p) => p.displayName,
+      cell: (p) => (
+        <span className="block min-w-0">
+          <b className="block truncate font-semibold">{p.displayName}</b>
+          <span className="block truncate text-label-12 font-normal text-ink-3">
+            {[p.city, p.websiteDomain].filter(Boolean).join(', ')}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: 'cc',
+      header: t('work.base.colCountry'),
+      sortValue: (p) => p.countryCode ?? '',
+      cell: (p) =>
+        p.countryCode ? (
+          <CountryCode code={p.countryCode} title={fmt.country(p.countryCode)} />
+        ) : (
+          '—'
+        ),
+      mobileHidden: true,
+    },
+    {
+      id: 'status',
+      header: t('app.common.status'),
+      sortValue: (p) => p.status,
+      cell: (p) => <Badge>{p.status}</Badge>,
+      mobileHidden: true,
+    },
+    {
+      id: 'channels',
+      header: t('work.base.colChannels'),
+      cell: (p) => (
+        <span className="text-ink-2">
+          {p.channels.map((c) => t(`app.channels.${c.channel}` as MessageKey)).join(', ') || '—'}
+        </span>
+      ),
+      mobileHidden: true,
+    },
+    {
+      id: 'source',
+      header: t('work.base.colSource'),
+      cell: (p) => <span className="text-ink-2">{p.sourceCodes.join(', ')}</span>,
+      mobileHidden: true,
+    },
+    {
+      id: 'score',
+      header: t('work.base.colScore'),
+      sortValue: (p) => p.score ?? 0,
+      cell: (p) => (p.score !== null ? <Score value={p.score} /> : '—'),
+    },
+  ];
+  return (
+    <>
+      <DataTable
+        rows={items}
+        columns={cols}
+        getId={(p) => p.id}
+        getLabel={(p) => p.displayName}
+        searchText={(p) => `${p.displayName} ${p.city ?? ''}`}
+        onRowClick={(p) => setOpen(p.id)}
+        activeId={open}
+        caption={t('live.realData')}
+      />
+      <RealProspectSheet id={open} onClose={() => setOpen(null)} />
+    </>
+  );
+}
 
 const tone = { valid: 'ok', risky: 'warn', invalid: 'bad', none: 'none' } as const;
 const STAGES: Stage[] = ['new', 'contacted', 'replied', 'meeting', 'won', 'lost'];
@@ -255,6 +349,9 @@ function prospectColumns(
 
 export function ProspectsView() {
   const { t, locale, fmt, rows, facets, views } = useProspectBits();
+  const real = useRealProspects();
+  const [source, setSource] = React.useState<'real' | 'demo' | null>(null);
+  const effective = source ?? (real && real.length ? 'real' : 'demo');
   const bulk = useBulk();
   const params = useSearchParams();
   const [open, setOpen] = React.useState<DemoProspect | null>(
@@ -263,8 +360,33 @@ export function ProspectsView() {
   const companies = rows.filter((p) => p.kind === 'company');
   const people = rows;
   const search = (p: DemoProspect) => `${p.person} ${p.org} ${p.city[locale]} ${p.source}`;
+  const switcher = (
+    <div className="flex flex-wrap items-center gap-3">
+      <Segmented<'real' | 'demo'>
+        label={t('live.realData')}
+        value={effective}
+        onChange={setSource}
+        options={[
+          { value: 'real', label: `${t('live.showReal')} (${real?.length ?? '…'})` },
+          { value: 'demo', label: t('live.showDemoData') },
+        ]}
+      />
+      {real && real.length === 0 ? (
+        <p className="text-label-13 font-normal text-ink-3">{t('live.noReal')}</p>
+      ) : null}
+    </div>
+  );
+  if (effective === 'real' && real) {
+    return (
+      <div className="grid min-w-0 gap-4">
+        {switcher}
+        <RealProspects items={real} />
+      </div>
+    );
+  }
   return (
     <Tabs defaultValue="companies" className="grid min-w-0 gap-4 [&>*]:min-w-0">
+      {switcher}
       <TabsList>
         <TabsTrigger value="companies">
           {t('work.base.tabCompanies')}{' '}
