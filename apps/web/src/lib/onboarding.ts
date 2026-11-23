@@ -4,6 +4,8 @@ import { apiFetch } from './api';
 export interface OrgProfileInput {
   accountType: string;
   sectors: string[];
+  /** Site de l'expéditeur (normalisé en domaine par le serveur), null pour effacer. */
+  website?: string | null;
 }
 
 /** Enregistre le type de compte et les secteurs (PUT /api/organization/profile, owner/admin). */

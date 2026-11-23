@@ -6,7 +6,7 @@ import { AuthShell } from '@/components/auth/auth-shell';
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   return (
-    <I18nProvider locale={locale} messages={pickMessages(locale, ['common', 'auth', 'app'])}>
+    <I18nProvider locale={locale} messages={pickMessages(locale, ['common', 'auth', 'app', 'crm'])}>
       <AuthShell>{children}</AuthShell>
       <Toaster />
     </I18nProvider>

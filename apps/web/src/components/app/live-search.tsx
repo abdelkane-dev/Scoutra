@@ -62,18 +62,32 @@ export function useLiveCampaign(id: string | null) {
     return () => window.clearInterval(timer);
   }, [id, refresh]);
 
+  const lastEventId = React.useRef<string | null>(null);
+  const status = campaign?.status;
   React.useEffect(() => {
-    if (!id || !campaign || campaign.status !== 'running') return;
-    const es = new EventSource(`/api/campaigns/${id}/stream`);
+    if (!id || (status !== 'running' && status !== 'paused')) return;
+    // Reprise : le navigateur renvoie Last-Event-ID à la reconnexion ; à la réouverture du flux,
+    // on le transmet explicitement (?lastEventId=) pour ne perdre aucun événement.
+    const q = lastEventId.current ? `?lastEventId=${encodeURIComponent(lastEventId.current)}` : '';
+    const es = new EventSource(`/api/campaigns/${id}/stream${q}`);
+    const seen = (e: Event) => {
+      const le = (e as MessageEvent).lastEventId;
+      if (le) lastEventId.current = le;
+    };
     const bump = (n: number) => setPhase((p) => Math.max(p, n));
-    es.addEventListener('campaign.progress', () => bump(2));
-    es.addEventListener('prospect.created', () => bump(3));
-    es.addEventListener('prospect.updated', () => {
+    const on = (name: string, f: (e: Event) => void) =>
+      es.addEventListener(name, (e) => {
+        seen(e);
+        f(e);
+      });
+    on('campaign.progress', () => bump(2));
+    on('prospect.created', () => bump(3));
+    on('prospect.updated', () => {
       bump(5);
       void refresh();
     });
-    es.addEventListener('message.drafted', () => bump(6));
-    es.addEventListener('campaign.warning', (e) => {
+    on('message.drafted', () => bump(6));
+    on('campaign.warning', (e) => {
       try {
         const d = JSON.parse((e as MessageEvent).data) as { code: string };
         setWarnings((w) => (w.includes(d.code) ? w : [...w, d.code]));
@@ -81,9 +95,9 @@ export function useLiveCampaign(id: string | null) {
         /* événement illisible ignoré */
       }
     });
-    es.addEventListener('campaign.status', () => void refresh());
+    on('campaign.status', () => void refresh());
     return () => es.close();
-  }, [id, campaign?.status, refresh, campaign]);
+  }, [id, status, refresh]);
 
   React.useEffect(() => {
     if (campaign?.status && campaign.status !== 'interpreting') setStalled(false);
@@ -101,15 +115,7 @@ export function useLiveCampaign(id: string | null) {
   return { campaign, prospects, warnings, stalled, agentsDone, refresh };
 }
 
-export function LiveRun({
-  id,
-  onDemo,
-  onReset,
-}: {
-  id: string;
-  onDemo: () => void;
-  onReset: () => void;
-}) {
+export function LiveRun({ id, onReset }: { id: string; onReset: () => void }) {
   const t = useT();
   const fmt = useFormat();
   const { campaign: c, prospects, warnings, stalled, agentsDone, refresh } = useLiveCampaign(id);
@@ -236,9 +242,6 @@ export function LiveRun({
         {c.status === 'interpreting' && stalled ? (
           <div className="flex flex-wrap items-center gap-3 border-t border-line px-4 py-3 text-copy-14 text-ink-2">
             {t('live.stalled')}
-            <Button size="sm" onClick={onDemo}>
-              {t('live.showDemo')}
-            </Button>
           </div>
         ) : null}
       </Panel>

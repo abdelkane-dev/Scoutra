@@ -107,6 +107,7 @@ export function OrganizationSettings({
   const [name, setName] = React.useState(app.org.name);
   const [type, setType] = React.useState(app.org.accountType ?? '');
   const [picked, setPicked] = React.useState<string[]>(app.org.sectors);
+  const [website, setWebsite] = React.useState(app.org.website ?? '');
   const msg = useAuthErrorMessage();
   return (
     <div className="grid gap-4">
@@ -151,7 +152,11 @@ export function OrganizationSettings({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            const { error } = await saveOrganizationProfile({ accountType: type, sectors: picked });
+            const { error } = await saveOrganizationProfile({
+              accountType: type,
+              sectors: picked,
+              website: website.trim() || null,
+            });
             if (error) return toast(error.message || t('auth.errors.unknown'));
             toast(t('prefs.org.saved'));
             router.refresh();
@@ -201,6 +206,18 @@ export function OrganizationSettings({
                 </label>
               ))}
             </div>
+          </Row>
+          <Row label={t('crm.website')} hint={t('crm.websiteHint')}>
+            <Input
+              className="max-w-md"
+              type="url"
+              inputMode="url"
+              value={website}
+              disabled={!editable}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder={t('crm.websitePlaceholder')}
+              aria-label={t('crm.website')}
+            />
           </Row>
           {editable ? (
             <div className="flex justify-end border-t border-line px-4 py-3">

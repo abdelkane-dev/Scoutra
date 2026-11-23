@@ -3,6 +3,7 @@ export type CampaignStatus =
   | 'interpreting'
   | 'awaiting_confirmation'
   | 'running'
+  | 'paused'
   | 'cancelling'
   | 'cancelled'
   | 'completed'

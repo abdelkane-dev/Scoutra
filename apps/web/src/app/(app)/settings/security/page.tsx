@@ -9,8 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { t, allowed } = await pageKit();
-  void allowed;
+  const { t } = await pageKit();
   return (
     <>
       <h2 className="t-heading-16">{t('prefs.security.title')}</h2>

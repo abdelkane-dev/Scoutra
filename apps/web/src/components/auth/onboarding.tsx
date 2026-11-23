@@ -28,6 +28,7 @@ export function Onboarding({
   const [error, setError] = React.useState<string | null>(null);
   const [accountType, setAccountType] = React.useState('');
   const [picked, setPicked] = React.useState<string[]>([]);
+  const [website, setWebsite] = React.useState('');
   const countries = React.useMemo(() => countryOptions(locale), [locale]);
 
   return (
@@ -119,7 +120,11 @@ export function Onboarding({
               return setError(t('auth.onboarding.chooseOne'));
             setPending(true);
             setError(null);
-            const { error: err } = await saveOrganizationProfile({ accountType, sectors: picked });
+            const { error: err } = await saveOrganizationProfile({
+              accountType,
+              sectors: picked,
+              ...(website.trim() ? { website: website.trim() } : {}),
+            });
             setPending(false);
             if (err) return setError(err.message || msg(err.code));
             toast(t('auth.onboarding.saved'));
@@ -197,6 +202,16 @@ export function Onboarding({
               })}
             </div>
           </fieldset>
+          <Field id="website" label={t('crm.website')} hint={t('crm.websiteHint')}>
+            <Input
+              type="url"
+              inputMode="url"
+              autoComplete="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder={t('crm.websitePlaceholder')}
+            />
+          </Field>
           <div className="flex gap-2">
             <Button type="submit" variant="ink" size="lg" disabled={pending}>
               {t('auth.onboarding.save')}

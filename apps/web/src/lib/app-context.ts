@@ -24,6 +24,7 @@ export interface AppContext {
     countryCode: string;
     accountType: string | null;
     sectors: string[];
+    website: string | null;
     role: OrgRole;
     permissions: Action[];
     needsTwoFactor: Action[];
@@ -97,6 +98,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       countryCode: ctx.org.countryCode,
       accountType: ctx.org.accountType,
       sectors: ctx.org.sectors,
+      website: ctx.org.websiteDomain ?? null,
       role,
       permissions: perms.allowed,
       needsTwoFactor: perms.needsTwoFactor,

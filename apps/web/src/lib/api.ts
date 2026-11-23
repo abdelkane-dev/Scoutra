@@ -41,3 +41,12 @@ export async function apiFetch<T>(
     return { data: null, error: { code: 'network', message: '', status: 0 } };
   }
 }
+
+/** Mutation JSON ; renvoie le résultat sans lever d'exception. */
+export function apiSend<T>(
+  path: string,
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  body?: unknown,
+) {
+  return apiFetch<T>(path, { method, body: body ?? {} });
+}
